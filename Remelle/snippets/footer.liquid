@@ -1,0 +1,20 @@
+{% doc %}
+  Renders the storefront footer: copyright line and payment icons.
+
+  @example
+  {% render 'footer' %}
+{% enddoc %}
+
+<footer>
+  <div class="footer__copyright">
+    &copy;
+    {{ 'now' | date: '%Y' }}
+    {{ shop.name | link_to: routes.root_url }}, {{ powered_by_link }}
+  </div>
+
+  <div class="footer__payment">
+    {% for type in shop.enabled_payment_types %}
+      {{ type | payment_type_svg_tag }}
+    {% endfor %}
+  </div>
+</footer>

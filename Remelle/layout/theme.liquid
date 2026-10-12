@@ -28,16 +28,16 @@
   </head>
 
   <body>
-    {% block 'container', tag: 'div' %}
-      {% block 'header' -%}{%- endblock %}
-    {% endblock %}
+    <div class="block-container">
+      {% render 'header' %}
+    </div>
 
     <main>
       {{ content_for_layout }}
     </main>
 
-    {% block 'container', tag: 'div' %}
-      {% block 'footer' -%}{%- endblock %}
-    {% endblock %}
+    <div class="block-container">
+      {% render 'footer' %}
+    </div>
   </body>
 </html>

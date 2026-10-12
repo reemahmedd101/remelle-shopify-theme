@@ -1,7 +1,7 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Skeleton",
+    "theme_name": "Remelle",
     "theme_version": "0.1.0",
     "theme_author": "Shopify",
     "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
@@ -11,45 +11,8 @@
     "name": "t:general.typography",
     "settings": [
       {
-        "type": "header",
-        "content": "t:general.fonts"
-      },
-      {
-        "type": "font_picker",
-        "id": "type_primary_font",
-        "default": "work_sans_n4",
-        "label": "t:general.primary"
-      }
-    ]
-  },
-  {
-    "name": "t:general.layout",
-    "settings": [
-      {
-        "type": "select",
-        "id": "max_page_width",
-        "label": "t:labels.page_width",
-        "options": [
-          {
-            "value": "90rem",
-            "label": "t:options.page_width.narrow"
-          },
-          {
-            "value": "110rem",
-            "label": "t:options.page_width.wide"
-          }
-        ],
-        "default": "90rem"
-      },
-      {
-        "type": "range",
-        "id": "min_page_margin",
-        "min": 10,
-        "max": 100,
-        "step": 1,
-        "unit": "px",
-        "label": "t:labels.page_margin",
-        "default": 20
+        "type": "paragraph",
+        "content": "t:general.typography_note"
       }
     ]
   },
@@ -58,25 +21,72 @@
     "settings": [
       {
         "type": "color",
-        "id": "background_color",
-        "default": "#FFFFFF",
-        "label": "t:labels.background"
+        "id": "color_burgundy",
+        "default": "#670D0D",
+        "label": "t:labels.burgundy"
       },
       {
         "type": "color",
-        "id": "foreground_color",
-        "default": "#333333",
-        "label": "t:labels.foreground"
+        "id": "color_beige",
+        "default": "#F5EDE3",
+        "label": "t:labels.beige"
+      },
+      {
+        "type": "color",
+        "id": "color_off_white",
+        "default": "#FAF5F0",
+        "label": "t:labels.off_white"
+      },
+      {
+        "type": "color",
+        "id": "color_black",
+        "default": "#060505",
+        "label": "t:labels.black"
+      }
+    ]
+  },
+  {
+    "name": "t:general.layout",
+    "settings": [
+      {
+        "type": "range",
+        "id": "page_width",
+        "min": 1200,
+        "max": 1600,
+        "step": 8,
+        "unit": "px",
+        "label": "t:labels.page_width",
+        "default": 1440
       },
       {
         "type": "range",
-        "id": "input_corner_radius",
+        "id": "page_inset",
         "min": 0,
-        "max": 10,
+        "max": 80,
+        "step": 4,
+        "unit": "px",
+        "label": "t:labels.page_inset",
+        "default": 48
+      },
+      {
+        "type": "range",
+        "id": "announcement_height",
+        "min": 24,
+        "max": 48,
         "step": 1,
         "unit": "px",
-        "label": "t:labels.input_corner_radius",
-        "default": 4
+        "label": "t:labels.announcement_height",
+        "default": 30
+      },
+      {
+        "type": "range",
+        "id": "navigation_height",
+        "min": 48,
+        "max": 80,
+        "step": 1,
+        "unit": "px",
+        "label": "t:labels.navigation_height",
+        "default": 56
       }
     ]
   }

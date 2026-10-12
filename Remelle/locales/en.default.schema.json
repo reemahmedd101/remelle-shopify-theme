@@ -31,11 +31,16 @@
     "settings": "Settings",
     "sidebar": "Sidebar",
     "theme": "Theme",
-    "typography": "Typography"
+    "typography": "Typography",
+    "typography_note": "Body, navigation, and product information use Instrument Sans. Display and section headings use Instrument Serif. Snell Roundhand is reserved for the phrase Intention & authenticity."
   },
   "labels": {
     "alignment": "Alignment",
+    "announcement_height": "Announcement height",
     "background": "Background",
+    "beige": "Beige",
+    "black": "Black",
+    "burgundy": "Burgundy",
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",
@@ -44,6 +49,9 @@
     "menu": "Menu",
     "customer_account_menu": "Customer account menu",
     "padding": "Padding",
+    "navigation_height": "Navigation height",
+    "off_white": "Off white",
+    "page_inset": "Page inset",
     "page_margin": "Page margin",
     "page_width": "Page width",
     "show_payment_icons": "Show payment icons"

@@ -153,7 +153,7 @@ header {
 header a {
   position: relative;
   text-decoration: none;
-  color: var(--color-foreground);
+  color: var(--color-black);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,7 +162,7 @@ header a sup {
   position: absolute;
   left: 100%;
   overflow: hidden;
-  max-width: var(--page-margin);
+  max-width: var(--page-inset);
 }
 header svg {
   width: 2rem;
@@ -181,7 +181,7 @@ footer {
 }
 footer a {
   text-decoration: none;
-  color: var(--color-foreground);
+  color: var(--color-black);
 }
 footer .footer__links,
 footer .footer__payment {

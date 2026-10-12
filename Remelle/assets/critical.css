@@ -31,17 +31,17 @@ input,
 textarea,
 select {
   font: inherit;
-  border-radius: var(--style-border-radius-inputs);
+  border-radius: var(--radius-none);
 }
 
 select {
-  background-color: var(--color-background);
+  background-color: var(--color-off-white);
   color: currentcolor;
 }
 
 dialog {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--color-off-white);
+  color: var(--color-black);
 }
 
 p {
@@ -73,9 +73,16 @@ p:empty {
 
 /** Theme styles below */
 body {
-  font-family: var(--font-primary--family);
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  background-color: var(--color-off-white);
+  color: var(--color-black);
+}
+
+h1,
+h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
 }
 
 /** Block container layout utilities */
@@ -92,11 +99,8 @@ body {
  * the entire viewport.
  */
 .block-container {
-  --content-width: min(
-    calc(var(--page-width) - var(--page-margin) * 2),
-    calc(100% - var(--page-margin) * 2)
-  );
-  --content-margin: minmax(var(--page-margin), 1fr);
+  --content-width: min(var(--page-content), calc(100% - var(--page-inset) * 2));
+  --content-margin: minmax(var(--page-inset), 1fr);
   --content-grid: var(--content-margin) var(--content-width) var(--content-margin);
 
   /* This is required to make <img> elements work as background images */

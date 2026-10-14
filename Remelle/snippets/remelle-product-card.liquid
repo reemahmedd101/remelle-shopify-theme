@@ -1,0 +1,267 @@
+{% doc %}
+  Homepage carousel card, 363 by 550, with a 363 by 484 photograph.
+
+  @param {product} product - Product to render
+
+  @example
+  {% render 'remelle-product-card', product: product %}
+{% enddoc %}
+
+{%- liquid
+  assign card_image = product.featured_image
+  assign card_alt = card_image.alt | default: product.title
+  assign color_option = nil
+
+  for option in product.options_with_values
+    assign option_name = option.name | downcase
+    if option_name == 'color' or option_name == 'colour'
+      assign color_option = option
+    endif
+  endfor
+
+  assign show_badge = false
+  if product.tags contains 'new' or product.tags contains 'new-in' or product.tags contains 'New'
+    assign show_badge = true
+  endif
+-%}
+
+<article class="remelle-card">
+  <div class="remelle-card__photo">
+    <a class="remelle-card__media" href="{{ product.url }}">
+      {%- if card_image != blank -%}
+        {{
+          card_image
+          | image_url: width: 800
+          | image_tag:
+            widths: '363, 726',
+            sizes: '363px',
+            alt: card_alt,
+            class: 'remelle-card__image',
+            loading: 'lazy'
+        }}
+      {%- endif -%}
+    </a>
+
+    {%- if show_badge -%}
+      <p class="remelle-card__badge">{{ 'products.new_in' | t }}</p>
+    {%- endif -%}
+
+    <button class="remelle-card__wish" type="button" aria-pressed="false" aria-label="{{ 'products.wishlist' | t }}">
+      {% render 'icon-heart' %}
+    </button>
+
+    {%- if product.selected_or_first_available_variant -%}
+      {% form 'product', product, class: 'remelle-card__form' %}
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+        <button class="remelle-card__add" type="submit" aria-label="{{ 'products.add' | t: title: product.title }}">
+          {% render 'icon-plus' %}
+        </button>
+      {% endform %}
+    {%- endif -%}
+  </div>
+
+  <h3 class="remelle-card__name">
+    <a href="{{ product.url }}">{{ product.title | escape }}</a>
+  </h3>
+
+  <div class="remelle-card__meta">
+    <p class="remelle-card__price">{{ product.price | money }}</p>
+    {%- if color_option -%}
+      <ul class="remelle-card__swatches">
+        {%- for value in color_option.values limit: 2 -%}
+          {%- liquid
+            assign swatch_color = value.swatch.color
+            if swatch_color == blank
+              assign swatch_name = value.name | downcase
+              case swatch_name
+                when 'burgundy'
+                  assign swatch_color = '#670D0D'
+                when 'black'
+                  assign swatch_color = '#060505'
+                when 'off white', 'cream', 'ivory', 'white'
+                  assign swatch_color = '#F3EDE4'
+                when 'brown'
+                  assign swatch_color = '#6A4A38'
+                else
+                  assign swatch_color = '#D0CBC4'
+              endcase
+            endif
+          -%}
+          <li class="remelle-card__swatch" style="background: {{ swatch_color }};">
+            <span class="remelle-card__swatch-label">{{ value.name | escape }}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+      {%- if color_option.values.size > 2 -%}
+        <p class="remelle-card__more">+ {{ color_option.values.size | minus: 2 }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</article>
+
+{% stylesheet %}
+  .remelle-card {
+    flex: 0 0 363px;
+    width: 363px;
+    color: #242424;
+  }
+
+  .remelle-card__photo {
+    position: relative;
+    height: 484px;
+    background: var(--color-beige);
+  }
+
+  .remelle-card__media {
+    display: block;
+    height: 100%;
+    padding: 10px;
+  }
+
+  .remelle-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .remelle-card__badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    margin: 0;
+    padding: 2px 6px;
+    border-radius: var(--radius-badge);
+    background: #ffffff;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 12px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .remelle-card__wish,
+  .remelle-card__add {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .remelle-card__wish {
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: 0;
+    background: transparent;
+    color: var(--color-burgundy);
+  }
+
+  .remelle-card__wish[aria-pressed='true'] .icon-heart path {
+    fill: currentColor;
+  }
+
+  .remelle-card__form {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    margin: 0;
+  }
+
+  .remelle-card__add {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+  }
+
+  .remelle-card__wish:focus-visible,
+  .remelle-card__add:focus-visible,
+  .remelle-card__name a:focus-visible,
+  .remelle-card__media:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-card__name {
+    margin: 20px 0 0;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  .remelle-card__name a {
+    display: block;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .remelle-card__meta {
+    display: flex;
+    align-items: center;
+    height: 17px;
+    margin-top: 12px;
+  }
+
+  .remelle-card__price {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 17px;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  .remelle-card__swatches {
+    display: flex;
+    margin: 0 0 0 17px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .remelle-card__swatch {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-swatch);
+  }
+
+  .remelle-card__swatch + .remelle-card__swatch {
+    margin-left: -4px;
+  }
+
+  .remelle-card__swatch-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .remelle-card__more {
+    margin: 0 0 0 4px;
+    color: #242424;
+    font-family: Inter, var(--font-sans);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+{% endstylesheet %}

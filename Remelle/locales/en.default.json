@@ -56,6 +56,14 @@
   "hero": {
     "slides": "Campaign slides"
   },
+  "products": {
+    "add": "Add {{ title }} to cart",
+    "new_in": "New in",
+    "next": "Next products",
+    "previous": "Previous products",
+    "progress": "Product carousel progress",
+    "wishlist": "Save"
+  },
   "hello_world": {
     "title": "Hello, World!",
     "intro": "The Skeleton theme is a minimal, carefully structured Shopify theme designed to help you quickly get started. Designed with modularity, maintainability, and Shopify's best practices in mind.",

@@ -18,8 +18,10 @@
     "footer": "Footer",
     "group": "Group",
     "header": "Header",
+    "editorial": "Editorial photograph",
     "house": "House introduction",
     "hero": "Hero",
+    "products": "Objects of desire",
     "hello_world": "Hello world",
     "layout": "Layout",
     "liquid_tips": "Liquid tips",
@@ -51,6 +53,8 @@
     "button_label": "Button label",
     "button_link": "Button link",
     "description": "Description",
+    "editorial_image": "Image",
+    "editorial_image_alt": "Image alt text",
     "eyebrow": "Eyebrow",
     "foreground": "Foreground",
     "heading": "Heading",
@@ -78,6 +82,7 @@
     "newsletter_title": "Newsletter title",
     "off_white": "Off white",
     "page_inset": "Page inset",
+    "products_to_show": "Products to show",
     "page_margin": "Page margin",
     "page_width": "Page width",
     "send": "Send label",
@@ -85,7 +90,8 @@
     "shop_title": "Shop title",
     "show_payment_icons": "Show payment icons",
     "tiktok_label": "Tiktok label",
-    "tiktok_url": "Tiktok URL"
+    "tiktok_url": "Tiktok URL",
+    "view_all": "View all label"
   },
   "options": {
     "alignment": {

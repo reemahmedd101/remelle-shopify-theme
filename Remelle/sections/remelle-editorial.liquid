@@ -1,0 +1,129 @@
+<section
+  class="remelle-editorial"
+  {% if section.settings.heading != blank %}
+    aria-labelledby="RemelleEditorialTitle-{{ section.id }}"
+  {% endif %}
+>
+  <div class="remelle-editorial__media">
+    {%- if section.settings.image != blank -%}
+      {%- assign editorial_alt = section.settings.image_alt | default: section.settings.image.alt -%}
+      {{
+        section.settings.image
+        | image_url: width: 2880
+        | image_tag:
+          widths: '750, 1100, 1500, 2000, 2880',
+          sizes: '100vw',
+          alt: editorial_alt,
+          class: 'remelle-editorial__image',
+          loading: 'lazy'
+      }}
+    {%- endif -%}
+  </div>
+
+  <div class="remelle-editorial__copy">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="remelle-editorial__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+    {%- if section.settings.heading != blank -%}
+      <h2 class="remelle-editorial__heading" id="RemelleEditorialTitle-{{ section.id }}">
+        {{ section.settings.heading | escape }}
+      </h2>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-editorial {
+    position: relative;
+    height: 756px;
+    overflow: hidden;
+    background: #c5c0b8;
+    color: var(--color-burgundy);
+  }
+
+  .remelle-editorial__media,
+  .remelle-editorial__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .remelle-editorial__image {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .remelle-editorial__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+  }
+
+  .remelle-editorial__copy {
+    position: relative;
+    z-index: 1;
+    padding-top: 56px;
+    padding-left: max(var(--page-inset), calc((100% - var(--page-width)) / 2 + var(--page-inset)));
+  }
+
+  .remelle-editorial__eyebrow {
+    margin: 0 0 20px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-editorial__heading {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.editorial",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.editorial_image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "t:labels.editorial_image_alt",
+      "default": "Three models walking in the winter collection"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "03 — How we wore it"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Remelle in action"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.editorial"
+    }
+  ]
+}
+{% endschema %}

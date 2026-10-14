@@ -7,7 +7,15 @@
     "house": {
       "type": "remelle-house",
       "settings": {}
+    },
+    "products": {
+      "type": "remelle-products",
+      "settings": {}
+    },
+    "editorial": {
+      "type": "remelle-editorial",
+      "settings": {}
     }
   },
-  "order": ["hero", "house"]
+  "order": ["hero", "house", "products", "editorial"]
 }

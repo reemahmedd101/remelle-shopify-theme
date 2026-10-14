@@ -1,0 +1,360 @@
+{%- liquid
+  assign slide_one = section.settings.image
+  assign slide_two = section.settings.image_2
+  assign show_index = false
+  if slide_one != blank and slide_two != blank
+    assign show_index = true
+  endif
+
+  assign heading_source = section.settings.heading | newline_to_br
+  assign heading_lines = heading_source | split: '<br />'
+  if heading_lines.size == 1
+    assign heading_lines = heading_source | split: '<br>'
+  endif
+
+  assign button_label = section.settings.button_label
+  assign button_link = section.settings.button_link
+  if button_link == blank
+    assign button_link = routes.all_products_collection_url
+  endif
+-%}
+
+<section
+  class="remelle-hero"
+  {% if section.settings.heading != blank %}
+    aria-labelledby="RemelleHeroTitle-{{ section.id }}"
+  {% endif %}
+>
+  {%- if slide_one != blank or slide_two != blank -%}
+    <div class="remelle-hero__slides">
+      {%- if slide_one != blank -%}
+        <div class="remelle-hero__slide remelle-hero__slide--1">
+          {%- liquid
+            assign slide_one_alt = section.settings.image_alt | default: slide_one.alt
+            if section.index == 1
+              echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'eager', fetchpriority: 'high', preload: true, class: 'remelle-hero__image'
+            else
+              echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'lazy', class: 'remelle-hero__image'
+            endif
+          -%}
+        </div>
+      {%- endif -%}
+      {%- if slide_two != blank -%}
+        <div class="remelle-hero__slide remelle-hero__slide--2">
+          {%- assign slide_two_alt = section.settings.image_2_alt | default: slide_two.alt -%}
+          {{ slide_two | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_two_alt, loading: 'lazy', class: 'remelle-hero__image' }}
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="remelle-hero__copy">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="remelle-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+    {%- if section.settings.heading != blank -%}
+      <h1 class="remelle-hero__heading" id="RemelleHeroTitle-{{ section.id }}">
+        {%- for line in heading_lines -%}
+          {%- assign line_text = line | strip -%}
+          {%- if line_text != blank -%}
+            <span class="remelle-hero__line">{{ line_text | escape }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+      </h1>
+    {%- endif -%}
+    {%- if section.settings.description != blank -%}
+      <p class="remelle-hero__description">{{ section.settings.description | escape }}</p>
+    {%- endif -%}
+    {%- if button_label != blank -%}
+      <a class="remelle-hero__button" href="{{ button_link }}">
+        {{ button_label | escape }}
+        {% render 'icon-arrow-up-right' %}
+      </a>
+    {%- endif -%}
+  </div>
+
+  {%- if show_index -%}
+    <fieldset class="remelle-hero__index">
+      <legend class="remelle-hero__legend">{{ 'hero.slides' | t }}</legend>
+      <label class="remelle-hero__digit remelle-hero__digit--1">
+        <input
+          class="remelle-hero__control remelle-hero__control--1"
+          type="radio"
+          name="remelle-hero-{{ section.id }}"
+          checked
+        >
+        <span>01</span>
+      </label>
+      <label class="remelle-hero__digit remelle-hero__digit--2">
+        <input
+          class="remelle-hero__control remelle-hero__control--2"
+          type="radio"
+          name="remelle-hero-{{ section.id }}"
+        >
+        <span>02</span>
+      </label>
+    </fieldset>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  main > :first-child:has(.remelle-hero) {
+    margin-top: -1px;
+  }
+
+  .remelle-hero {
+    position: relative;
+    height: 740px;
+    overflow: hidden;
+    background: var(--color-black);
+    color: #fffdfc;
+  }
+
+  .remelle-hero__slides,
+  .remelle-hero__slide {
+    position: absolute;
+    inset: 0;
+  }
+
+  .remelle-hero__slide--2 {
+    opacity: 0;
+  }
+
+  .remelle-hero__slide--2:only-child {
+    opacity: 1;
+  }
+
+  .remelle-hero:has(.remelle-hero__control--2:checked) .remelle-hero__slide--1 {
+    opacity: 0;
+  }
+
+  .remelle-hero:has(.remelle-hero__control--2:checked) .remelle-hero__slide--2 {
+    opacity: 1;
+  }
+
+  .remelle-hero__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .remelle-hero__slide::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(20, 8, 7, 0.02), rgba(20, 8, 7, 0.4));
+    pointer-events: none;
+  }
+
+  .remelle-hero__slide--2::after {
+    background: linear-gradient(to bottom, rgba(20, 8, 7, 0.03), rgba(20, 8, 7, 0.53));
+  }
+
+  .remelle-hero__copy {
+    position: absolute;
+    z-index: 1;
+    top: 314px;
+    left: max(var(--page-inset), calc((100% - var(--page-width)) / 2 + var(--page-inset)));
+    width: min(720px, calc(100% - var(--page-inset) * 2));
+  }
+
+  .remelle-hero__eyebrow {
+    margin: 0 0 20px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-hero__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    color: #fffdfc;
+    font-family: var(--font-serif);
+    font-size: 74px;
+    font-weight: 400;
+    line-height: 0.96;
+    letter-spacing: -0.01em;
+  }
+
+  .remelle-hero__description {
+    margin: 12px 0 0;
+    color: #d6d6d6;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: 0;
+  }
+
+  .remelle-hero__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    margin-top: 40px;
+    padding: 0 20px;
+    border: 1px solid var(--color-beige);
+    border-radius: var(--radius-none);
+    background: var(--color-beige);
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.96px;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-hero__button .icon-arrow-up-right {
+    width: 24px;
+    height: 24px;
+  }
+
+  .remelle-hero__button:focus-visible {
+    outline: 1px solid var(--color-beige);
+    outline-offset: 3px;
+  }
+
+  .remelle-hero__legend,
+  .remelle-hero__control {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .remelle-hero__index {
+    position: absolute;
+    z-index: 1;
+    right: max(var(--page-inset), calc((100% - var(--page-width)) / 2 + var(--page-inset)));
+    bottom: 42px;
+    display: flex;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+  }
+
+  .remelle-hero__digit {
+    color: #fffdfc;
+    opacity: 0.3;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 0;
+    cursor: pointer;
+  }
+
+  .remelle-hero:has(.remelle-hero__control--1:checked) .remelle-hero__digit--1,
+  .remelle-hero:has(.remelle-hero__control--2:checked) .remelle-hero__digit--2 {
+    opacity: 1;
+  }
+
+  .remelle-hero__digit:has(:focus-visible) span {
+    outline: 1px solid #fffdfc;
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 720px) {
+    .remelle-hero__heading {
+      font-size: clamp(40px, 10vw, 74px);
+    }
+
+    .remelle-hero__copy {
+      top: 96px;
+      width: calc(100% - 48px);
+      left: 24px;
+    }
+
+    .remelle-hero__button {
+      max-width: 100%;
+      height: auto;
+      min-height: 48px;
+      padding-block: 14px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.hero",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.hero_image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "t:labels.hero_image_alt",
+      "default": "Model seated in an ivory coat"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "t:labels.hero_image_2",
+      "info": "t:labels.hero_image_2_info"
+    },
+    {
+      "type": "text",
+      "id": "image_2_alt",
+      "label": "t:labels.hero_image_2_alt",
+      "default": "Model standing in a dark shirt"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "Fall / Winter 2026"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Timeless pieces,\nModern muse"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "t:labels.description",
+      "default": "Sculptural silhouettes, uncompromising detail and a new language of modern elegance."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:labels.button_label",
+      "default": "Discover the winter collection"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:labels.button_link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.hero"
+    }
+  ]
+}
+{% endschema %}

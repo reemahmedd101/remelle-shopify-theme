@@ -53,6 +53,9 @@
     "expires_on": "Expires on {{ expires_on }}",
     "use_at_checkout": "Use this gift card at checkout"
   },
+  "hero": {
+    "slides": "Campaign slides"
+  },
   "hello_world": {
     "title": "Hello, World!",
     "intro": "The Skeleton theme is a minimal, carefully structured Shopify theme designed to help you quickly get started. Designed with modularity, maintainability, and Shopify's best practices in mind.",

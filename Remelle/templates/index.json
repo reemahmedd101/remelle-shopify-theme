@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "hero": {
+      "type": "remelle-hero",
+      "settings": {}
+    },
+    "house": {
+      "type": "remelle-house",
+      "settings": {}
+    }
+  },
+  "order": ["hero", "house"]
+}

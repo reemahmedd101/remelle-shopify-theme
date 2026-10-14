@@ -1,0 +1,31 @@
+{% doc %}
+  Remelle wordmark. The nav size is 128 by 24. The footer size is 469 by 88.
+
+  @param {string} variant - "nav" or "footer"
+  @param {string} [class] - Extra class names
+
+  @example
+  {% render 'wordmark', variant: 'nav' %}
+{% enddoc %}
+
+{% liquid
+  if variant == 'footer'
+    assign wordmark_file = 'wordmark-beige.png'
+    assign wordmark_width = 469
+    assign wordmark_height = 88
+    assign wordmark_class = 'wordmark wordmark--footer'
+  else
+    assign wordmark_file = 'wordmark-burgundy.png'
+    assign wordmark_width = 128
+    assign wordmark_height = 24
+    assign wordmark_class = 'wordmark wordmark--nav'
+  endif
+%}
+
+<img
+  class="{{ wordmark_class }} {{ class }}"
+  src="{{ wordmark_file | asset_url }}"
+  alt=""
+  width="{{ wordmark_width }}"
+  height="{{ wordmark_height }}"
+>

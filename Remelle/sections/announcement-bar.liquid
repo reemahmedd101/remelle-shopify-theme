@@ -1,0 +1,17 @@
+{% if section.settings.text != blank %}
+  <p class="announcement">{{ section.settings.text | escape }}</p>
+{% endif %}
+
+{% schema %}
+{
+  "name": "t:general.announcement",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:labels.announcement",
+      "default": "Free delivery on your first order"
+    }
+  ]
+}
+{% endschema %}

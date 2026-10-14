@@ -1,0 +1,213 @@
+{% liquid
+  assign shop_url = routes.all_products_collection_url
+  assign about_url = pages['about'].url | default: '/pages/about'
+  assign contact_url = pages['contact'].url | default: '/pages/contact'
+  assign returns_url = pages['returns'].url | default: '/pages/returns'
+%}
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__top">
+      <div class="site-footer__columns">
+        <div>
+          <p class="site-footer__title">{{ section.settings.shop_title | escape }}</p>
+          <div class="site-footer__links">
+            {% capture shop_titles %}{{ 'chrome.new_collection' | t }}|{{ 'chrome.coats_tops' | t }}|{{ 'chrome.pants' | t }}{% endcapture %}
+            {% capture shop_urls %}{{ shop_url }}|{{ shop_url }}|{{ shop_url }}{% endcapture %}
+            {% render 'menu-links',
+              menu: section.settings.menu_shop,
+              titles: shop_titles,
+              urls: shop_urls,
+              class: 'site-footer__link'
+            %}
+          </div>
+        </div>
+
+        <div>
+          <p class="site-footer__title">{{ section.settings.brand_title | escape }}</p>
+          <div class="site-footer__links">
+            {% capture brand_titles %}{{ 'chrome.about_remelle' | t }}|{{ 'chrome.contact_us' | t }}{% endcapture %}
+            {% capture brand_urls %}{{ about_url }}|{{ contact_url }}{% endcapture %}
+            {% render 'menu-links',
+              menu: section.settings.menu_brand,
+              titles: brand_titles,
+              urls: brand_urls,
+              class: 'site-footer__link'
+            %}
+          </div>
+        </div>
+
+        <div>
+          <p class="site-footer__title">{{ section.settings.inquiries_title | escape }}</p>
+          <div class="site-footer__links">
+            {% capture returns_title %}{{ 'chrome.return_exchange' | t }}{% endcapture %}
+            {% render 'menu-links',
+              menu: section.settings.menu_inquiries,
+              titles: returns_title,
+              urls: returns_url,
+              class: 'site-footer__link'
+            %}
+          </div>
+        </div>
+
+        <div>
+          <p class="site-footer__title">{{ section.settings.follow_title | escape }}</p>
+          <div class="site-footer__links">
+            {% if section.settings.instagram_url != blank %}
+              <a class="site-footer__social" href="{{ section.settings.instagram_url }}">
+                {{ section.settings.instagram_label | escape }}
+                {% render 'icon-arrow-up-right' %}
+              </a>
+            {% else %}
+              <span class="site-footer__social">
+                {{ section.settings.instagram_label | escape }}
+                {% render 'icon-arrow-up-right' %}
+              </span>
+            {% endif %}
+            {% if section.settings.tiktok_url != blank %}
+              <a class="site-footer__social" href="{{ section.settings.tiktok_url }}">
+                {{ section.settings.tiktok_label | escape }}
+                {% render 'icon-arrow-up-right' %}
+              </a>
+            {% else %}
+              <span class="site-footer__social">
+                {{ section.settings.tiktok_label | escape }}
+                {% render 'icon-arrow-up-right' %}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="newsletter">
+        <p class="site-footer__title">{{ section.settings.newsletter_title | escape }}</p>
+        {% form 'customer', id: 'footer-newsletter' %}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <div class="newsletter__row">
+            <label class="visually-hidden" for="footer-newsletter-email">{{ 'chrome.email' | t }}</label>
+            <input
+              id="footer-newsletter-email"
+              type="email"
+              name="contact[email]"
+              autocomplete="email"
+              required
+              placeholder="{{ section.settings.newsletter_placeholder | escape }}"
+            >
+            <button class="newsletter__send" type="submit">
+              {{ section.settings.send_label | escape }}
+              {% render 'icon-arrow-up-right' %}
+            </button>
+          </div>
+          <span class="newsletter__rule"></span>
+          {% if form.errors %}
+            <div class="newsletter__errors">{{ form.errors | default_errors }}</div>
+          {% endif %}
+        {% endform %}
+      </div>
+    </div>
+
+    <div class="site-footer__rule-wrap">
+      <hr class="site-footer__rule">
+    </div>
+
+    <div class="site-footer__brand">
+      <a href="{{ routes.root_url }}" aria-label="{{ 'chrome.wordmark' | t }}">
+        {% render 'wordmark', variant: 'footer' %}
+      </a>
+      <p class="site-footer__copyright">{{ section.settings.copyright | escape }}</p>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "t:general.footer",
+  "settings": [
+    {
+      "type": "text",
+      "id": "shop_title",
+      "label": "t:labels.shop_title",
+      "default": "Shop"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_shop",
+      "label": "t:labels.menu_shop"
+    },
+    {
+      "type": "text",
+      "id": "brand_title",
+      "label": "t:labels.brand_title",
+      "default": "The brand"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_brand",
+      "label": "t:labels.menu_brand"
+    },
+    {
+      "type": "text",
+      "id": "inquiries_title",
+      "label": "t:labels.inquiries_title",
+      "default": "Inquiries"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_inquiries",
+      "label": "t:labels.menu_inquiries"
+    },
+    {
+      "type": "text",
+      "id": "follow_title",
+      "label": "t:labels.follow_title",
+      "default": "Follow"
+    },
+    {
+      "type": "text",
+      "id": "instagram_label",
+      "label": "t:labels.instagram_label",
+      "default": "Instagram"
+    },
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "t:labels.instagram_url"
+    },
+    {
+      "type": "text",
+      "id": "tiktok_label",
+      "label": "t:labels.tiktok_label",
+      "default": "Tiktok"
+    },
+    {
+      "type": "url",
+      "id": "tiktok_url",
+      "label": "t:labels.tiktok_url"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_title",
+      "label": "t:labels.newsletter_title",
+      "default": "Newsletter"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_placeholder",
+      "label": "t:labels.newsletter_placeholder",
+      "default": "Enter your email"
+    },
+    {
+      "type": "text",
+      "id": "send_label",
+      "label": "t:labels.send",
+      "default": "Send"
+    },
+    {
+      "type": "text",
+      "id": "copyright",
+      "label": "t:labels.copyright",
+      "default": "© 2026 Remelle, all rights reserved"
+    }
+  ]
+}
+{% endschema %}

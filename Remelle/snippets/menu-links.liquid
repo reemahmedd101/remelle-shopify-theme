@@ -1,0 +1,27 @@
+{% doc %}
+  Renders links from a Shopify menu. When no menu is selected, renders the
+  fallback labels and URLs in the same order.
+
+  @param {linklist} [menu] - Menu chosen in the theme editor
+  @param {string} titles - Fallback labels, separated by |
+  @param {string} urls - Fallback URLs, separated by |
+  @param {string} [class] - Class added to each link
+
+  @example
+  {% render 'menu-links', menu: section.settings.menu, titles: 'Shop|About', urls: '/collections/all|/pages/about', class: 'site-nav-link' %}
+{% enddoc %}
+
+{% liquid
+  assign fallback_titles = titles | split: '|'
+  assign fallback_urls = urls | split: '|'
+%}
+
+{% if menu != blank and menu.links.size > 0 %}
+  {% for link in menu.links %}
+    <a class="{{ class }}" href="{{ link.url }}">{{ link.title }}</a>
+  {% endfor %}
+{% else %}
+  {% for title in fallback_titles %}
+    <a class="{{ class }}" href="{{ fallback_urls[forloop.index0] }}">{{ title }}</a>
+  {% endfor %}
+{% endif %}

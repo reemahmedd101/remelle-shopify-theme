@@ -10,6 +10,7 @@
     {% # Load and preload the critical CSS %}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {% render 'chrome-styles' %}
 
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
@@ -18,16 +19,13 @@
   </head>
 
   <body>
-    <div class="block-container">
-      {% render 'header' %}
-    </div>
+    {% section 'announcement-bar' %}
+    {% section 'header' %}
 
     <main>
       {{ content_for_layout }}
     </main>
 
-    <div class="block-container">
-      {% render 'footer' %}
-    </div>
+    {% section 'footer' %}
   </body>
 </html>

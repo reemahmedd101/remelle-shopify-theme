@@ -1,0 +1,48 @@
+{% liquid
+  assign about_url = pages['about'].url | default: '/pages/about'
+  assign contact_url = pages['contact'].url | default: '/pages/contact'
+  if customer
+    assign account_url = routes.account_url
+  else
+    assign account_url = routes.account_login_url
+  endif
+%}
+
+<header class="site-header">
+  <nav class="site-header__bar" aria-label="{{ 'chrome.primary' | t }}">
+    <div class="site-header__group">
+      {% capture primary_titles %}{{ 'chrome.shop' | t }}|{{ 'chrome.about' | t }}{% endcapture %}
+      {% capture primary_urls %}{{ routes.all_products_collection_url }}|{{ about_url }}{% endcapture %}
+      {% render 'menu-links', menu: section.settings.menu, titles: primary_titles, urls: primary_urls, class: 'site-nav-link' %}
+    </div>
+
+    <a href="{{ routes.root_url }}" aria-label="{{ 'chrome.wordmark' | t }}">
+      {% render 'wordmark', variant: 'nav' %}
+    </a>
+
+    <div class="site-header__group site-header__group--end">
+      <a class="site-nav-link" href="{{ account_url }}">{{ 'chrome.account' | t }}</a>
+      {% capture contact_title %}{{ 'chrome.contact' | t }}{% endcapture %}
+      {% render 'menu-links', menu: section.settings.menu_secondary, titles: contact_title, urls: contact_url, class: 'site-nav-link' %}
+      <a class="site-nav-link" href="{{ routes.cart_url }}">{{ 'chrome.cart_count' | t: count: cart.item_count }}</a>
+    </div>
+  </nav>
+</header>
+
+{% schema %}
+{
+  "name": "t:general.header",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "t:labels.menu"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_secondary",
+      "label": "t:labels.menu_secondary"
+    }
+  ]
+}
+{% endschema %}

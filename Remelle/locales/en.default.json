@@ -13,6 +13,22 @@
     "comment_form_submit": "Post",
     "comment_form_title": "Add a comment"
   },
+  "chrome": {
+    "about": "About",
+    "about_remelle": "About Remelle",
+    "account": "Account",
+    "cart_count": "Cart ({{ count }})",
+    "coats_tops": "Coats/Tops",
+    "contact": "Contact",
+    "contact_us": "Contact us",
+    "email": "Email address",
+    "new_collection": "New collection",
+    "pants": "Pants",
+    "primary": "Primary",
+    "return_exchange": "Return & Exchange",
+    "shop": "Shop",
+    "wordmark": "Remelle"
+  },
   "cart": {
     "checkout": "Checkout",
     "title": "Cart",

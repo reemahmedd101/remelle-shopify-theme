@@ -1,0 +1,155 @@
+{%- liquid
+  assign invite_link = section.settings.button_link
+  if invite_link == blank
+    assign invite_link = routes.all_products_collection_url
+  endif
+-%}
+
+<section class="remelle-about-invite" aria-labelledby="RemelleAboutInvite-{{ section.id }}">
+  <div class="remelle-about-invite__inner">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="remelle-about-invite__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+    {%- if section.settings.heading != blank -%}
+      <h2 class="remelle-about-invite__heading" id="RemelleAboutInvite-{{ section.id }}">
+        {{ section.settings.heading | escape }}
+      </h2>
+    {%- endif -%}
+    {%- if section.settings.text != blank -%}
+      <div class="remelle-about-invite__text">{{ section.settings.text }}</div>
+    {%- endif -%}
+    {%- if section.settings.button_label != blank -%}
+      <a class="remelle-about-invite__button" href="{{ invite_link }}">
+        {{ section.settings.button_label | escape }}
+        {% render 'icon-arrow-up-right' %}
+      </a>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-about-invite {
+    padding: 80px var(--page-inset);
+  }
+
+  .remelle-about-invite__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(720px, 100%);
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .remelle-about-invite__eyebrow {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 15px;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-about-invite__heading {
+    margin: 24px 0 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-about-invite__text {
+    max-width: 580px;
+    margin-top: 24px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-about-invite__text p {
+    margin: 0;
+  }
+
+  .remelle-about-invite__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 319px;
+    height: 48px;
+    margin-top: 24px;
+    padding: 0 20px;
+    border: 1px solid var(--color-off-white);
+    border-radius: var(--radius-none);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.96px;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .remelle-about-invite__button .icon-arrow-up-right {
+    width: 24px;
+    height: 24px;
+  }
+
+  .remelle-about-invite__button:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.about_invitation",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "Fall / Winter 2026"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Find your objects of desire"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:labels.description",
+      "default": "<p>Discover the silhouettes that bring our philosophy to life.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:labels.button_label",
+      "default": "Discover the winter collection"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:labels.button_link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.about_invitation"
+    }
+  ]
+}
+{% endschema %}

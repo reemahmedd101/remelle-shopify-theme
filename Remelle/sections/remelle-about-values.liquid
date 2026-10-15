@@ -1,0 +1,158 @@
+<section class="remelle-about-values" aria-labelledby="RemelleAboutValues-{{ section.id }}">
+  <div class="remelle-about-values__inner">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="remelle-about-values__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+    {%- if section.settings.heading != blank -%}
+      <h2 class="remelle-about-values__heading" id="RemelleAboutValues-{{ section.id }}">
+        {{ section.settings.heading | escape }}
+      </h2>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="remelle-about-values__grid">
+        {%- for block in section.blocks -%}
+          <article class="remelle-about-values__item" {{ block.shopify_attributes }}>
+            {%- if block.settings.label != blank -%}
+              <p class="remelle-about-values__label">{{ block.settings.label | escape }}</p>
+            {%- endif -%}
+            {%- if block.settings.title != blank -%}
+              <h3 class="remelle-about-values__title">{{ block.settings.title | escape }}</h3>
+            {%- endif -%}
+            {%- if block.settings.text != blank -%}
+              <div class="remelle-about-values__text">{{ block.settings.text }}</div>
+            {%- endif -%}
+          </article>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-about-values__inner {
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+    padding: 80px var(--page-inset);
+  }
+
+  .remelle-about-values__eyebrow {
+    margin: 0 0 20px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 15px;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-about-values__heading {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-about-values__grid {
+    display: flex;
+    gap: 64px;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-about-values__item {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .remelle-about-values__label {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 15px;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-about-values__title {
+    margin: 12px 0 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 35px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-about-values__text {
+    margin-top: 16px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-about-values__text p {
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.about_values",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "02 — What we believe"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Considered in every way"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "value",
+      "name": "t:general.about_value",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:labels.eyebrow"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "t:labels.heading"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:labels.description"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "t:general.about_values"
+    }
+  ]
+}
+{% endschema %}

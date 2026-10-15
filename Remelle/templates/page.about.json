@@ -1,0 +1,77 @@
+{
+  "sections": {
+    "story": {
+      "type": "remelle-about-story",
+      "settings": {}
+    },
+    "values": {
+      "type": "remelle-about-values",
+      "blocks": {
+        "intention": {
+          "type": "value",
+          "settings": {
+            "label": "Intention",
+            "title": "Beyond the moment",
+            "text": "<p>Timelessness is our starting point. Considered silhouettes and a confident point of view take precedence over fleeting trends.</p>"
+          }
+        },
+        "craftsmanship": {
+          "type": "value",
+          "settings": {
+            "label": "Craftsmanship",
+            "title": "The detail matters",
+            "text": "<p>Sculptural form, proportion and an exacting finish. Our commitment to quality is expressed in the details that define each piece.</p>"
+          }
+        },
+        "authenticity": {
+          "type": "value",
+          "settings": {
+            "label": "Authenticity",
+            "title": "Entirely individual",
+            "text": "<p>Elegance is personal. We create statement pieces that invite your own expression, rather than prescribe a single way to dress.</p>"
+          }
+        }
+      },
+      "block_order": ["intention", "craftsmanship", "authenticity"],
+      "settings": {}
+    },
+    "faq": {
+      "type": "remelle-about-faq",
+      "blocks": {
+        "philosophy": {
+          "type": "question",
+          "settings": {
+            "question": "What defines Remelle's design philosophy?",
+            "answer": "<p>Intention and authenticity. Our collections draw from art, architecture and cultural heritage, bringing sculptural silhouettes and meticulous detail to timeless statement pieces.</p>",
+            "open": true
+          }
+        },
+        "trends": {
+          "type": "question",
+          "settings": {
+            "question": "Are Remelle pieces designed around trends?"
+          }
+        },
+        "style": {
+          "type": "question",
+          "settings": {
+            "question": "How can I style the collection?"
+          }
+        },
+        "details": {
+          "type": "question",
+          "settings": {
+            "question": "Where can I find details about each piece?"
+          }
+        }
+      },
+      "block_order": ["philosophy", "trends", "style", "details"],
+      "settings": {}
+    },
+    "invitation": {
+      "type": "remelle-about-invitation",
+      "settings": {}
+    }
+  },
+  "order": ["story", "values", "faq", "invitation"]
+}

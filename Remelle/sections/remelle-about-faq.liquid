@@ -1,0 +1,257 @@
+{%- liquid
+  assign contact_link = section.settings.link
+  if contact_link == blank
+    assign contact_link = pages.contact.url | default: '/pages/contact'
+  endif
+-%}
+
+<section class="remelle-about-faq" aria-labelledby="RemelleAboutFaq-{{ section.id }}">
+  <div class="remelle-about-faq__inner">
+    <div class="remelle-about-faq__intro">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="remelle-about-faq__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="remelle-about-faq__heading" id="RemelleAboutFaq-{{ section.id }}">
+          {{ section.settings.heading | escape }}
+        </h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <div class="remelle-about-faq__text">{{ section.settings.text }}</div>
+      {%- endif -%}
+      {%- if section.settings.link_label != blank -%}
+        <a class="remelle-about-faq__link" href="{{ contact_link }}">
+          {{ section.settings.link_label | escape }}
+          {% render 'icon-arrow-up-right' %}
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="remelle-about-faq__list">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.question != blank -%}
+            <details class="remelle-about-faq__row" {% if block.settings.open %}open{% endif %} {{ block.shopify_attributes }}>
+              <summary>
+                <span>{{ block.settings.question | escape }}</span>
+                <span class="remelle-about-faq__icon remelle-about-faq__icon--plus" aria-hidden="true">{% render 'icon-plus' %}</span>
+                <span class="remelle-about-faq__icon remelle-about-faq__icon--minus" aria-hidden="true">{% render 'icon-minus' %}</span>
+              </summary>
+              {%- if block.settings.answer != blank -%}
+                <div class="remelle-about-faq__answer">{{ block.settings.answer }}</div>
+              {%- endif -%}
+            </details>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-about-faq__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 175px;
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+    padding: 80px var(--page-inset);
+  }
+
+  .remelle-about-faq__intro {
+    flex: 0 1 480px;
+    width: 480px;
+  }
+
+  .remelle-about-faq__eyebrow {
+    margin: 0 0 20px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 15px;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-about-faq__heading {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-about-faq__text {
+    margin-top: 24px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-about-faq__text p {
+    margin: 0;
+  }
+
+  .remelle-about-faq__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 28px;
+    padding: 10px 0 4px;
+    border-bottom: 1px solid var(--color-burgundy);
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 12px;
+    letter-spacing: 1.6px;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .remelle-about-faq__link:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-about-faq__list {
+    flex: 1 1 689px;
+    min-width: 0;
+    border-top: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-about-faq__row {
+    border-bottom: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-about-faq__row summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 64px;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 24px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .remelle-about-faq__row summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .remelle-about-faq__row summary:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-about-faq__icon {
+    display: inline-flex;
+    flex: 0 0 24px;
+    color: var(--color-burgundy);
+  }
+
+  .remelle-about-faq__icon--minus {
+    display: none;
+  }
+
+  .remelle-about-faq__row[open] .remelle-about-faq__icon--plus {
+    display: none;
+  }
+
+  .remelle-about-faq__row[open] .remelle-about-faq__icon--minus {
+    display: inline-flex;
+  }
+
+  .remelle-about-faq__answer {
+    max-width: 620px;
+    padding-bottom: 20px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-about-faq__answer p {
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.about_faq",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "03 — A little more"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "About Remelle"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:labels.description",
+      "default": "<p>A few notes on our philosophy, our pieces and finding your own expression.</p>"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "t:labels.button_label",
+      "default": "Contact us"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "t:labels.button_link"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "t:general.about_question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "t:labels.question"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "t:labels.answer"
+        },
+        {
+          "type": "checkbox",
+          "id": "open",
+          "label": "t:labels.open_row",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "t:general.about_faq"
+    }
+  ]
+}
+{% endschema %}

@@ -44,7 +44,11 @@
     }
   },
   "collections": {
-    "title": "Collections"
+    "title": "Collections",
+    "sort": "Sort",
+    "previous": "Previous",
+    "next": "Next",
+    "empty": "No products"
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",

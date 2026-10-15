@@ -1,0 +1,264 @@
+{%- liquid
+  assign listing_heading = collection.title
+  if section.settings.heading != blank
+    assign listing_heading = section.settings.heading
+  endif
+-%}
+
+<section
+  class="remelle-listing"
+  {% if listing_heading != blank %}
+    aria-labelledby="RemelleListingTitle-{{ section.id }}"
+  {% endif %}
+>
+  <div class="remelle-listing__header">
+    <div class="remelle-listing__intro">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="remelle-listing__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if listing_heading != blank -%}
+        <h1 class="remelle-listing__title" id="RemelleListingTitle-{{ section.id }}">
+          {{ listing_heading | escape }}
+        </h1>
+      {%- endif -%}
+    </div>
+
+    {%- if collection.sort_options.size > 0 -%}
+      <form class="remelle-listing__sort" method="get">
+        <label class="remelle-listing__sort-label" for="RemelleListingSort-{{ section.id }}">{{ 'collections.sort' | t }}</label>
+        <select
+          class="remelle-listing__sort-select"
+          id="RemelleListingSort-{{ section.id }}"
+          name="sort_by"
+          onchange="this.form.submit()"
+        >
+          {%- for option in collection.sort_options -%}
+            <option value="{{ option.value | escape }}" {% if option.value == collection.sort_by %}selected{% endif %}>
+              {{ option.name | escape }}
+            </option>
+          {%- endfor -%}
+        </select>
+        {% render 'icon-chevron-down' %}
+      </form>
+    {%- endif -%}
+  </div>
+
+  {% paginate collection.products by 12 %}
+    {%- if collection.products_count > 0 -%}
+      <div class="remelle-listing__grid">
+        {%- for product in collection.products -%}
+          {% render 'remelle-product-card',
+            product: product,
+            layout: 'shop',
+            show_new_badge: section.settings.show_new_badge,
+            badge_label: section.settings.badge_label,
+            badge_tag: section.settings.badge_tag,
+            show_sale_badge: section.settings.show_sale_badge,
+            sale_label: section.settings.sale_label,
+            sale_tag: section.settings.sale_tag
+          %}
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <p class="remelle-listing__empty">{{ 'collections.empty' | t }}</p>
+    {%- endif -%}
+
+    {%- if paginate.pages > 1 -%}
+      <nav class="remelle-listing__pages" aria-label="{{ listing_heading | escape }}">
+        {%- if paginate.previous -%}
+          <a class="remelle-listing__page" href="{{ paginate.previous.url }}">{{ 'collections.previous' | t }}</a>
+        {%- endif -%}
+        {%- if paginate.next -%}
+          <a class="remelle-listing__page" href="{{ paginate.next.url }}">{{ 'collections.next' | t }}</a>
+        {%- endif -%}
+      </nav>
+    {%- endif -%}
+  {% endpaginate %}
+</section>
+
+{% stylesheet %}
+  .remelle-listing {
+    padding: 48px 0 140px;
+  }
+
+  .remelle-listing__header,
+  .remelle-listing__grid,
+  .remelle-listing__empty,
+  .remelle-listing__pages {
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-listing__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .remelle-listing__eyebrow {
+    margin: 0 0 20px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 15px;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-listing__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-listing__sort-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .remelle-listing__sort {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0 0 4px;
+    color: var(--color-burgundy);
+  }
+
+  .remelle-listing__sort-select {
+    appearance: none;
+    max-width: 200px;
+    margin: 0;
+    padding: 0 24px 0 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0;
+    cursor: pointer;
+  }
+
+  .remelle-listing__sort .icon-chevron-down {
+    position: absolute;
+    right: 0;
+    pointer-events: none;
+  }
+
+  .remelle-listing__sort-select:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-listing__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 80px 16px;
+    margin-top: 64px;
+  }
+
+  .remelle-listing__empty {
+    margin-top: 64px;
+    margin-bottom: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-listing__pages {
+    display: flex;
+    gap: 24px;
+    margin-top: 80px;
+  }
+
+  .remelle-listing__page {
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .remelle-listing__page:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.listing",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "info": "t:labels.listing_heading_info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_new_badge",
+      "label": "t:labels.show_new_badge",
+      "info": "t:labels.badge_tag_info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "badge_label",
+      "label": "t:labels.badge_label",
+      "default": "New in"
+    },
+    {
+      "type": "text",
+      "id": "badge_tag",
+      "label": "t:labels.badge_tag"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "t:labels.show_sale_badge",
+      "info": "t:labels.sale_tag_info",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "t:labels.sale_label",
+      "default": "Sale"
+    },
+    {
+      "type": "text",
+      "id": "sale_tag",
+      "label": "t:labels.sale_tag"
+    }
+  ]
+}
+{% endschema %}

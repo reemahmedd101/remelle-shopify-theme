@@ -1,7 +1,8 @@
 {% doc %}
-  Homepage carousel card, 363 by 550, with a 363 by 484 photograph.
+  Product card. The homepage carousel uses 363 by 550. The shop grid uses 323 by 497.
 
   @param {product} product - Product to render
+  @param {string} [layout] - Pass shop for the listing grid card
   @param {boolean} [show_new_badge] - When false, the New in badge stays hidden
   @param {string} [badge_label] - New in badge text
   @param {string} [badge_tag] - Product tag that shows New in
@@ -80,7 +81,7 @@
   endfor
 -%}
 
-<article class="remelle-card">
+<article class="remelle-card{% if layout == 'shop' %} remelle-card--shop{% endif %}">
   <div class="remelle-card__photo">
     <a class="remelle-card__media" href="{{ card_url }}">
       {%- if card_image != blank -%}
@@ -166,6 +167,15 @@
     flex: 0 0 363px;
     width: 363px;
     color: #242424;
+  }
+
+  .remelle-card.remelle-card--shop {
+    flex: none;
+    width: 323px;
+  }
+
+  .remelle-card.remelle-card--shop .remelle-card__photo {
+    height: 431px;
   }
 
   .remelle-card__photo {

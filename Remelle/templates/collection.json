@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "listing": {
+      "type": "remelle-collection",
+      "settings": {}
+    }
+  },
+  "order": ["listing"]
+}

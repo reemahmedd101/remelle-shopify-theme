@@ -1,0 +1,330 @@
+{%- liquid
+  assign product_collection = section.settings.collection
+  if product_collection == blank and collections.all.products_count > 0
+    assign product_collection = collections.all
+  endif
+
+  assign picked_products = section.settings.products
+  assign use_picked = false
+  if picked_products != blank and picked_products.size > 0
+    assign use_picked = true
+  endif
+
+  assign has_other = false
+  if use_picked
+    for item in picked_products
+      if item.id != product.id
+        assign has_other = true
+        break
+      endif
+    endfor
+  elsif product_collection != blank
+    for item in product_collection.products
+      if item.id != product.id
+        assign has_other = true
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- if has_other or request.design_mode -%}
+  <section
+    class="remelle-recs"
+    {% if section.settings.heading != blank %}
+      aria-labelledby="RemelleRecsTitle-{{ section.id }}"
+    {% endif %}
+  >
+    <div class="remelle-recs__header">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="remelle-recs__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="remelle-recs__heading" id="RemelleRecsTitle-{{ section.id }}">
+          {{ section.settings.heading | escape }}
+        </h2>
+      {%- endif -%}
+    </div>
+
+    {%- if has_other -%}
+      <div class="remelle-recs__track" tabindex="0">
+        {%- assign shown = 0 -%}
+        {%- if use_picked -%}
+          {%- for item in picked_products -%}
+            {%- if shown >= section.settings.products_to_show -%}
+              {%- break -%}
+            {%- endif -%}
+            {%- if item.id != product.id -%}
+              {% render 'remelle-product-card',
+                product: item,
+                show_new_badge: section.settings.show_new_badge,
+                badge_label: section.settings.badge_label,
+                badge_tag: section.settings.badge_tag,
+                show_sale_badge: section.settings.show_sale_badge,
+                sale_label: section.settings.sale_label,
+                sale_tag: section.settings.sale_tag
+              %}
+              {%- assign shown = shown | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- for item in product_collection.products -%}
+            {%- if shown >= section.settings.products_to_show -%}
+              {%- break -%}
+            {%- endif -%}
+            {%- if item.id != product.id -%}
+              {% render 'remelle-product-card',
+                product: item,
+                show_new_badge: section.settings.show_new_badge,
+                badge_label: section.settings.badge_label,
+                badge_tag: section.settings.badge_tag,
+                show_sale_badge: section.settings.show_sale_badge,
+                sale_label: section.settings.sale_label,
+                sale_tag: section.settings.sale_tag
+              %}
+              {%- assign shown = shown | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+
+      <div class="remelle-recs__controls">
+        <div
+          class="remelle-recs__progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          aria-label="{{ 'products.progress' | t }}"
+        >
+          <span class="remelle-recs__progress-fill"></span>
+        </div>
+        <div class="remelle-recs__arrows">
+          <button class="remelle-recs__arrow" type="button" data-direction="prev" aria-label="{{ 'products.previous' | t }}">
+            {% render 'icon-arrow-left' %}
+          </button>
+          <button class="remelle-recs__arrow" type="button" data-direction="next" aria-label="{{ 'products.next' | t }}">
+            {% render 'icon-arrow-right' %}
+          </button>
+        </div>
+      </div>
+    {%- endif -%}
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .remelle-recs {
+    padding: 104px 0 56px;
+    overflow: hidden;
+  }
+
+  .remelle-recs__header {
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-recs__eyebrow {
+    margin: 0 0 20px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-recs__heading {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-recs__track {
+    display: flex;
+    gap: 16px;
+    margin-top: 48px;
+    padding-left: max(var(--page-inset), calc((100% - var(--page-width)) / 2 + var(--page-inset)));
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .remelle-recs__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .remelle-recs__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: min(var(--page-width), 100%);
+    height: 32px;
+    margin: 32px auto 0;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-recs__progress {
+    width: min(862px, calc(100% - 96px));
+    height: 1px;
+    background: rgba(103, 13, 13, 0.25);
+  }
+
+  .remelle-recs__progress-fill {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: var(--color-burgundy);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .remelle-recs__arrows {
+    display: flex;
+    justify-content: space-between;
+    width: 80px;
+  }
+
+  .remelle-recs__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-burgundy);
+    cursor: pointer;
+  }
+
+  .remelle-recs__arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .remelle-recs__arrow:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  document.querySelectorAll('.remelle-recs').forEach((section) => {
+    const track = section.querySelector('.remelle-recs__track');
+    const fill = section.querySelector('.remelle-recs__progress-fill');
+    const progress = section.querySelector('.remelle-recs__progress');
+    const previous = section.querySelector('[data-direction="prev"]');
+    const next = section.querySelector('[data-direction="next"]');
+    if (!track || !previous || !next) return;
+
+    const update = () => {
+      const max = track.scrollWidth - track.clientWidth;
+      const ratio = track.scrollWidth === 0 ? 0 : (track.clientWidth + track.scrollLeft) / track.scrollWidth;
+      const amount = Math.max(0, Math.min(1, ratio));
+      if (fill) fill.style.transform = `scaleX(${amount})`;
+      if (progress) progress.setAttribute('aria-valuenow', String(Math.round(amount * 100)));
+      previous.disabled = track.scrollLeft <= 1;
+      next.disabled = max <= 1 || track.scrollLeft >= max - 1;
+    };
+
+    const step = () => {
+      const card = track.querySelector('.remelle-card');
+      if (!card) return 379;
+      return card.getBoundingClientRect().width + 16;
+    };
+
+    previous.addEventListener('click', () => {
+      track.scrollBy({ left: -step(), behavior: 'smooth' });
+    });
+    next.addEventListener('click', () => {
+      track.scrollBy({ left: step(), behavior: 'smooth' });
+    });
+    track.addEventListener('scroll', update, { passive: true });
+    update();
+  });
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:general.recommendations",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "product_list",
+      "id": "products",
+      "label": "t:labels.products",
+      "info": "t:labels.products_info",
+      "limit": 12
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:general.collection",
+      "info": "t:labels.collection_info"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "t:labels.products_to_show",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "People also viewed"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_new_badge",
+      "label": "t:labels.show_new_badge",
+      "info": "t:labels.badge_tag_info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "badge_label",
+      "label": "t:labels.badge_label",
+      "default": "New in"
+    },
+    {
+      "type": "text",
+      "id": "badge_tag",
+      "label": "t:labels.badge_tag"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "t:labels.show_sale_badge",
+      "info": "t:labels.sale_tag_info",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "t:labels.sale_label",
+      "default": "Sale"
+    },
+    {
+      "type": "text",
+      "id": "sale_tag",
+      "label": "t:labels.sale_tag"
+    }
+  ]
+}
+{% endschema %}

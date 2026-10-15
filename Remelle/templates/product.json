@@ -1,0 +1,45 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-product",
+      "blocks": {
+        "details": {
+          "type": "information",
+          "settings": {
+            "title": "Product description",
+            "use_product_description": true,
+            "content": "<p>Long wool coat with a wide shawl collar, cut in a clean line.</p>"
+          }
+        },
+        "composition": {
+          "type": "information",
+          "settings": {
+            "title": "Washing guide",
+            "content": "<p>Dry clean only. Do not machine wash, bleach, or tumble dry.</p>"
+          }
+        },
+        "delivery": {
+          "type": "information",
+          "settings": {
+            "title": "Care guide",
+            "content": "<p>Brush lightly after wearing and air the coat between uses. Store it on a wide hanger.</p>"
+          }
+        },
+        "returns": {
+          "type": "information",
+          "settings": {
+            "title": "Delivery & Returns",
+            "content": "<p>Free delivery on your first order. Unworn items can be returned or exchanged.</p>"
+          }
+        }
+      },
+      "block_order": ["details", "composition", "delivery", "returns"],
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "remelle-product-recommendations",
+      "settings": {}
+    }
+  },
+  "order": ["main", "recommendations"]
+}

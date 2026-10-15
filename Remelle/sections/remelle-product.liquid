@@ -1,0 +1,708 @@
+{%- liquid
+  assign current = product.selected_or_first_available_variant
+  assign add_label = section.settings.add_label
+  if add_label == blank
+    assign add_label = 'product.add_to_basket' | t
+  endif
+-%}
+
+<section class="remelle-pdp" aria-labelledby="RemelleProductTitle-{{ section.id }}">
+  <div class="remelle-pdp__layout">
+    <div class="remelle-pdp__gallery">
+      {%- if product.images.size > 1 -%}
+        {%- for gallery_image in product.images limit: 2 -%}
+          <div class="remelle-pdp__tile">
+            {{
+              gallery_image
+              | image_url: width: 1200
+              | image_tag:
+                widths: '367, 734, 1100',
+                sizes: '367px',
+                alt: gallery_image.alt | default: product.title,
+                class: 'remelle-pdp__image',
+                loading: 'eager'
+            }}
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+      <div class="remelle-pdp__tile remelle-pdp__tile--wide">
+        {%- if product.featured_image -%}
+          {{
+            product.featured_image
+            | image_url: width: 1600
+            | image_tag:
+              widths: '742, 1200, 1600',
+              sizes: '742px',
+              alt: product.featured_image.alt | default: product.title,
+              class: 'remelle-pdp__image remelle-pdp__image--main',
+              loading: 'eager'
+          }}
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="remelle-pdp__buy">
+      <div class="remelle-pdp__heading">
+        <h1 class="remelle-pdp__title" id="RemelleProductTitle-{{ section.id }}">{{ product.title | escape }}</h1>
+        <p class="remelle-pdp__price" data-product-price>{{ current.price | money }}</p>
+      </div>
+
+      {%- if product.description != blank -%}
+        <div class="remelle-pdp__description">{{ product.description }}</div>
+      {%- endif -%}
+
+      {% form 'product', product, class: 'remelle-pdp__form' %}
+        <input type="hidden" name="id" value="{{ current.id }}" data-variant-id>
+
+        {%- unless product.has_only_default_variant -%}
+          {%- assign option_passes = 'color,size,other' | split: ',' -%}
+          {%- for pass in option_passes -%}
+          {%- for option in product.options_with_values -%}
+            {%- liquid
+              assign option_name = option.name | downcase
+              assign is_color = false
+              assign is_size = false
+              if option_name == 'color' or option_name == 'colour'
+                assign is_color = true
+              endif
+              if option_name == 'size'
+                assign is_size = true
+              endif
+              assign show_option = false
+              if pass == 'color' and is_color
+                assign show_option = true
+              elsif pass == 'size' and is_size
+                assign show_option = true
+              elsif pass == 'other' and is_color == false and is_size == false
+                assign show_option = true
+              endif
+              assign option_index = option.position | minus: 1
+            -%}
+            {%- if show_option -%}
+            <fieldset class="remelle-pdp__option{% if is_color %} remelle-pdp__option--color{% elsif is_size %} remelle-pdp__option--size{% endif %}">
+              <legend class="remelle-pdp__legend">
+                <span>{{ option.name | escape }}</span>
+                {%- if is_color -%}
+                  <span class="remelle-pdp__legend-value" data-color-current>{{ option.selected_value | escape }}</span>
+                {%- endif -%}
+              </legend>
+              <div class="remelle-pdp__choices">
+                {%- for value in option.values -%}
+                  {%- liquid
+                    assign swatch_color = value.swatch.color
+                    assign swatch_image = nil
+                    if swatch_color == blank and is_color
+                      assign swatch_name = value.name | downcase
+                      case swatch_name
+                        when 'burgundy'
+                          assign swatch_color = '#670D0D'
+                        when 'black'
+                          assign swatch_color = '#060505'
+                        when 'off white', 'cream', 'ivory', 'white', 'cream white'
+                          assign swatch_color = '#F3EDE4'
+                        when 'brown'
+                          assign swatch_color = '#6A4A38'
+                        else
+                          assign swatch_color = '#D0CBC4'
+                      endcase
+                    endif
+                    if is_color
+                      for variant in product.variants
+                        if variant.options[option_index] == value.name and variant.featured_image
+                          assign swatch_image = variant.featured_image
+                          break
+                        endif
+                      endfor
+                      if swatch_image == nil
+                        assign swatch_image = product.featured_image
+                      endif
+                    endif
+                    assign choice_label = value.name | replace: '/', ' / '
+                  -%}
+                  <label class="remelle-pdp__choice{% if is_color %} remelle-pdp__choice--color{% else %} remelle-pdp__choice--text{% endif %}">
+                    <input
+                      type="radio"
+                      name="option-{{ option.position }}"
+                      value="{{ value.name | escape }}"
+                      {% if value.selected %}checked{% endif %}
+                      data-option
+                    >
+                    {%- if is_color -%}
+                      <span
+                        class="remelle-pdp__swatch"
+                        style="{% if swatch_color != blank %}background: {{ swatch_color }};{% endif %}"
+                      >
+                        {%- if swatch_image -%}
+                          {{
+                            swatch_image
+                            | image_url: width: 200
+                            | image_tag: alt: '', class: 'remelle-pdp__swatch-image', loading: 'lazy'
+                          }}
+                        {%- endif -%}
+                      </span>
+                    {%- else -%}
+                      <span class="remelle-pdp__choice-name">{{ choice_label | escape }}</span>
+                    {%- endif -%}
+                  </label>
+                {%- endfor -%}
+              </div>
+            </fieldset>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- endfor -%}
+        {%- endunless -%}
+
+        <div class="remelle-pdp__quantity">
+          <p class="remelle-pdp__legend" id="RemelleProductQty-{{ section.id }}">{{ 'product.quantity' | t }}</p>
+          <div class="remelle-pdp__qty">
+            <button class="remelle-pdp__qty-btn remelle-pdp__qty-btn--minus" type="button" data-qty="-1" aria-label="{{ 'product.decrease' | t }}">
+              {% render 'icon-minus' %}
+            </button>
+            <input
+              class="remelle-pdp__qty-input"
+              type="number"
+              name="quantity"
+              value="1"
+              min="1"
+              inputmode="numeric"
+              aria-labelledby="RemelleProductQty-{{ section.id }}"
+            >
+            <button class="remelle-pdp__qty-btn remelle-pdp__qty-btn--plus" type="button" data-qty="1" aria-label="{{ 'product.increase' | t }}">
+              {% render 'icon-plus' %}
+            </button>
+          </div>
+        </div>
+
+        <div class="remelle-pdp__purchase">
+          <button
+            class="remelle-pdp__add"
+            type="submit"
+            name="add"
+            data-add
+            data-label="{{ add_label | escape }}"
+            data-sold-out="{{ 'product.sold_out' | t | escape }}"
+            {% unless current.available %}disabled{% endunless %}
+          >
+            {%- if current.available -%}
+              {{ add_label | escape }}
+            {%- else -%}
+              {{ 'product.sold_out' | t }}
+            {%- endif -%}
+          </button>
+          <button class="remelle-pdp__wish" type="button" aria-pressed="false" aria-label="{{ 'products.wishlist' | t }}">
+            {% render 'icon-heart' %}
+          </button>
+        </div>
+      {% endform %}
+
+      {%- if section.blocks.size > 0 -%}
+        <div class="remelle-pdp__info">
+          {%- for block in section.blocks -%}
+            {%- if block.settings.title != blank -%}
+              <details class="remelle-pdp__row" {{ block.shopify_attributes }}>
+                <summary>
+                  <span class="remelle-pdp__expand" aria-hidden="true"></span>
+                  <span>{{ block.settings.title | escape }}</span>
+                </summary>
+                {%- liquid
+                  assign answer = block.settings.content
+                  if block.settings.use_product_description and product.description != blank
+                    assign answer = product.description
+                  endif
+                -%}
+                {%- if answer != blank -%}
+                  <div class="remelle-pdp__answer">{{ answer }}</div>
+                {%- endif -%}
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <script type="application/json" data-product-variants>
+    [
+      {%- for variant in product.variants -%}
+        {
+          "id": {{ variant.id }},
+          "options": {{ variant.options | json }},
+          "available": {{ variant.available | json }},
+          "price": {{ variant.price | money | json }},
+          "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1600 | json }}{% else %}null{% endif %}
+        }{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]
+  </script>
+</section>
+
+{% stylesheet %}
+  .remelle-pdp {
+    padding-top: 48px;
+  }
+
+  .remelle-pdp__layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-pdp__gallery {
+    display: grid;
+    flex: 1.35 1 742px;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-width: 742px;
+    min-width: 0;
+  }
+
+  .remelle-pdp__tile {
+    aspect-ratio: 367 / 413;
+    background: var(--color-beige);
+    overflow: hidden;
+  }
+
+  .remelle-pdp__tile--wide {
+    grid-column: 1 / -1;
+    aspect-ratio: 742 / 413;
+  }
+
+  .remelle-pdp__image,
+  .remelle-pdp__swatch-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .remelle-pdp__buy {
+    flex: 1 1 548px;
+    max-width: 548px;
+    min-width: 0;
+  }
+
+  .remelle-pdp__heading,
+  .remelle-pdp__option--color,
+  .remelle-pdp__quantity {
+    max-width: 410px;
+  }
+
+  .remelle-pdp__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 36px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-pdp__price {
+    margin: 6px 0 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+
+  .remelle-pdp__description {
+    max-width: 548px;
+    margin-top: 24px;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-pdp__description p {
+    margin: 0;
+  }
+
+  .remelle-pdp__form {
+    margin: 0;
+  }
+
+  .remelle-pdp__option,
+  .remelle-pdp__quantity {
+    margin: 24px 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .remelle-pdp__legend {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .remelle-pdp__legend-value {
+    color: #8a8178;
+    font-weight: 400;
+  }
+
+  .remelle-pdp__choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .remelle-pdp__option--size .remelle-pdp__choices {
+    gap: 6px;
+  }
+
+  .remelle-pdp__choice {
+    position: relative;
+    display: flex;
+    cursor: pointer;
+  }
+
+  .remelle-pdp__choice input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .remelle-pdp__choice--color {
+    flex-direction: column;
+    width: 81px;
+  }
+
+  .remelle-pdp__swatch {
+    display: block;
+    width: 81px;
+    height: 102px;
+    background: var(--color-beige);
+    overflow: hidden;
+    border: 1px solid transparent;
+  }
+
+  .remelle-pdp__swatch-image {
+    object-fit: contain;
+  }
+
+  .remelle-pdp__choice--color:has(:checked) .remelle-pdp__swatch,
+  .remelle-pdp__choice input:focus-visible + .remelle-pdp__swatch {
+    border-color: #242424;
+  }
+
+  .remelle-pdp__choice--text {
+    align-items: center;
+    justify-content: center;
+    min-width: 81px;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    background: var(--color-beige);
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+  }
+
+  .remelle-pdp__choice--text:has(:checked) {
+    border-color: #242424;
+  }
+
+  .remelle-pdp__choice input:focus-visible + .remelle-pdp__choice-name,
+  .remelle-pdp__choice--text:has(:focus-visible) {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-pdp__qty {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .remelle-pdp__qty-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .remelle-pdp__qty-btn--minus {
+    background: #eadcd6;
+    color: #242424;
+  }
+
+  .remelle-pdp__qty-btn--plus {
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+  }
+
+  .remelle-pdp__qty-input {
+    width: 81px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: #ffffff;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 40px;
+    text-align: center;
+  }
+
+  .remelle-pdp__qty-input::-webkit-outer-spin-button,
+  .remelle-pdp__qty-input::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+
+  .remelle-pdp__qty-btn:focus-visible,
+  .remelle-pdp__qty-input:focus-visible,
+  .remelle-pdp__add:focus-visible,
+  .remelle-pdp__wish:focus-visible,
+  .remelle-pdp__row summary:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-pdp__purchase {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .remelle-pdp__add {
+    flex: 1 1 auto;
+    height: 44px;
+    padding: 0 20px;
+    border: 1px solid var(--color-off-white);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.96px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-pdp__add:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .remelle-pdp__wish {
+    display: inline-flex;
+    flex: 0 0 46px;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--color-burgundy);
+    background: transparent;
+    color: var(--color-burgundy);
+    cursor: pointer;
+  }
+
+  .remelle-pdp__wish .icon-heart {
+    width: 24px;
+    height: 24px;
+  }
+
+  .remelle-pdp__wish[aria-pressed='true'] .icon-heart path {
+    fill: currentColor;
+  }
+
+  .remelle-pdp__info {
+    margin-top: 24px;
+    border-top: 1px dashed rgba(36, 36, 36, 0.28);
+  }
+
+  .remelle-pdp__row {
+    border-bottom: 1px dashed rgba(36, 36, 36, 0.28);
+  }
+
+  .remelle-pdp__row summary {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    height: 53px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .remelle-pdp__row summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .remelle-pdp__expand {
+    position: relative;
+    flex: 0 0 15px;
+    width: 15px;
+    height: 15px;
+  }
+
+  .remelle-pdp__expand::before,
+  .remelle-pdp__expand::after {
+    content: "";
+    position: absolute;
+    background: #242424;
+  }
+
+  .remelle-pdp__expand::before {
+    top: 7px;
+    left: 0;
+    width: 15px;
+    height: 1px;
+  }
+
+  .remelle-pdp__expand::after {
+    top: 0;
+    left: 7px;
+    width: 1px;
+    height: 15px;
+  }
+
+  .remelle-pdp__row[open] .remelle-pdp__expand::after {
+    content: none;
+  }
+
+  .remelle-pdp__answer {
+    padding-bottom: 16px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-pdp__answer p {
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  document.querySelectorAll('.remelle-pdp').forEach((section) => {
+    const data = section.querySelector('[data-product-variants]');
+    if (!data) return;
+    const variants = JSON.parse(data.textContent);
+    const idInput = section.querySelector('[data-variant-id]');
+    const price = section.querySelector('[data-product-price]');
+    const add = section.querySelector('[data-add]');
+    const gallery = section.querySelector('.remelle-pdp__image--main');
+    const quantity = section.querySelector('.remelle-pdp__qty-input');
+
+    const selectedOptions = () =>
+      [...section.querySelectorAll('[data-option]:checked')]
+        .sort((a, b) => Number(a.name.replace('option-', '')) - Number(b.name.replace('option-', '')))
+        .map((input) => input.value);
+
+    const sync = () => {
+      const chosen = selectedOptions();
+      const variant = variants.find((item) => item.options.every((option, index) => option === chosen[index]));
+      if (!variant) return;
+      if (idInput) idInput.value = variant.id;
+      if (price) price.textContent = variant.price;
+      if (add) {
+        add.disabled = !variant.available;
+        add.textContent = variant.available ? add.dataset.label : add.dataset.soldOut;
+      }
+      if (gallery && variant.image) {
+        gallery.src = variant.image;
+        gallery.srcset = '';
+      }
+      const colorCurrent = section.querySelector('[data-color-current]');
+      const colorInput = section.querySelector('.remelle-pdp__option--color [data-option]:checked');
+      if (colorCurrent && colorInput) colorCurrent.textContent = colorInput.value;
+    };
+
+    section.querySelectorAll('[data-option]').forEach((input) => {
+      input.addEventListener('change', sync);
+    });
+
+    section.querySelectorAll('[data-qty]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!quantity) return;
+        const next = Math.max(1, Number(quantity.value || 1) + Number(button.dataset.qty));
+        quantity.value = String(next);
+      });
+    });
+
+    const wish = section.querySelector('.remelle-pdp__wish');
+    if (wish) {
+      wish.addEventListener('click', () => {
+        const pressed = wish.getAttribute('aria-pressed') === 'true';
+        wish.setAttribute('aria-pressed', pressed ? 'false' : 'true');
+      });
+    }
+  });
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:general.product",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "add_label",
+      "label": "t:labels.button_label",
+      "default": "Add to basket"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "information",
+      "name": "t:labels.information",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "t:labels.heading"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_product_description",
+          "label": "t:labels.use_product_description",
+          "info": "t:labels.use_product_description_info",
+          "default": false
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "t:labels.information_text",
+          "info": "t:labels.information_text_info"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

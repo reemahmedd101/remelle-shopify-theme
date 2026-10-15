@@ -60,6 +60,13 @@
   "hero": {
     "slides": "Campaign slides"
   },
+  "product": {
+    "add_to_basket": "Add to basket",
+    "sold_out": "Sold out",
+    "quantity": "Quantity",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity"
+  },
   "products": {
     "add": "Add {{ title }} to cart",
     "new_in": "New in",

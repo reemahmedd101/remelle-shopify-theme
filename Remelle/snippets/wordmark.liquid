@@ -1,5 +1,5 @@
 {% doc %}
-  Remelle wordmark. The nav size is 128 by 24. The footer asset is 471 by 88 and displays at 469 wide.
+  Remelle wordmark. The nav size is 128 by 24. The footer mark is the vector wordmark and displays at 469 wide.
 
   @param {string} variant - "nav" or "footer"
   @param {string} [class] - Extra class names
@@ -10,8 +10,8 @@
 
 {% liquid
   if variant == 'footer'
-    assign wordmark_file = 'wordmark-beige.png'
-    assign wordmark_width = 471
+    assign wordmark_file = 'wordmark-beige.svg'
+    assign wordmark_width = 470
     assign wordmark_height = 88
     assign wordmark_class = 'wordmark wordmark--footer'
   else

@@ -1,8 +1,22 @@
 {%- liquid
   assign product_collection = section.settings.collection
+  if product_collection == blank and collections.all.products_count > 0
+    assign product_collection = collections.all
+  endif
+
   assign view_all_url = routes.all_products_collection_url
-  if product_collection != blank
-    assign view_all_url = product_collection.url
+  if section.settings.collection != blank
+    assign view_all_url = section.settings.collection.url
+  endif
+
+  assign picked_products = section.settings.products
+  assign show_picked = false
+  assign show_products = false
+  if picked_products != blank and picked_products.size > 0
+    assign show_picked = true
+    assign show_products = true
+  elsif product_collection != blank and product_collection.products_count > 0
+    assign show_products = true
   endif
 -%}
 
@@ -31,11 +45,33 @@
     {%- endif -%}
   </div>
 
-  {%- if product_collection != blank and product_collection.products_count > 0 -%}
+  {%- if show_products -%}
     <div class="remelle-products__track" tabindex="0">
-      {%- for product in product_collection.products limit: section.settings.products_to_show -%}
-        {% render 'remelle-product-card', product: product %}
-      {%- endfor -%}
+      {%- if show_picked -%}
+        {%- for product in picked_products limit: section.settings.products_to_show -%}
+          {% render 'remelle-product-card',
+            product: product,
+            show_new_badge: section.settings.show_new_badge,
+            badge_label: section.settings.badge_label,
+            badge_tag: section.settings.badge_tag,
+            show_sale_badge: section.settings.show_sale_badge,
+            sale_label: section.settings.sale_label,
+            sale_tag: section.settings.sale_tag
+          %}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for product in product_collection.products limit: section.settings.products_to_show -%}
+          {% render 'remelle-product-card',
+            product: product,
+            show_new_badge: section.settings.show_new_badge,
+            badge_label: section.settings.badge_label,
+            badge_tag: section.settings.badge_tag,
+            show_sale_badge: section.settings.show_sale_badge,
+            sale_label: section.settings.sale_label,
+            sale_tag: section.settings.sale_tag
+          %}
+        {%- endfor -%}
+      {%- endif -%}
     </div>
 
     <div class="remelle-products__controls">
@@ -241,9 +277,17 @@
   },
   "settings": [
     {
+      "type": "product_list",
+      "id": "products",
+      "label": "t:labels.products",
+      "info": "t:labels.products_info",
+      "limit": 12
+    },
+    {
       "type": "collection",
       "id": "collection",
-      "label": "t:general.collection"
+      "label": "t:general.collection",
+      "info": "t:labels.collection_info"
     },
     {
       "type": "range",
@@ -253,6 +297,42 @@
       "max": 12,
       "step": 1,
       "default": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "show_new_badge",
+      "label": "t:labels.show_new_badge",
+      "info": "t:labels.badge_tag_info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "badge_label",
+      "label": "t:labels.badge_label",
+      "default": "New in"
+    },
+    {
+      "type": "text",
+      "id": "badge_tag",
+      "label": "t:labels.badge_tag"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "t:labels.show_sale_badge",
+      "info": "t:labels.sale_tag_info",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "t:labels.sale_label",
+      "default": "Sale"
+    },
+    {
+      "type": "text",
+      "id": "sale_tag",
+      "label": "t:labels.sale_tag"
     },
     {
       "type": "text",

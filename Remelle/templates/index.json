@@ -15,7 +15,11 @@
     "editorial": {
       "type": "remelle-editorial",
       "settings": {}
+    },
+    "story": {
+      "type": "remelle-story",
+      "settings": {}
     }
   },
-  "order": ["hero", "house", "products", "editorial"]
+  "order": ["hero", "house", "products", "editorial", "story"]
 }

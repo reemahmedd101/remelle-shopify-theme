@@ -2,7 +2,7 @@
   assign slide_one = section.settings.image
   assign slide_two = section.settings.image_2
   assign show_index = false
-  if slide_one != blank and slide_two != blank
+  if slide_two != blank
     assign show_index = true
   endif
 
@@ -25,28 +25,40 @@
     aria-labelledby="RemelleHeroTitle-{{ section.id }}"
   {% endif %}
 >
-  {%- if slide_one != blank or slide_two != blank -%}
-    <div class="remelle-hero__slides">
+  <div class="remelle-hero__slides">
+    <div class="remelle-hero__slide remelle-hero__slide--1">
       {%- if slide_one != blank -%}
-        <div class="remelle-hero__slide remelle-hero__slide--1">
-          {%- liquid
-            assign slide_one_alt = section.settings.image_alt | default: slide_one.alt
-            if section.index == 1
-              echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'eager', fetchpriority: 'high', preload: true, class: 'remelle-hero__image'
-            else
-              echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'lazy', class: 'remelle-hero__image'
-            endif
-          -%}
-        </div>
-      {%- endif -%}
-      {%- if slide_two != blank -%}
-        <div class="remelle-hero__slide remelle-hero__slide--2">
-          {%- assign slide_two_alt = section.settings.image_2_alt | default: slide_two.alt -%}
-          {{ slide_two | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_two_alt, loading: 'lazy', class: 'remelle-hero__image' }}
-        </div>
+        {%- liquid
+          assign slide_one_alt = section.settings.image_alt | default: slide_one.alt
+          if section.index == 1
+            echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'eager', fetchpriority: 'high', preload: true, class: 'remelle-hero__image'
+          else
+            echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'lazy', class: 'remelle-hero__image'
+          endif
+        -%}
+      {%- else -%}
+        <img
+          class="remelle-hero__image"
+          src="{{ 'Image wash.png' | asset_url }}"
+          alt="{{ section.settings.image_alt | escape }}"
+          width="1440"
+          height="740"
+          {% if section.index == 1 %}
+            loading="eager"
+            fetchpriority="high"
+          {% else %}
+            loading="lazy"
+          {% endif %}
+        >
       {%- endif -%}
     </div>
-  {%- endif -%}
+    {%- if slide_two != blank -%}
+      <div class="remelle-hero__slide remelle-hero__slide--2">
+        {%- assign slide_two_alt = section.settings.image_2_alt | default: slide_two.alt -%}
+        {{ slide_two | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_two_alt, loading: 'lazy', class: 'remelle-hero__image' }}
+      </div>
+    {%- endif -%}
+  </div>
 
   <div class="remelle-hero__copy">
     {%- if section.settings.eyebrow != blank -%}
@@ -301,7 +313,8 @@
     {
       "type": "image_picker",
       "id": "image",
-      "label": "t:labels.hero_image"
+      "label": "t:labels.hero_image",
+      "info": "t:labels.image_fallback_info"
     },
     {
       "type": "text",

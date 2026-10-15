@@ -2,15 +2,75 @@
   Homepage carousel card, 363 by 550, with a 363 by 484 photograph.
 
   @param {product} product - Product to render
+  @param {boolean} [show_new_badge] - When false, the New in badge stays hidden
+  @param {string} [badge_label] - New in badge text
+  @param {string} [badge_tag] - Product tag that shows New in
+  @param {boolean} [show_sale_badge] - When false, the Sale badge stays hidden
+  @param {string} [sale_label] - Sale badge text
+  @param {string} [sale_tag] - Product tag that shows Sale
 
   @example
-  {% render 'remelle-product-card', product: product %}
+  {% render 'remelle-product-card', product: product, show_new_badge: true, badge_label: 'New in', badge_tag: 'new', show_sale_badge: true, sale_label: 'Sale', sale_tag: 'sale' %}
 {% enddoc %}
 
 {%- liquid
+  assign card_title = product.title
+  assign card_url = product.url
+  assign card_price = product.price
   assign card_image = product.featured_image
   assign card_alt = card_image.alt | default: product.title
   assign color_option = nil
+  assign show_new = false
+  assign show_sale = false
+  assign new_tag_setting = badge_tag | downcase | strip
+  assign sale_tag_setting = sale_tag | downcase | strip
+
+  if show_new_badge and badge_label != blank
+    assign show_new = true
+    if new_tag_setting != blank
+      assign saw_tag = false
+      assign matched_new = false
+      assign new_terms = new_tag_setting | split: ','
+      for tag in product.tags
+        assign saw_tag = true
+        assign tag_value = tag | downcase | strip
+        for term in new_terms
+          assign term_value = term | strip
+          if tag_value == term_value
+            assign matched_new = true
+          endif
+          if term_value == 'new' and tag_value == 'new in'
+            assign matched_new = true
+          endif
+        endfor
+      endfor
+      if saw_tag
+        assign show_new = matched_new
+      endif
+    endif
+  endif
+
+  if show_sale_badge and sale_label != blank
+    assign show_sale = true
+    if sale_tag_setting != blank
+      assign saw_sale_tag = false
+      assign matched_sale = false
+      assign sale_terms = sale_tag_setting | split: ','
+      for tag in product.tags
+        assign saw_sale_tag = true
+        assign tag_value = tag | downcase | strip
+        for term in sale_terms
+          assign term_value = term | strip
+          if tag_value == term_value
+            assign matched_sale = true
+          endif
+        endfor
+      endfor
+      if saw_sale_tag
+        assign show_sale = matched_sale
+      endif
+    endif
+  endif
 
   for option in product.options_with_values
     assign option_name = option.name | downcase
@@ -18,16 +78,11 @@
       assign color_option = option
     endif
   endfor
-
-  assign show_badge = false
-  if product.tags contains 'new' or product.tags contains 'new-in' or product.tags contains 'New'
-    assign show_badge = true
-  endif
 -%}
 
 <article class="remelle-card">
   <div class="remelle-card__photo">
-    <a class="remelle-card__media" href="{{ product.url }}">
+    <a class="remelle-card__media" href="{{ card_url }}">
       {%- if card_image != blank -%}
         {{
           card_image
@@ -42,8 +97,15 @@
       {%- endif -%}
     </a>
 
-    {%- if show_badge -%}
-      <p class="remelle-card__badge">{{ 'products.new_in' | t }}</p>
+    {%- if show_new or show_sale -%}
+      <div class="remelle-card__badges">
+        {%- if show_new -%}
+          <p class="remelle-card__badge">{{ badge_label | escape }}</p>
+        {%- endif -%}
+        {%- if show_sale -%}
+          <p class="remelle-card__badge remelle-card__badge--sale">{{ sale_label | escape }}</p>
+        {%- endif -%}
+      </div>
     {%- endif -%}
 
     <button class="remelle-card__wish" type="button" aria-pressed="false" aria-label="{{ 'products.wishlist' | t }}">
@@ -53,7 +115,7 @@
     {%- if product.selected_or_first_available_variant -%}
       {% form 'product', product, class: 'remelle-card__form' %}
         <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-        <button class="remelle-card__add" type="submit" aria-label="{{ 'products.add' | t: title: product.title }}">
+        <button class="remelle-card__add" type="submit" aria-label="{{ 'products.add' | t: title: card_title }}">
           {% render 'icon-plus' %}
         </button>
       {% endform %}
@@ -61,11 +123,11 @@
   </div>
 
   <h3 class="remelle-card__name">
-    <a href="{{ product.url }}">{{ product.title | escape }}</a>
+    <a href="{{ card_url }}">{{ card_title | escape }}</a>
   </h3>
 
   <div class="remelle-card__meta">
-    <p class="remelle-card__price">{{ product.price | money }}</p>
+    <p class="remelle-card__price">{{ card_price | money }}</p>
     {%- if color_option -%}
       <ul class="remelle-card__swatches">
         {%- for value in color_option.values limit: 2 -%}
@@ -124,10 +186,17 @@
     object-fit: contain;
   }
 
-  .remelle-card__badge {
+  .remelle-card__badges {
     position: absolute;
     top: 10px;
     left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .remelle-card__badge {
     margin: 0;
     padding: 2px 6px;
     border-radius: var(--radius-badge);
@@ -139,6 +208,11 @@
     line-height: 12px;
     letter-spacing: 0;
     text-transform: uppercase;
+  }
+
+  .remelle-card__badge--sale {
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
   }
 
   .remelle-card__wish,
@@ -166,13 +240,12 @@
   }
 
   .remelle-card__form {
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
     margin: 0;
   }
 
   .remelle-card__add {
+    right: 10px;
+    bottom: 10px;
     width: 40px;
     height: 40px;
     border: 0;

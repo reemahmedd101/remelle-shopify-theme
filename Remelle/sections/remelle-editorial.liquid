@@ -17,6 +17,15 @@
           class: 'remelle-editorial__image',
           loading: 'lazy'
       }}
+    {%- else -%}
+      <img
+        class="remelle-editorial__image"
+        src="{{ 'in action.png' | asset_url }}"
+        alt="{{ section.settings.image_alt | escape }}"
+        width="1440"
+        height="800"
+        loading="lazy"
+      >
     {%- endif -%}
   </div>
 
@@ -99,7 +108,8 @@
     {
       "type": "image_picker",
       "id": "image",
-      "label": "t:labels.editorial_image"
+      "label": "t:labels.editorial_image",
+      "info": "t:labels.image_fallback_info"
     },
     {
       "type": "text",

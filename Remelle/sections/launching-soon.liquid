@@ -1,0 +1,202 @@
+<section class="launching" aria-labelledby="LaunchingSoon-{{ section.id }}">
+  <div class="launching__inner">
+    <a class="launching__mark" href="{{ routes.root_url }}" aria-label="{{ 'chrome.wordmark' | t }}">
+      {% render 'wordmark', variant: 'nav' %}
+    </a>
+
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="launching__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h1 class="launching__title" id="LaunchingSoon-{{ section.id }}">{{ section.settings.heading | escape }}</h1>
+    {%- endif -%}
+
+    {%- if section.settings.message != blank -%}
+      <p class="launching__message">{{ section.settings.message | escape | newline_to_br }}</p>
+    {%- elsif shop.password_message != blank -%}
+      <p class="launching__message">{{ shop.password_message | escape | newline_to_br }}</p>
+    {%- endif -%}
+
+    <div
+      class="launching__counter"
+      role="timer"
+      data-launch="2026-11-01T00:00:00+03:00"
+    >
+      <div class="launching__unit">
+        <span class="launching__value" data-unit="days">0</span>
+        <span class="launching__unit-label">{{ 'password.days' | t }}</span>
+      </div>
+      <div class="launching__unit">
+        <span class="launching__value" data-unit="hours">00</span>
+        <span class="launching__unit-label">{{ 'password.hours' | t }}</span>
+      </div>
+      <div class="launching__unit">
+        <span class="launching__value" data-unit="minutes">00</span>
+        <span class="launching__unit-label">{{ 'password.minutes' | t }}</span>
+      </div>
+      <div class="launching__unit">
+        <span class="launching__value" data-unit="seconds">00</span>
+        <span class="launching__unit-label">{{ 'password.seconds' | t }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  body.template-password {
+    background: var(--color-beige);
+  }
+
+  .launching {
+    display: flex;
+    min-height: 100svh;
+    align-items: center;
+    justify-content: center;
+    padding: 48px var(--page-inset);
+    background: var(--color-beige);
+    color: var(--color-burgundy);
+    text-align: center;
+  }
+
+  .launching__inner {
+    width: min(640px, 100%);
+  }
+
+  .launching__mark {
+    display: inline-block;
+    margin-bottom: 48px;
+  }
+
+  .launching__eyebrow {
+    margin: 0 0 20px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .launching__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .launching__message {
+    width: min(420px, 100%);
+    margin: 16px auto 0;
+    color: var(--color-black);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .launching__counter {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 48px;
+  }
+
+  .launching__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 64px;
+  }
+
+  .launching__value {
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .launching__unit-label {
+    margin-top: 8px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 720px) {
+    .launching__title,
+    .launching__value {
+      font-size: clamp(36px, 8vw, 56px);
+      line-height: 1;
+    }
+
+    .launching__counter {
+      gap: 16px;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  const counters = document.querySelectorAll('.launching__counter')
+
+  counters.forEach((counter) => {
+    const launchAt = new Date(counter.dataset.launch).getTime()
+    const units = {
+      days: counter.querySelector('[data-unit="days"]'),
+      hours: counter.querySelector('[data-unit="hours"]'),
+      minutes: counter.querySelector('[data-unit="minutes"]'),
+      seconds: counter.querySelector('[data-unit="seconds"]'),
+    }
+
+    const pad = (value) => String(value).padStart(2, '0')
+
+    const tick = () => {
+      const remaining = Math.max(0, launchAt - Date.now())
+      const totalSeconds = Math.floor(remaining / 1000)
+      units.days.textContent = String(Math.floor(totalSeconds / 86400))
+      units.hours.textContent = pad(Math.floor((totalSeconds % 86400) / 3600))
+      units.minutes.textContent = pad(Math.floor((totalSeconds % 3600) / 60))
+      units.seconds.textContent = pad(totalSeconds % 60)
+    }
+
+    tick()
+    window.setInterval(tick, 1000)
+  })
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:general.launching_soon",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "The collection"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Launching soon"
+    },
+    {
+      "type": "textarea",
+      "id": "message",
+      "label": "t:labels.description",
+      "default": "Remelle is preparing the first collection."
+    }
+  ]
+}
+{% endschema %}

@@ -1,17 +1,36 @@
 {% liquid
   assign about_url = pages['about'].url | default: '/pages/about'
   assign contact_url = pages['contact'].url | default: '/pages/contact'
-  if customer
-    assign account_url = routes.account_url
+  assign account_url = routes.account_url
+
+  assign shop_label = section.settings.shop_label
+  if shop_label == blank
+    assign shop_label = 'chrome.shop' | t
+  endif
+  assign about_label = section.settings.about_label
+  if about_label == blank
+    assign about_label = 'chrome.about' | t
+  endif
+  assign account_label = section.settings.account_label
+  if account_label == blank
+    assign account_label = 'chrome.account' | t
+  endif
+  assign contact_label = section.settings.contact_label
+  if contact_label == blank
+    assign contact_label = 'chrome.contact' | t
+  endif
+  assign cart_label = section.settings.cart_label
+  if cart_label == blank
+    assign cart_label = 'chrome.cart_count' | t: count: cart.item_count
   else
-    assign account_url = routes.account_login_url
+    assign cart_label = cart_label | append: ' (' | append: cart.item_count | append: ')'
   endif
 %}
 
 <header class="site-header">
   <nav class="site-header__bar" aria-label="{{ 'chrome.primary' | t }}">
     <div class="site-header__group">
-      {% capture primary_titles %}{{ 'chrome.shop' | t }}|{{ 'chrome.about' | t }}{% endcapture %}
+      {% capture primary_titles %}{{ shop_label }}|{{ about_label }}{% endcapture %}
       {% capture primary_urls %}{{ routes.all_products_collection_url }}|{{ about_url }}{% endcapture %}
       {% render 'menu-links', menu: section.settings.menu, titles: primary_titles, urls: primary_urls, class: 'site-nav-link' %}
     </div>
@@ -21,10 +40,10 @@
     </a>
 
     <div class="site-header__group site-header__group--end">
-      <a class="site-nav-link" href="{{ account_url }}">{{ 'chrome.account' | t }}</a>
-      {% capture contact_title %}{{ 'chrome.contact' | t }}{% endcapture %}
+      <a class="site-nav-link" href="{{ account_url }}">{{ account_label | escape }}</a>
+      {% capture contact_title %}{{ contact_label }}{% endcapture %}
       {% render 'menu-links', menu: section.settings.menu_secondary, titles: contact_title, urls: contact_url, class: 'site-nav-link' %}
-      <a class="site-nav-link" href="{{ routes.cart_url }}">{{ 'chrome.cart_count' | t: count: cart.item_count }}</a>
+      <a class="site-nav-link" href="{{ routes.cart_url }}">{{ cart_label | escape }}</a>
     </div>
   </nav>
 </header>
@@ -42,6 +61,42 @@
       "type": "link_list",
       "id": "menu_secondary",
       "label": "t:labels.menu_secondary"
+    },
+    {
+      "type": "text",
+      "id": "shop_label",
+      "label": "t:labels.shop_label",
+      "default": "Shop"
+    },
+    {
+      "type": "text",
+      "id": "about_label",
+      "label": "t:labels.about_label",
+      "default": "About"
+    },
+    {
+      "type": "text",
+      "id": "account_label",
+      "label": "t:labels.account_label",
+      "default": "Account"
+    },
+    {
+      "type": "text",
+      "id": "contact_label",
+      "label": "t:labels.contact_label",
+      "default": "Contact"
+    },
+    {
+      "type": "text",
+      "id": "cart_label",
+      "label": "t:labels.cart_label",
+      "default": "Cart",
+      "info": "t:labels.cart_label_info"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.header"
     }
   ]
 }

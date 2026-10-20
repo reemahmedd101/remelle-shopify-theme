@@ -47,6 +47,11 @@
               urls: returns_url,
               class: 'site-footer__link'
             %}
+            {%- if section.settings.contact_email != blank -%}
+              <a class="site-footer__link" href="mailto:{{ section.settings.contact_email | escape }}">
+                {{ section.settings.contact_email | escape }}
+              </a>
+            {%- endif -%}
           </div>
         </div>
 
@@ -158,6 +163,12 @@
     },
     {
       "type": "text",
+      "id": "contact_email",
+      "label": "t:labels.contact_email",
+      "default": "info@remelle.shop"
+    },
+    {
+      "type": "text",
       "id": "follow_title",
       "label": "t:labels.follow_title",
       "default": "Follow"
@@ -207,6 +218,11 @@
       "id": "copyright",
       "label": "t:labels.copyright",
       "default": "© 2026 Remelle, all rights reserved"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.footer"
     }
   ]
 }

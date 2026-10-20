@@ -1,0 +1,341 @@
+{%- liquid
+  assign contact_email = section.settings.email | default: 'info@remelle.shop'
+  assign email_href = 'mailto:' | append: contact_email
+-%}
+
+<section class="remelle-contact" aria-labelledby="RemelleContact-{{ section.id }}">
+  <div class="remelle-contact__inner">
+    <div class="remelle-contact__intro">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="remelle-contact__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h1 class="remelle-contact__heading" id="RemelleContact-{{ section.id }}">
+          {{ section.settings.heading | escape }}
+        </h1>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <div class="remelle-contact__text">{{ section.settings.text }}</div>
+      {%- endif -%}
+      {%- if contact_email != blank -%}
+        <a class="remelle-contact__email" href="{{ email_href }}">{{ contact_email | escape }}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="remelle-contact__form-wrap">
+      {% form 'contact', class: 'remelle-contact__form' %}
+        {%- if form.posted_successfully? -%}
+          <p class="remelle-contact__success" role="status">{{ section.settings.success_message | escape }}</p>
+        {%- endif -%}
+
+        {%- if form.errors -%}
+          <div class="remelle-contact__errors" role="alert">{{ form.errors | default_errors }}</div>
+        {%- endif -%}
+
+        <div class="remelle-contact__fields">
+          <label class="remelle-contact__field">
+            <span class="remelle-contact__label">{{ section.settings.name_label | escape }}</span>
+            <input
+              class="remelle-contact__input"
+              type="text"
+              name="contact[name]"
+              autocomplete="name"
+              value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+            >
+          </label>
+
+          <label class="remelle-contact__field">
+            <span class="remelle-contact__label">{{ section.settings.email_label | escape }}</span>
+            <input
+              class="remelle-contact__input"
+              type="email"
+              name="contact[email]"
+              autocomplete="email"
+              required
+              value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+            >
+          </label>
+
+          <label class="remelle-contact__field">
+            <span class="remelle-contact__label">{{ section.settings.phone_label | escape }}</span>
+            <input
+              class="remelle-contact__input"
+              type="tel"
+              name="contact[phone]"
+              autocomplete="tel"
+              value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}"
+            >
+          </label>
+
+          <label class="remelle-contact__field remelle-contact__field--message">
+            <span class="remelle-contact__label">{{ section.settings.message_label | escape }}</span>
+            <textarea
+              class="remelle-contact__input remelle-contact__textarea"
+              name="contact[body]"
+              rows="4"
+              required
+            >{% if form.body %}{{ form.body }}{% endif %}</textarea>
+          </label>
+        </div>
+
+        <button class="remelle-contact__submit" type="submit">
+          {{ section.settings.submit_label | escape }}
+          {% render 'icon-arrow-up-right' %}
+        </button>
+      {% endform %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-contact {
+    padding: 145px 56px 120px;
+  }
+
+  .remelle-contact__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 142px;
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+  }
+
+  .remelle-contact__intro {
+    flex: 0 1 419px;
+    width: 419px;
+    max-width: 100%;
+  }
+
+  .remelle-contact__eyebrow {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 15px;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-contact__heading {
+    margin: 12px 0 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-contact__text {
+    margin-top: 16px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-contact__text p {
+    margin: 0;
+  }
+
+  .remelle-contact__email {
+    display: inline-block;
+    margin-top: 24px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .remelle-contact__email:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-contact__form-wrap {
+    flex: 1 1 767px;
+    width: 767px;
+    max-width: 100%;
+  }
+
+  .remelle-contact__form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .remelle-contact__success,
+  .remelle-contact__errors {
+    margin: 0 0 24px;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-contact__success {
+    color: var(--color-burgundy);
+  }
+
+  .remelle-contact__errors {
+    color: #670d0d;
+  }
+
+  .remelle-contact__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .remelle-contact__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .remelle-contact__label {
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-contact__input {
+    width: 100%;
+    margin: 0;
+    padding: 12px 0;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-burgundy) 35%, transparent);
+    border-radius: var(--radius-none);
+    background: transparent;
+    color: var(--color-black);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-contact__textarea {
+    min-height: 88px;
+    resize: vertical;
+  }
+
+  .remelle-contact__input:focus-visible {
+    outline: none;
+    border-bottom-color: var(--color-burgundy);
+  }
+
+  .remelle-contact__submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 44px;
+    margin-top: 48px;
+    padding: 0 20px;
+    border: 1px solid var(--color-off-white);
+    border-radius: var(--radius-none);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.96px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-contact__submit .icon-arrow-up-right {
+    width: 16px;
+    height: 16px;
+  }
+
+  .remelle-contact__submit:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.contact",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "Get in touch"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Contact us"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:labels.description",
+      "default": "<p>For orders, fittings, or anything else about Remelle, leave a note. We read every message.</p>"
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "t:labels.contact_email",
+      "default": "info@remelle.shop"
+    },
+    {
+      "type": "text",
+      "id": "name_label",
+      "label": "t:labels.name",
+      "default": "Name"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "t:labels.email",
+      "default": "Email"
+    },
+    {
+      "type": "text",
+      "id": "phone_label",
+      "label": "t:labels.phone",
+      "default": "Phone"
+    },
+    {
+      "type": "text",
+      "id": "message_label",
+      "label": "t:labels.message",
+      "default": "Message"
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "t:labels.send",
+      "default": "Send"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "t:labels.success_message",
+      "default": "Thank you. Your message is on its way to Remelle."
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.contact"
+    }
+  ]
+}
+{% endschema %}

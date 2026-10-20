@@ -3,12 +3,20 @@
     "main": {
       "type": "remelle-product",
       "blocks": {
-        "details": {
+        "manufacturing": {
           "type": "information",
           "settings": {
-            "title": "Product description",
-            "use_product_description": true,
-            "content": "<p>Long wool coat with a wide shawl collar, cut in a clean line.</p>"
+            "title": "Manufacturing",
+            "use_product_description": false,
+            "content": ""
+          }
+        },
+        "fabric_costs": {
+          "type": "information",
+          "settings": {
+            "title": "Fabric costs",
+            "use_product_description": false,
+            "content": ""
           }
         },
         "composition": {
@@ -22,7 +30,7 @@
           "type": "information",
           "settings": {
             "title": "Care guide",
-            "content": "<p>Brush lightly after wearing and air the coat between uses. Store it on a wide hanger.</p>"
+            "content": "<p>Brush lightly after wearing and air between uses. Store it on a wide hanger.</p>"
           }
         },
         "returns": {
@@ -33,7 +41,7 @@
           }
         }
       },
-      "block_order": ["details", "composition", "delivery", "returns"],
+      "block_order": ["manufacturing", "fabric_costs", "composition", "delivery", "returns"],
       "settings": {}
     },
     "recommendations": {

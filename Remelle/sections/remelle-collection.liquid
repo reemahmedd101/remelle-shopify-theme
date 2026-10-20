@@ -203,6 +203,40 @@
     outline: 1px solid var(--color-burgundy);
     outline-offset: 3px;
   }
+
+  @media (max-width: 1100px) {
+    .remelle-listing__grid {
+      gap: 48px 16px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .remelle-listing {
+      padding: 32px 0 80px;
+    }
+
+    .remelle-listing__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .remelle-listing__title {
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .remelle-listing__grid {
+      gap: 40px 16px;
+      margin-top: 40px;
+      justify-content: space-between;
+    }
+  }
+
+  @media (max-width: 414px) {
+    .remelle-listing__grid {
+      justify-content: center;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

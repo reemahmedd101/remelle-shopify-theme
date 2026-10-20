@@ -42,7 +42,11 @@
             }
           }
         },
-        "block_order": ["intention", "craftsmanship", "authenticity"],
+        "block_order": [
+          "intention",
+          "craftsmanship",
+          "authenticity"
+        ],
         "settings": {}
       },
       "remelle-about-faq": {
@@ -75,7 +79,12 @@
             }
           }
         },
-        "block_order": ["philosophy", "trends", "style", "details"],
+        "block_order": [
+          "philosophy",
+          "trends",
+          "style",
+          "details"
+        ],
         "settings": {}
       },
       "remelle-about-invitation": {

@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-list-collections",
+      "settings": {
+        "heading": "Collections",
+        "show_description": false,
+        "hide_all_collection": true
+      }
+    }
+  },
+  "order": ["main"]
+}

@@ -4,6 +4,7 @@
   if add_label == blank
     assign add_label = 'product.add_to_basket' | t
   endif
+  assign product_form_id = 'RemelleProductForm-' | append: section.id
 -%}
 
 <section class="remelle-pdp" aria-labelledby="RemelleProductTitle-{{ section.id }}">
@@ -44,14 +45,33 @@
     <div class="remelle-pdp__buy">
       <div class="remelle-pdp__heading">
         <h1 class="remelle-pdp__title" id="RemelleProductTitle-{{ section.id }}">{{ product.title | escape }}</h1>
-        <p class="remelle-pdp__price" data-product-price>{{ current.price | money }}</p>
+        <div class="remelle-pdp__price-row">
+          {%- if current.compare_at_price > current.price -%}
+            <s class="remelle-pdp__compare" data-product-compare>{{ current.compare_at_price | money }}</s>
+          {%- else -%}
+            <s class="remelle-pdp__compare remelle-pdp__compare--hidden" data-product-compare hidden></s>
+          {%- endif -%}
+          <p class="remelle-pdp__price" data-product-price>{{ current.price | money }}</p>
+        </div>
       </div>
 
       {%- if product.description != blank -%}
         <div class="remelle-pdp__description">{{ product.description }}</div>
       {%- endif -%}
 
-      {% form 'product', product, class: 'remelle-pdp__form' %}
+      {% form 'product', product, class: 'remelle-pdp__form', id: product_form_id %}
+        {%- if form.errors -%}
+          <div class="remelle-pdp__errors" role="alert">
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        <p class="remelle-pdp__unavailable" data-unavailable hidden>
+          {{ 'product.unavailable' | t }}
+        </p>
+        <p class="remelle-pdp__errors" data-cart-error hidden role="alert"></p>
+        <p class="remelle-pdp__status" data-cart-status hidden role="status"></p>
+
         <input type="hidden" name="id" value="{{ current.id }}" data-variant-id>
 
         {%- unless product.has_only_default_variant -%}
@@ -165,7 +185,11 @@
               value="1"
               min="1"
               inputmode="numeric"
+              data-qty-input
               aria-labelledby="RemelleProductQty-{{ section.id }}"
+              {% if current.inventory_management != blank and current.inventory_policy == 'deny' and current.inventory_quantity > 0 %}
+                max="{{ current.inventory_quantity }}"
+              {% endif %}
             >
             <button class="remelle-pdp__qty-btn remelle-pdp__qty-btn--plus" type="button" data-qty="1" aria-label="{{ 'product.increase' | t }}">
               {% render 'icon-plus' %}
@@ -180,7 +204,10 @@
             name="add"
             data-add
             data-label="{{ add_label | escape }}"
+            data-adding-label="{{ 'product.adding' | t | escape }}"
+            data-added-label="{{ 'product.added' | t | escape }}"
             data-sold-out="{{ 'product.sold_out' | t | escape }}"
+            data-unavailable-label="{{ 'product.unavailable' | t | escape }}"
             {% unless current.available %}disabled{% endunless %}
           >
             {%- if current.available -%}
@@ -193,6 +220,12 @@
             {% render 'icon-heart' %}
           </button>
         </div>
+
+        {%- if section.settings.show_dynamic_checkout -%}
+          <div class="remelle-pdp__dynamic" data-dynamic-checkout>
+            {{ form | payment_button }}
+          </div>
+        {%- endif -%}
       {% endform %}
 
       {%- if section.blocks.size > 0 -%}
@@ -229,6 +262,10 @@
           "options": {{ variant.options | json }},
           "available": {{ variant.available | json }},
           "price": {{ variant.price | money | json }},
+          "compare_at_price": {% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+          "inventory_management": {{ variant.inventory_management | json }},
+          "inventory_policy": {{ variant.inventory_policy | json }},
+          "inventory_quantity": {{ variant.inventory_quantity | json }},
           "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1600 | json }}{% else %}null{% endif %}
         }{%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
@@ -299,13 +336,78 @@
     letter-spacing: -0.02em;
   }
 
+  .remelle-pdp__price-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
   .remelle-pdp__price {
-    margin: 6px 0 0;
+    margin: 0;
     color: #242424;
     font-family: var(--font-sans);
     font-size: 24px;
     font-weight: 600;
     line-height: 24px;
+  }
+
+  .remelle-pdp__compare {
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 24px;
+  }
+
+  .remelle-pdp__compare--hidden,
+  .remelle-pdp__compare[hidden] {
+    display: none;
+  }
+
+  .remelle-pdp__errors {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--color-burgundy);
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .remelle-pdp__unavailable {
+    margin: 16px 0 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .remelle-pdp__unavailable[hidden],
+  .remelle-pdp__status[hidden],
+  .remelle-pdp__errors[hidden] {
+    display: none;
+  }
+
+  .remelle-pdp__status {
+    margin: 16px 0 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .remelle-pdp__choice--unavailable {
+    opacity: 0.4;
+  }
+
+  .remelle-pdp__dynamic {
+    margin-top: 12px;
+  }
+
+  .remelle-pdp__dynamic .shopify-payment-button__button {
+    min-height: 44px;
   }
 
   .remelle-pdp__description {
@@ -605,6 +707,60 @@
   .remelle-pdp__answer p {
     margin: 0;
   }
+
+  @media (max-width: 1024px) {
+    .remelle-pdp__layout {
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .remelle-pdp__gallery,
+    .remelle-pdp__buy {
+      flex: none;
+      width: 100%;
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .remelle-pdp {
+      padding-top: 24px;
+    }
+
+    .remelle-pdp__layout {
+      padding-inline: var(--page-inset);
+      gap: 24px;
+    }
+
+    .remelle-pdp__title {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .remelle-pdp__price {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .remelle-pdp__choice--color,
+    .remelle-pdp__swatch {
+      width: 72px;
+    }
+
+    .remelle-pdp__swatch {
+      height: 90px;
+    }
+  }
+
+  @media (max-width: 414px) {
+    .remelle-pdp__purchase {
+      flex-wrap: wrap;
+    }
+
+    .remelle-pdp__add {
+      flex: 1 1 calc(100% - 54px);
+    }
+  }
 {% endstylesheet %}
 
 {% javascript %}
@@ -614,29 +770,96 @@
     const variants = JSON.parse(data.textContent);
     const idInput = section.querySelector('[data-variant-id]');
     const price = section.querySelector('[data-product-price]');
+    const compare = section.querySelector('[data-product-compare]');
     const add = section.querySelector('[data-add]');
+    const unavailable = section.querySelector('[data-unavailable]');
     const gallery = section.querySelector('.remelle-pdp__image--main');
-    const quantity = section.querySelector('.remelle-pdp__qty-input');
+    const quantity = section.querySelector('[data-qty-input]');
+    const dynamicCheckout = section.querySelector('[data-dynamic-checkout]');
 
     const selectedOptions = () =>
       [...section.querySelectorAll('[data-option]:checked')]
         .sort((a, b) => Number(a.name.replace('option-', '')) - Number(b.name.replace('option-', '')))
         .map((input) => input.value);
 
+    const markOptionAvailability = (chosen) => {
+      section.querySelectorAll('[data-option]').forEach((input) => {
+        const optionIndex = Number(input.name.replace('option-', '')) - 1;
+        const trial = chosen.slice();
+        trial[optionIndex] = input.value;
+        const match = variants.find((item) => item.options.every((option, index) => option === trial[index]));
+        const label = input.closest('.remelle-pdp__choice');
+        const isAvailable = Boolean(match && match.available);
+        input.disabled = !match;
+        if (label) label.classList.toggle('remelle-pdp__choice--unavailable', !isAvailable);
+      });
+    };
+
+    const syncQuantityBounds = (variant) => {
+      if (!quantity || !variant) return;
+      const tracked =
+        variant.inventory_management &&
+        variant.inventory_policy === 'deny' &&
+        typeof variant.inventory_quantity === 'number' &&
+        variant.inventory_quantity > 0;
+      if (tracked) {
+        quantity.max = String(variant.inventory_quantity);
+        if (Number(quantity.value) > variant.inventory_quantity) {
+          quantity.value = String(variant.inventory_quantity);
+        }
+      } else {
+        quantity.removeAttribute('max');
+      }
+    };
+
     const sync = () => {
       const chosen = selectedOptions();
+      markOptionAvailability(chosen);
       const variant = variants.find((item) => item.options.every((option, index) => option === chosen[index]));
-      if (!variant) return;
-      if (idInput) idInput.value = variant.id;
+
+      if (!variant) {
+        if (idInput) idInput.value = '';
+        if (add) {
+          add.disabled = true;
+          add.textContent = add.dataset.unavailableLabel || add.dataset.soldOut;
+        }
+        if (unavailable) unavailable.hidden = false;
+        if (dynamicCheckout) dynamicCheckout.hidden = true;
+        if (compare) {
+          compare.hidden = true;
+          compare.textContent = '';
+        }
+        return;
+      }
+
+      if (unavailable) unavailable.hidden = true;
+      if (idInput) idInput.value = String(variant.id);
       if (price) price.textContent = variant.price;
+      if (compare) {
+        if (variant.compare_at_price) {
+          compare.hidden = false;
+          compare.classList.remove('remelle-pdp__compare--hidden');
+          compare.textContent = variant.compare_at_price;
+        } else {
+          compare.hidden = true;
+          compare.textContent = '';
+        }
+      }
       if (add) {
         add.disabled = !variant.available;
         add.textContent = variant.available ? add.dataset.label : add.dataset.soldOut;
       }
+      if (dynamicCheckout) dynamicCheckout.hidden = !variant.available;
       if (gallery && variant.image) {
         gallery.src = variant.image;
         gallery.srcset = '';
       }
+      syncQuantityBounds(variant);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('variant', String(variant.id));
+      window.history.replaceState({}, '', url.toString());
+
       const colorCurrent = section.querySelector('[data-color-current]');
       const colorInput = section.querySelector('.remelle-pdp__option--color [data-option]:checked');
       if (colorCurrent && colorInput) colorCurrent.textContent = colorInput.value;
@@ -649,7 +872,8 @@
     section.querySelectorAll('[data-qty]').forEach((button) => {
       button.addEventListener('click', () => {
         if (!quantity) return;
-        const next = Math.max(1, Number(quantity.value || 1) + Number(button.dataset.qty));
+        const max = quantity.max ? Number(quantity.max) : Infinity;
+        const next = Math.max(1, Math.min(max, Number(quantity.value || 1) + Number(button.dataset.qty)));
         quantity.value = String(next);
       });
     });
@@ -661,6 +885,8 @@
         wish.setAttribute('aria-pressed', pressed ? 'false' : 'true');
       });
     }
+
+    sync();
   });
 {% endjavascript %}
 
@@ -676,6 +902,12 @@
       "id": "add_label",
       "label": "t:labels.button_label",
       "default": "Add to basket"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dynamic_checkout",
+      "label": "t:labels.show_dynamic_checkout",
+      "default": true
     }
   ],
   "blocks": [

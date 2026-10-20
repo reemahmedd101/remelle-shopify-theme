@@ -1,0 +1,254 @@
+<section class="remelle-search" aria-labelledby="RemelleSearchTitle-{{ section.id }}">
+  <div class="remelle-search__inner">
+    <h1 class="remelle-search__title" id="RemelleSearchTitle-{{ section.id }}">
+      {%- if section.settings.heading != blank -%}
+        {{ section.settings.heading | escape }}
+      {%- else -%}
+        {{ 'search.title' | t }}
+      {%- endif -%}
+    </h1>
+
+    <form class="remelle-search__form" action="{{ routes.search_url }}" method="get" role="search">
+      <label class="visually-hidden" for="RemelleSearchInput-{{ section.id }}">{{ 'search.title' | t }}</label>
+      <input
+        class="remelle-search__input"
+        id="RemelleSearchInput-{{ section.id }}"
+        type="search"
+        name="q"
+        value="{{ search.terms | escape }}"
+        placeholder="{{ 'search.placeholder' | t }}"
+      >
+      <button class="remelle-search__submit" type="submit">{{ 'search.submit' | t }}</button>
+    </form>
+
+    {%- if search.performed -%}
+      {%- if search.results_count == 0 -%}
+        <div class="remelle-search__empty">
+          <p>{{ 'search.no_results_html' | t: terms: search.terms }}</p>
+          <a class="remelle-search__shop" href="{{ routes.all_products_collection_url }}">
+            {{ '404.back_to_shopping' | t }}
+          </a>
+        </div>
+      {%- else -%}
+        <p class="remelle-search__summary">
+          {{ 'search.results_for_html' | t: terms: search.terms, count: search.results_count }}
+        </p>
+
+        <div class="remelle-search__results">
+          {% paginate search.results by 20 %}
+            {%- for result in search.results -%}
+              <article class="remelle-search__result">
+                {%- assign featured_image = result.featured_image | default: result.image -%}
+                {%- if featured_image -%}
+                  <a class="remelle-search__media" href="{{ result.url }}">
+                    {{
+                      featured_image
+                      | image_url: width: 400
+                      | image_tag:
+                        widths: '120, 240, 400',
+                        sizes: '120px',
+                        alt: result.title,
+                        class: 'remelle-search__image',
+                        loading: 'lazy'
+                    }}
+                  </a>
+                {%- endif -%}
+                <div class="remelle-search__content">
+                  <h2 class="remelle-search__name">
+                    <a href="{{ result.url }}">{{ result.title | escape }}</a>
+                  </h2>
+                  {%- if result.object_type == 'product' and result.price -%}
+                    <p class="remelle-search__price">{{ result.price | money }}</p>
+                  {%- endif -%}
+                </div>
+              </article>
+            {%- endfor -%}
+
+            {%- if paginate.pages > 1 -%}
+              <nav class="remelle-search__pages" aria-label="{{ 'search.title' | t }}">
+                {{ paginate | default_pagination }}
+              </nav>
+            {%- endif -%}
+          {% endpaginate %}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-search {
+    padding: 48px 0 120px;
+  }
+
+  .remelle-search__inner {
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-search__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-search__form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 640px;
+    margin-top: 32px;
+  }
+
+  .remelle-search__input {
+    flex: 1 1 240px;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid rgba(36, 36, 36, 0.2);
+    background: #ffffff;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+  }
+
+  .remelle-search__submit {
+    height: 44px;
+    padding: 0 20px;
+    border: 1px solid var(--color-burgundy);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.96px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-search__empty,
+  .remelle-search__summary {
+    margin-top: 32px;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .remelle-search__shop,
+  .remelle-search__name a {
+    color: var(--color-burgundy);
+    text-decoration: underline;
+  }
+
+  .remelle-search__shop {
+    display: inline-block;
+    margin-top: 16px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .remelle-search__results {
+    display: grid;
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .remelle-search__result {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 20px;
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-search__media {
+    display: block;
+    aspect-ratio: 120 / 160;
+    background: var(--color-beige);
+    overflow: hidden;
+  }
+
+  .remelle-search__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .remelle-search__name {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .remelle-search__name a {
+    text-decoration: none;
+  }
+
+  .remelle-search__price {
+    margin: 8px 0 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .remelle-search__pages {
+    margin-top: 24px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+
+  .remelle-search a:focus-visible,
+  .remelle-search button:focus-visible,
+  .remelle-search input:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 768px) {
+    .remelle-search__title {
+      font-size: 40px;
+    }
+  }
+
+  @media (max-width: 414px) {
+    .remelle-search__result {
+      grid-template-columns: 88px minmax(0, 1fr);
+      gap: 16px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.search",
+  "enabled_on": {
+    "templates": ["search"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Search"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.search"
+    }
+  ]
+}
+{% endschema %}

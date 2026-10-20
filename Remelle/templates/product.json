@@ -42,7 +42,10 @@
         }
       },
       "block_order": ["manufacturing", "fabric_costs", "composition", "delivery", "returns"],
-      "settings": {}
+      "settings": {
+        "add_label": "Add to basket",
+        "show_dynamic_checkout": true
+      }
     },
     "recommendations": {
       "type": "remelle-product-recommendations",

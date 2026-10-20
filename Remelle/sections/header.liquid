@@ -2,6 +2,7 @@
   assign about_url = pages['about'].url | default: '/pages/about'
   assign contact_url = pages['contact'].url | default: '/pages/contact'
   assign account_url = routes.account_url
+  assign shop_url = routes.all_products_collection_url
 
   assign shop_label = section.settings.shop_label
   if shop_label == blank
@@ -19,34 +20,112 @@
   if contact_label == blank
     assign contact_label = 'chrome.contact' | t
   endif
-  assign cart_label = section.settings.cart_label
-  if cart_label == blank
-    assign cart_label = 'chrome.cart_count' | t: count: cart.item_count
-  else
-    assign cart_label = cart_label | append: ' (' | append: cart.item_count | append: ')'
+  assign cart_base_label = section.settings.cart_label
+  if cart_base_label == blank
+    assign cart_base_label = 'chrome.cart' | t
   endif
 %}
 
-<header class="site-header">
+<header class="site-header" data-site-header>
   <nav class="site-header__bar" aria-label="{{ 'chrome.primary' | t }}">
-    <div class="site-header__group">
-      {% capture primary_titles %}{{ shop_label }}|{{ about_label }}{% endcapture %}
-      {% capture primary_urls %}{{ routes.all_products_collection_url }}|{{ about_url }}{% endcapture %}
-      {% render 'menu-links', menu: section.settings.menu, titles: primary_titles, urls: primary_urls, class: 'site-nav-link' %}
+    <div class="site-header__group site-header__group--start">
+      <button
+        class="site-header__menu-btn"
+        type="button"
+        data-nav-open
+        aria-expanded="false"
+        aria-controls="SiteHeaderMenu-{{ section.id }}"
+        aria-label="{{ 'chrome.open_menu' | t }}"
+      >
+        <span class="site-header__menu-icon" aria-hidden="true"></span>
+      </button>
+
+      <div class="site-header__desktop-links">
+        {% capture primary_titles %}{{ shop_label }}|{{ about_label }}{% endcapture %}
+        {% capture primary_urls %}{{ shop_url }}|{{ about_url }}{% endcapture %}
+        {% render 'menu-links', menu: section.settings.menu, titles: primary_titles, urls: primary_urls, class: 'site-nav-link' %}
+      </div>
     </div>
 
-    <a href="{{ routes.root_url }}" aria-label="{{ 'chrome.wordmark' | t }}">
+    <a class="site-header__wordmark" href="{{ routes.root_url }}" aria-label="{{ 'chrome.wordmark' | t }}">
       {% render 'wordmark', variant: 'nav' %}
     </a>
 
     <div class="site-header__group site-header__group--end">
-      <a class="site-nav-link" href="{{ account_url }}">{{ account_label | escape }}</a>
-      {% capture contact_title %}{{ contact_label }}{% endcapture %}
-      {% render 'menu-links', menu: section.settings.menu_secondary, titles: contact_title, urls: contact_url, class: 'site-nav-link' %}
-      <a class="site-nav-link" href="{{ routes.cart_url }}">{{ cart_label | escape }}</a>
+      <div class="site-header__desktop-links site-header__desktop-links--end">
+        <a class="site-nav-link" href="{{ account_url }}">{{ account_label | escape }}</a>
+        {% capture contact_title %}{{ contact_label }}{% endcapture %}
+        {% render 'menu-links', menu: section.settings.menu_secondary, titles: contact_title, urls: contact_url, class: 'site-nav-link' %}
+      </div>
+      <a
+        class="site-nav-link site-header__cart"
+        href="{{ routes.cart_url }}"
+        data-cart-link
+        data-cart-label="{{ cart_base_label | escape }}"
+      >
+        <span data-cart-text>{{ cart_base_label | escape }} (<span data-cart-count>{{ cart.item_count }}</span>)</span>
+      </a>
     </div>
   </nav>
+
+  <div
+    class="site-header__drawer"
+    id="SiteHeaderMenu-{{ section.id }}"
+    data-nav-drawer
+    hidden
+  >
+    <div class="site-header__drawer-panel" role="dialog" aria-modal="true" aria-label="{{ 'chrome.primary' | t }}">
+      <div class="site-header__drawer-top">
+        <button
+          class="site-header__close"
+          type="button"
+          data-nav-close
+          aria-label="{{ 'chrome.close_menu' | t }}"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <ul class="site-header__drawer-links">
+        <li><a class="site-header__drawer-link" href="{{ shop_url }}">{{ shop_label | escape }}</a></li>
+        <li><a class="site-header__drawer-link" href="{{ about_url }}">{{ about_label | escape }}</a></li>
+        <li><a class="site-header__drawer-link" href="{{ account_url }}">{{ account_label | escape }}</a></li>
+        <li><a class="site-header__drawer-link" href="{{ contact_url }}">{{ contact_label | escape }}</a></li>
+        <li>
+          <a class="site-header__drawer-link" href="{{ routes.cart_url }}" data-cart-link>
+            <span data-cart-text>{{ cart_base_label | escape }} (<span data-cart-count>{{ cart.item_count }}</span>)</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </header>
+
+{% javascript %}
+  document.querySelectorAll('[data-site-header]').forEach((header) => {
+    const openBtn = header.querySelector('[data-nav-open]');
+    const closeBtn = header.querySelector('[data-nav-close]');
+    const drawer = header.querySelector('[data-nav-drawer]');
+    if (!openBtn || !drawer) return;
+
+    const setOpen = (open) => {
+      drawer.hidden = !open;
+      openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      document.documentElement.classList.toggle('nav-open', open);
+    };
+
+    openBtn.addEventListener('click', () => setOpen(true));
+    if (closeBtn) closeBtn.addEventListener('click', () => setOpen(false));
+    drawer.addEventListener('click', (event) => {
+      if (event.target === drawer) setOpen(false);
+    });
+    drawer.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => setOpen(false));
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !drawer.hidden) setOpen(false);
+    });
+  });
+{% endjavascript %}
 
 {% schema %}
 {

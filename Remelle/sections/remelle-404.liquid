@@ -1,0 +1,145 @@
+<section class="remelle-status" aria-labelledby="Remelle404Title-{{ section.id }}">
+  <div class="remelle-status__inner">
+    <p class="remelle-status__eyebrow">
+      {%- if section.settings.eyebrow != blank -%}
+        {{ section.settings.eyebrow | escape }}
+      {%- else -%}
+        {{ '404.title' | t }}
+      {%- endif -%}
+    </p>
+    <h1 class="remelle-status__title" id="Remelle404Title-{{ section.id }}">
+      {%- if section.settings.heading != blank -%}
+        {{ section.settings.heading | escape }}
+      {%- else -%}
+        {{ '404.not_found' | t }}
+      {%- endif -%}
+    </h1>
+    <p class="remelle-status__body">
+      {%- if section.settings.body != blank -%}
+        {{ section.settings.body | escape }}
+      {%- else -%}
+        {{ '404.body' | t }}
+      {%- endif -%}
+    </p>
+    <a class="remelle-status__cta" href="{{ routes.all_products_collection_url }}">
+      {%- if section.settings.button_label != blank -%}
+        {{ section.settings.button_label | escape }}
+      {%- else -%}
+        {{ '404.back_to_shopping' | t }}
+      {%- endif -%}
+    </a>
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-status {
+    padding: 80px 0 140px;
+  }
+
+  .remelle-status__inner {
+    width: min(560px, 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-status__eyebrow {
+    margin: 0 0 16px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-status__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 48px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-status__body {
+    margin: 20px 0 0;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .remelle-status__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin-top: 32px;
+    padding: 0 20px;
+    border: 1px solid var(--color-burgundy);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.96px;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .remelle-status__cta:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 414px) {
+    .remelle-status {
+      padding: 48px 0 96px;
+    }
+
+    .remelle-status__title {
+      font-size: 36px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.404",
+  "enabled_on": {
+    "templates": ["404"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "404"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Page not found."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "t:labels.description",
+      "default": "The page you were looking for does not exist or may have moved."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:labels.button_label",
+      "default": "Back to shopping"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.404"
+    }
+  ]
+}
+{% endschema %}

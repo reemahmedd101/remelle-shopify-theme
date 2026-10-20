@@ -113,13 +113,37 @@
       {% render 'icon-heart' %}
     </button>
 
-    {%- if product.selected_or_first_available_variant -%}
+    {%- liquid
+      assign quick_variant = product.selected_or_first_available_variant
+      assign quick_available = false
+      if quick_variant and quick_variant.available
+        assign quick_available = true
+      endif
+    -%}
+    {%- if product.has_only_default_variant and quick_variant -%}
       {% form 'product', product, class: 'remelle-card__form' %}
-        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-        <button class="remelle-card__add" type="submit" aria-label="{{ 'products.add' | t: title: card_title }}">
+        <input type="hidden" name="id" value="{{ quick_variant.id }}">
+        <button
+          class="remelle-card__add"
+          type="submit"
+          {% if quick_available %}
+            aria-label="{{ 'products.add' | t: title: card_title }}"
+          {% else %}
+            aria-label="{{ 'product.sold_out' | t }}"
+            disabled
+          {% endif %}
+        >
           {% render 'icon-plus' %}
         </button>
       {% endform %}
+    {%- elsif quick_variant -%}
+      <a
+        class="remelle-card__add remelle-card__add--link"
+        href="{{ card_url }}"
+        aria-label="{{ 'products.choose_options' | t: title: card_title }}"
+      >
+        {% render 'icon-plus' %}
+      </a>
     {%- endif -%}
   </div>
 
@@ -176,6 +200,30 @@
 
   .remelle-card.remelle-card--shop .remelle-card__photo {
     height: 431px;
+  }
+
+  @media (max-width: 768px) {
+    .remelle-card,
+    .remelle-card.remelle-card--shop {
+      flex: 1 1 calc(50% - 8px);
+      width: calc(50% - 8px);
+      max-width: 323px;
+    }
+
+    .remelle-card__photo,
+    .remelle-card.remelle-card--shop .remelle-card__photo {
+      height: auto;
+      aspect-ratio: 323 / 431;
+    }
+  }
+
+  @media (max-width: 414px) {
+    .remelle-card,
+    .remelle-card.remelle-card--shop {
+      flex: 1 1 100%;
+      width: 100%;
+      max-width: none;
+    }
   }
 
   .remelle-card__photo {
@@ -262,6 +310,15 @@
     border-radius: var(--radius-control);
     background: var(--color-burgundy);
     color: var(--color-off-white);
+  }
+
+  .remelle-card__add:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  a.remelle-card__add--link {
+    text-decoration: none;
   }
 
   .remelle-card__wish:focus-visible,

@@ -1,7 +1,11 @@
 {
+  "accessibility": {
+    "skip_to_content": "Skip to content"
+  },
   "404": {
     "title": "404",
     "not_found": "Page not found.",
+    "body": "The page you were looking for does not exist or may have moved.",
     "back_to_shopping": "Back to shopping"
   },
   "blog": {
@@ -17,30 +21,109 @@
     "about": "About",
     "about_remelle": "About Remelle",
     "account": "Account",
+    "cart": "Cart",
     "cart_count": "Cart ({{ count }})",
+    "close_menu": "Close menu",
     "coats_tops": "Coats/Tops",
     "contact": "Contact",
     "contact_us": "Contact us",
     "email": "Email address",
     "new_collection": "New collection",
+    "newsletter_success": "Thank you for subscribing.",
+    "open_menu": "Open menu",
     "pants": "Pants",
+    "policies": "Policies",
     "primary": "Primary",
     "return_exchange": "Return & Exchange",
     "shop": "Shop",
     "wordmark": "Remelle"
   },
   "cart": {
+    "apply": "Apply",
     "checkout": "Checkout",
+    "continue_shopping": "Continue shopping",
+    "discount_code": "Discount code",
+    "discount_hint": "Codes can also be entered at checkout.",
+    "discount_placeholder": "Enter code",
+    "empty_body": "Browse the collection and add pieces when you are ready.",
+    "empty_title": "Your cart is empty",
+    "eyebrow": "Shopping bag",
+    "item_count": {
+      "one": "{{ count }} item",
+      "other": "{{ count }} items"
+    },
+    "order_summary": "Order summary",
+    "product": "Product",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "subtotal": "Subtotal",
+    "taxes_shipping": "Taxes and shipping calculated at checkout.",
     "title": "Cart",
-    "update": "Update",
-    "remove": "Remove"
+    "total": "Total",
+    "update": "Update cart"
   },
   "customers": {
+    "account": {
+      "hosted_note": "Open your account to view orders and profile details.",
+      "logout": "Log out",
+      "no_orders": "You have not placed any orders yet.",
+      "order_number": "Order {{ number }}",
+      "orders": "Order history",
+      "title": "Account",
+      "welcome": "Welcome back, {{ name }}."
+    },
+    "addresses": {
+      "add_new": "Add a new address",
+      "address1": "Address",
+      "address2": "Apartment, suite, etc.",
+      "city": "City",
+      "country": "Country/region",
+      "default": "Default",
+      "delete": "Delete",
+      "empty": "You have no saved addresses yet.",
+      "phone": "Phone",
+      "save": "Save address",
+      "set_default": "Set as default address",
+      "title": "Addresses",
+      "zip": "Postal code"
+    },
+    "activate": {
+      "submit": "Activate account",
+      "title": "Activate account"
+    },
     "login": {
+      "create": "Create account",
       "email": "Email",
+      "forgot": "Forgot password?",
       "password": "Password",
       "submit": "Sign in",
-      "title": "Login"
+      "title": "Sign in"
+    },
+    "order": {
+      "back": "Back to account",
+      "quantity": "Qty {{ count }}",
+      "shipping": "Shipping",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "title": "Order {{ number }}",
+      "total": "Total"
+    },
+    "recover": {
+      "submit": "Reset password",
+      "success": "We sent password reset instructions to your email.",
+      "title": "Reset your password"
+    },
+    "register": {
+      "first_name": "First name",
+      "last_name": "Last name",
+      "sign_in": "Already have an account? Sign in",
+      "submit": "Create account",
+      "title": "Create account"
+    },
+    "reset": {
+      "confirm": "Confirm password",
+      "submit": "Set new password",
+      "title": "Reset password"
     }
   },
   "collections": {
@@ -48,7 +131,7 @@
     "sort": "Sort",
     "previous": "Previous",
     "next": "Next",
-    "empty": "No products"
+    "empty": "No products in this collection yet."
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
@@ -62,13 +145,17 @@
   },
   "product": {
     "add_to_basket": "Add to basket",
+    "adding": "Adding…",
+    "added": "Added to cart",
     "sold_out": "Sold out",
+    "unavailable": "This combination is unavailable",
     "quantity": "Quantity",
     "decrease": "Decrease quantity",
     "increase": "Increase quantity"
   },
   "products": {
     "add": "Add {{ title }} to cart",
+    "choose_options": "Choose options for {{ title }}",
     "new_in": "New in",
     "next": "Next products",
     "previous": "Previous products",

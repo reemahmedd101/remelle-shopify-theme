@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-cart",
+      "settings": {
+        "eyebrow": "Shopping bag",
+        "heading": "Cart",
+        "summary_heading": "Order summary",
+        "empty_heading": "Your cart is empty",
+        "empty_body": "Browse the collection and add pieces when you are ready.",
+        "continue_label": "Continue shopping",
+        "update_label": "Update cart",
+        "checkout_label": "Checkout"
+      }
+    }
+  },
+  "order": ["main"]
+}

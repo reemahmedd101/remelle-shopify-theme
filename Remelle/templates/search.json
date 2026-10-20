@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-search",
+      "settings": {
+        "heading": "Search"
+      }
+    }
+  },
+  "order": ["main"]
+}

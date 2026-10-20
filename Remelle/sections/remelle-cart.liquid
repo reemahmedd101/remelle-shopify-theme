@@ -1,0 +1,905 @@
+{%- liquid
+  assign page_eyebrow = section.settings.eyebrow
+  if page_eyebrow == blank
+    assign page_eyebrow = 'cart.eyebrow' | t
+  endif
+  assign page_heading = section.settings.heading
+  if page_heading == blank
+    assign page_heading = 'cart.title' | t
+  endif
+  assign continue_label = section.settings.continue_label
+  if continue_label == blank
+    assign continue_label = 'cart.continue_shopping' | t
+  endif
+  assign checkout_label = section.settings.checkout_label
+  if checkout_label == blank
+    assign checkout_label = 'cart.checkout' | t
+  endif
+  assign update_label = section.settings.update_label
+  if update_label == blank
+    assign update_label = 'cart.update' | t
+  endif
+  assign empty_heading = section.settings.empty_heading
+  if empty_heading == blank
+    assign empty_heading = 'cart.empty_title' | t
+  endif
+  assign empty_body = section.settings.empty_body
+  if empty_body == blank
+    assign empty_body = 'cart.empty_body' | t
+  endif
+  assign summary_heading = section.settings.summary_heading
+  if summary_heading == blank
+    assign summary_heading = 'cart.order_summary' | t
+  endif
+  assign cart_form_id = 'RemelleCartForm-' | append: section.id
+-%}
+
+<section class="remelle-cart" aria-labelledby="RemelleCartTitle-{{ section.id }}">
+  <div class="remelle-cart__inner">
+    <header class="remelle-cart__header">
+      {%- if page_eyebrow != blank -%}
+        <p class="remelle-cart__eyebrow">{{ page_eyebrow | escape }}</p>
+      {%- endif -%}
+      <div class="remelle-cart__heading-row">
+        <h1 class="remelle-cart__title" id="RemelleCartTitle-{{ section.id }}">
+          {{ page_heading | escape }}
+        </h1>
+        {%- if cart.item_count > 0 -%}
+          <p class="remelle-cart__count">{{ 'cart.item_count' | t: count: cart.item_count }}</p>
+        {%- endif -%}
+      </div>
+    </header>
+
+    {%- if cart.item_count == 0 -%}
+      <div class="remelle-cart__empty">
+        <div class="remelle-cart__empty-copy">
+          <h2 class="remelle-cart__empty-title">{{ empty_heading | escape }}</h2>
+          <p class="remelle-cart__empty-body">{{ empty_body | escape }}</p>
+        </div>
+        <a class="remelle-cart__cta" href="{{ routes.all_products_collection_url }}">
+          {{ continue_label | escape }}
+        </a>
+      </div>
+    {%- else -%}
+      {% form 'cart', cart, class: 'remelle-cart__form', id: cart_form_id %}
+        {%- if form.errors -%}
+          <div class="remelle-cart__errors" role="alert">
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        <div class="remelle-cart__main">
+          <div class="remelle-cart__columns" aria-hidden="true">
+            <span>{{ 'cart.product' | t }}</span>
+            <span>{{ 'cart.quantity' | t }}</span>
+            <span>{{ 'cart.total' | t }}</span>
+          </div>
+
+          <ul class="remelle-cart__lines" role="list">
+            {%- for item in cart.items -%}
+              <li class="remelle-cart__line">
+                <div class="remelle-cart__product">
+                  <a class="remelle-cart__media" href="{{ item.url }}">
+                    {%- if item.image -%}
+                      {{
+                        item.image
+                        | image_url: width: 480
+                        | image_tag:
+                          widths: '160, 320, 480',
+                          sizes: '(max-width: 768px) 96px, 160px',
+                          alt: item.image.alt | default: item.product.title,
+                          class: 'remelle-cart__image',
+                          loading: 'lazy'
+                      }}
+                    {%- else -%}
+                      <span class="remelle-cart__image remelle-cart__image--placeholder" aria-hidden="true"></span>
+                    {%- endif -%}
+                  </a>
+
+                  <div class="remelle-cart__meta">
+                    <a class="remelle-cart__name" href="{{ item.url }}">{{ item.product.title | escape }}</a>
+
+                    {%- unless item.product.has_only_default_variant -%}
+                      <p class="remelle-cart__variant">{{ item.variant.title | escape }}</p>
+                    {%- endunless -%}
+
+                    {%- if item.selling_plan_allocation -%}
+                      <p class="remelle-cart__variant">{{ item.selling_plan_allocation.selling_plan.name | escape }}</p>
+                    {%- endif -%}
+
+                    {%- for property in item.properties -%}
+                      {%- assign property_first = property.first -%}
+                      {%- if property.last != blank and property_first.first != '_' -%}
+                        <p class="remelle-cart__variant">
+                          {{ property_first | escape }}: {{ property.last | escape }}
+                        </p>
+                      {%- endif -%}
+                    {%- endfor -%}
+
+                    <p class="remelle-cart__unit-price">
+                      {%- if item.original_price != item.final_price -%}
+                        <s>{{ item.original_price | money }}</s>
+                      {%- endif -%}
+                      <span>{{ item.final_price | money }}</span>
+                    </p>
+
+                    <a class="remelle-cart__remove" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
+                  </div>
+                </div>
+
+                <div class="remelle-cart__qty">
+                  <label class="visually-hidden" for="RemelleCartQty-{{ section.id }}-{{ item.key }}">
+                    {{ 'cart.quantity' | t }}
+                  </label>
+                  <div class="remelle-cart__qty-controls">
+                    <button
+                      class="remelle-cart__qty-btn remelle-cart__qty-btn--minus"
+                      type="button"
+                      data-cart-qty="-1"
+                      data-target="RemelleCartQty-{{ section.id }}-{{ item.key }}"
+                      aria-label="{{ 'product.decrease' | t }}"
+                    >
+                      {% render 'icon-minus' %}
+                    </button>
+                    <input
+                      class="remelle-cart__qty-input"
+                      id="RemelleCartQty-{{ section.id }}-{{ item.key }}"
+                      type="number"
+                      name="updates[{{ item.key }}]"
+                      value="{{ item.quantity }}"
+                      min="0"
+                      inputmode="numeric"
+                      {% if item.variant.inventory_management != blank and item.variant.inventory_policy == 'deny' and item.variant.inventory_quantity > 0 %}
+                        max="{{ item.variant.inventory_quantity }}"
+                      {% endif %}
+                    >
+                    <button
+                      class="remelle-cart__qty-btn remelle-cart__qty-btn--plus"
+                      type="button"
+                      data-cart-qty="1"
+                      data-target="RemelleCartQty-{{ section.id }}-{{ item.key }}"
+                      aria-label="{{ 'product.increase' | t }}"
+                    >
+                      {% render 'icon-plus' %}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="remelle-cart__prices">
+                  {%- if item.original_line_price != item.final_line_price -%}
+                    <s class="remelle-cart__compare">{{ item.original_line_price | money }}</s>
+                  {%- endif -%}
+                  <p class="remelle-cart__line-price">{{ item.final_line_price | money }}</p>
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          <div class="remelle-cart__toolbar">
+            <a class="remelle-cart__continue" href="{{ routes.all_products_collection_url }}">
+              {{ continue_label | escape }}
+            </a>
+            <button class="remelle-cart__update" type="submit" name="update">
+              {{ update_label | escape }}
+            </button>
+          </div>
+        </div>
+
+        <aside class="remelle-cart__aside" aria-labelledby="RemelleCartSummary-{{ section.id }}">
+          <h2 class="remelle-cart__summary-title" id="RemelleCartSummary-{{ section.id }}">
+            {{ summary_heading | escape }}
+          </h2>
+
+          {%- if cart.cart_level_discount_applications.size > 0 -%}
+            <ul class="remelle-cart__discounts" role="list">
+              {%- for discount in cart.cart_level_discount_applications -%}
+                <li class="remelle-cart__discount">
+                  <span>{{ discount.title | escape }}</span>
+                  <span>-{{ discount.total_allocated_amount | money }}</span>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+
+          <div class="remelle-cart__discount-form">
+            <label class="remelle-cart__discount-label" for="RemelleCartDiscount-{{ section.id }}">
+              {{ 'cart.discount_code' | t }}
+            </label>
+            <div class="remelle-cart__discount-row">
+              <input
+                class="remelle-cart__discount-input"
+                id="RemelleCartDiscount-{{ section.id }}"
+                type="text"
+                value=""
+                autocomplete="off"
+                placeholder="{{ 'cart.discount_placeholder' | t | escape }}"
+                data-cart-discount
+                aria-describedby="RemelleCartDiscountHint-{{ section.id }}"
+              >
+              <button class="remelle-cart__discount-apply" type="button" data-cart-discount-apply>
+                {{ 'cart.apply' | t }}
+              </button>
+            </div>
+            <p class="remelle-cart__discount-hint" id="RemelleCartDiscountHint-{{ section.id }}">
+              {{ 'cart.discount_hint' | t }}
+            </p>
+          </div>
+
+          <div class="remelle-cart__summary">
+            <div class="remelle-cart__subtotal">
+              <span>{{ 'cart.subtotal' | t }}</span>
+              <span data-cart-subtotal>{{ cart.total_price | money }}</span>
+            </div>
+            <p class="remelle-cart__taxes">{{ 'cart.taxes_shipping' | t }}</p>
+          </div>
+
+          <button class="remelle-cart__checkout" type="submit" name="checkout">
+            {{ checkout_label | escape }}
+          </button>
+
+          {%- if additional_checkout_buttons -%}
+            <div class="remelle-cart__accelerated">
+              {{ content_for_additional_checkout_buttons }}
+            </div>
+          {%- endif -%}
+        </aside>
+      {% endform %}
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-cart {
+    padding: 48px 0 140px;
+    background: var(--color-off-white);
+  }
+
+  .remelle-cart__inner {
+    width: min(var(--page-width), 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-cart__header {
+    margin-bottom: 48px;
+  }
+
+  .remelle-cart__eyebrow {
+    margin: 0 0 16px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 15px;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart__heading-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .remelle-cart__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-cart__count {
+    margin: 0;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  .remelle-cart__empty {
+    display: grid;
+    gap: 32px;
+    max-width: 520px;
+    padding: 24px 0 80px;
+  }
+
+  .remelle-cart__empty-title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-cart__empty-body {
+    margin: 16px 0 0;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .remelle-cart__cta,
+  .remelle-cart__checkout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 24px;
+    border: 1px solid var(--color-off-white);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.96px;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-cart__errors {
+    grid-column: 1 / -1;
+    margin: 0 0 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--color-burgundy);
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .remelle-cart__form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 64px;
+    align-items: start;
+  }
+
+  .remelle-cart__columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 169px 120px;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(36, 36, 36, 0.16);
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart__columns span:nth-child(2),
+  .remelle-cart__columns span:nth-child(3) {
+    text-align: center;
+  }
+
+  .remelle-cart__columns span:nth-child(3) {
+    text-align: right;
+  }
+
+  .remelle-cart__lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .remelle-cart__line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 169px 120px;
+    gap: 24px;
+    align-items: center;
+    padding: 28px 0;
+    border-bottom: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-cart__product {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    min-width: 0;
+  }
+
+  .remelle-cart__media {
+    display: block;
+    width: 160px;
+    aspect-ratio: 160 / 214;
+    background: var(--color-beige);
+    overflow: hidden;
+  }
+
+  .remelle-cart__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+  }
+
+  .remelle-cart__image--placeholder {
+    display: block;
+    padding: 0;
+    background: var(--color-beige);
+  }
+
+  .remelle-cart__name {
+    display: block;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.3;
+    text-decoration: none;
+  }
+
+  .remelle-cart__variant {
+    margin: 8px 0 0;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .remelle-cart__unit-price {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .remelle-cart__unit-price s {
+    color: #8a8178;
+    font-weight: 400;
+  }
+
+  .remelle-cart__remove {
+    display: inline-block;
+    margin-top: 16px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.44px;
+    text-decoration: underline;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart__qty {
+    display: flex;
+    justify-content: center;
+  }
+
+  .remelle-cart__qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .remelle-cart__qty-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .remelle-cart__qty-btn--minus {
+    background: #eadcd6;
+    color: #242424;
+  }
+
+  .remelle-cart__qty-btn--plus {
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+  }
+
+  .remelle-cart__qty-input {
+    width: 81px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: #ffffff;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 40px;
+    text-align: center;
+  }
+
+  .remelle-cart__qty-input::-webkit-outer-spin-button,
+  .remelle-cart__qty-input::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+
+  .remelle-cart__prices {
+    text-align: right;
+  }
+
+  .remelle-cart__compare {
+    display: block;
+    margin-bottom: 4px;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 13px;
+  }
+
+  .remelle-cart__line-price {
+    margin: 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .remelle-cart__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  .remelle-cart__continue {
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.44px;
+    text-decoration: underline;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart__update {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--color-burgundy);
+    background: transparent;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.96px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-cart__aside {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+    padding: 32px 28px;
+    background: var(--color-beige);
+  }
+
+  .remelle-cart__summary-title {
+    margin: 0 0 24px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart__discounts {
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .remelle-cart__discount {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+
+  .remelle-cart__discount-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart__discount-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .remelle-cart__discount-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    border: 0;
+    border-bottom: 1px solid rgba(36, 36, 36, 0.28);
+    background: transparent;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+
+  .remelle-cart__discount-input::placeholder {
+    color: #8a8178;
+  }
+
+  .remelle-cart__discount-apply {
+    flex: 0 0 auto;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--color-burgundy);
+    background: transparent;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-cart__discount-hint {
+    margin: 10px 0 0;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .remelle-cart__summary {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-cart__subtotal {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .remelle-cart__taxes {
+    margin: 10px 0 0;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .remelle-cart__checkout {
+    width: 100%;
+    margin-top: 28px;
+  }
+
+  .remelle-cart__accelerated {
+    margin-top: 16px;
+  }
+
+  .remelle-cart a:focus-visible,
+  .remelle-cart button:focus-visible,
+  .remelle-cart input:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 1100px) {
+    .remelle-cart__form {
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 40px;
+    }
+
+    .remelle-cart__columns,
+    .remelle-cart__line {
+      grid-template-columns: minmax(0, 1fr) 169px 96px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .remelle-cart__form {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .remelle-cart__aside {
+      position: static;
+    }
+
+    .remelle-cart__columns {
+      display: none;
+    }
+
+    .remelle-cart__line {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .remelle-cart__qty,
+    .remelle-cart__prices {
+      justify-content: flex-start;
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .remelle-cart {
+      padding: 32px 0 96px;
+    }
+
+    .remelle-cart__title {
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .remelle-cart__heading-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .remelle-cart__product {
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .remelle-cart__media {
+      width: 96px;
+    }
+
+    .remelle-cart__image {
+      padding: 6px;
+    }
+
+    .remelle-cart__toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .remelle-cart__update {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 414px) {
+    .remelle-cart__discount-row {
+      flex-direction: column;
+    }
+
+    .remelle-cart__discount-apply {
+      width: 100%;
+    }
+
+    .remelle-cart__qty-input {
+      width: 64px;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  document.querySelectorAll('.remelle-cart').forEach((section) => {
+    section.querySelectorAll('[data-cart-qty]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const input = section.querySelector(`#${button.dataset.target}`);
+        if (!input) return;
+        const delta = Number(button.dataset.cartQty);
+        const max = input.max ? Number(input.max) : Infinity;
+        const next = Math.max(0, Math.min(max, Number(input.value || 0) + delta));
+        input.value = String(next);
+      });
+    });
+
+    const discountInput = section.querySelector('[data-cart-discount]');
+    const discountApply = section.querySelector('[data-cart-discount-apply]');
+    if (discountInput && discountApply) {
+      const applyDiscount = () => {
+        const code = discountInput.value.trim();
+        if (!code) {
+          discountInput.focus();
+          return;
+        }
+        window.location.assign(
+          `/discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent('/cart')}`
+        );
+      };
+      discountApply.addEventListener('click', applyDiscount);
+      discountInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          applyDiscount();
+        }
+      });
+    }
+  });
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:general.cart",
+  "enabled_on": {
+    "templates": ["cart"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "Shopping bag"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Cart"
+    },
+    {
+      "type": "text",
+      "id": "summary_heading",
+      "label": "t:labels.summary_heading",
+      "default": "Order summary"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "t:labels.empty_heading",
+      "default": "Your cart is empty"
+    },
+    {
+      "type": "textarea",
+      "id": "empty_body",
+      "label": "t:labels.empty_body",
+      "default": "Browse the collection and add pieces when you are ready."
+    },
+    {
+      "type": "text",
+      "id": "continue_label",
+      "label": "t:labels.continue_shopping",
+      "default": "Continue shopping"
+    },
+    {
+      "type": "text",
+      "id": "update_label",
+      "label": "t:labels.update_cart",
+      "default": "Update cart"
+    },
+    {
+      "type": "text",
+      "id": "checkout_label",
+      "label": "t:labels.checkout",
+      "default": "Checkout"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.cart"
+    }
+  ]
+}
+{% endschema %}

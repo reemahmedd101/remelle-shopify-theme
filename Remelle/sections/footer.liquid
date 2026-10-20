@@ -104,6 +104,9 @@
             </button>
           </div>
           <span class="newsletter__rule"></span>
+          {% if form.posted_successfully? %}
+            <p class="newsletter__success" role="status">{{ 'chrome.newsletter_success' | t }}</p>
+          {% endif %}
           {% if form.errors %}
             <div class="newsletter__errors">{{ form.errors | default_errors }}</div>
           {% endif %}
@@ -120,6 +123,43 @@
         {% render 'wordmark', variant: 'footer' %}
       </a>
       <p class="site-footer__copyright">{{ section.settings.copyright | escape }}</p>
+
+      {%- liquid
+        assign has_policies = false
+        if shop.refund_policy != blank or shop.privacy_policy != blank or shop.terms_of_service != blank or shop.shipping_policy != blank or shop.subscription_policy != blank or shop.legal_notice != blank
+          assign has_policies = true
+        endif
+      -%}
+      {%- if has_policies -%}
+        <nav class="site-footer__policies" aria-label="{{ 'chrome.policies' | t }}">
+          {%- if shop.refund_policy != blank -%}
+            <a class="site-footer__policy" href="{{ shop.refund_policy.url }}">{{ shop.refund_policy.title | escape }}</a>
+          {%- endif -%}
+          {%- if shop.shipping_policy != blank -%}
+            <a class="site-footer__policy" href="{{ shop.shipping_policy.url }}">{{ shop.shipping_policy.title | escape }}</a>
+          {%- endif -%}
+          {%- if shop.privacy_policy != blank -%}
+            <a class="site-footer__policy" href="{{ shop.privacy_policy.url }}">{{ shop.privacy_policy.title | escape }}</a>
+          {%- endif -%}
+          {%- if shop.terms_of_service != blank -%}
+            <a class="site-footer__policy" href="{{ shop.terms_of_service.url }}">{{ shop.terms_of_service.title | escape }}</a>
+          {%- endif -%}
+          {%- if shop.subscription_policy != blank -%}
+            <a class="site-footer__policy" href="{{ shop.subscription_policy.url }}">{{ shop.subscription_policy.title | escape }}</a>
+          {%- endif -%}
+          {%- if shop.legal_notice != blank -%}
+            <a class="site-footer__policy" href="{{ shop.legal_notice.url }}">{{ shop.legal_notice.title | escape }}</a>
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <div class="site-footer__payments">
+          {%- for type in shop.enabled_payment_types -%}
+            {{ type | payment_type_svg_tag: class: 'site-footer__payment-icon' }}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
     </div>
   </div>
 </footer>
@@ -218,6 +258,12 @@
       "id": "copyright",
       "label": "t:labels.copyright",
       "default": "© 2026 Remelle, all rights reserved"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "t:labels.show_payment_icons",
+      "default": true
     }
   ],
   "presets": [

@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-404",
+      "settings": {
+        "eyebrow": "404",
+        "heading": "Page not found.",
+        "body": "The page you were looking for does not exist or may have moved.",
+        "button_label": "Back to shopping"
+      }
+    }
+  },
+  "order": ["main"]
+}

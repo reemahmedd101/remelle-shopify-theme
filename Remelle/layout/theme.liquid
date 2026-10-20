@@ -17,12 +17,14 @@
     {% render 'meta-tags' %}
 
     {{ content_for_header }}
+    <script src="{{ 'remelle-cart.js' | asset_url }}" defer></script>
   </head>
 
   <body>
+    <a class="skip-to-content visually-hidden" href="#MainContent">{{ 'accessibility.skip_to_content' | t }}</a>
     {% sections 'header-group' %}
 
-    <main>
+    <main id="MainContent" tabindex="-1">
       {{ content_for_layout }}
     </main>
 

@@ -1,0 +1,135 @@
+{%- comment -%}
+  Classic customer accounts only. Unused when New customer accounts are enabled.
+{%- endcomment -%}
+
+<section class="remelle-customer" aria-labelledby="RemelleAddressesTitle-{{ section.id }}">
+  <div class="remelle-customer__inner remelle-customer__inner--wide">
+    <div class="remelle-customer__account-head">
+      <h1 class="remelle-customer__title" id="RemelleAddressesTitle-{{ section.id }}">
+        {{ 'customers.addresses.title' | t }}
+      </h1>
+      <a class="remelle-customer__logout" href="{{ routes.account_url }}">{{ 'customers.order.back' | t }}</a>
+    </div>
+
+    {%- paginate customer.addresses by 10 -%}
+      {%- if customer.addresses.size == 0 -%}
+        <p class="remelle-customer__empty">{{ 'customers.addresses.empty' | t }}</p>
+      {%- else -%}
+        <ul class="remelle-customer__orders" role="list">
+          {%- for address in customer.addresses -%}
+            <li class="remelle-customer__order">
+              <div class="remelle-customer__address">
+                {%- if address == customer.default_address -%}
+                  <p class="remelle-customer__subtitle">{{ 'customers.addresses.default' | t }}</p>
+                {%- endif -%}
+                {{ address | format_address }}
+                <div class="remelle-customer__links">
+                  {% form 'customer_address', address %}
+                    <input type="hidden" name="_method" value="delete">
+                    <button class="remelle-customer__text-btn" type="submit">{{ 'customers.addresses.delete' | t }}</button>
+                  {% endform %}
+                </div>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+      {%- if paginate.pages > 1 -%}
+        {{ paginate | default_pagination }}
+      {%- endif -%}
+    {%- endpaginate -%}
+
+    <h2 class="remelle-customer__subtitle">{{ 'customers.addresses.add_new' | t }}</h2>
+    {%- form 'customer_address', customer.new_address, class: 'remelle-customer__form' -%}
+      {%- if form.errors -%}
+        <div class="remelle-customer__errors" role="alert">{{ form.errors | default_errors }}</div>
+      {%- endif -%}
+
+      <label class="remelle-customer__label" for="AddressFirstName-{{ section.id }}">{{ 'customers.register.first_name' | t }}</label>
+      <input class="remelle-customer__input" type="text" name="address[first_name]" id="AddressFirstName-{{ section.id }}" autocomplete="given-name">
+
+      <label class="remelle-customer__label" for="AddressLastName-{{ section.id }}">{{ 'customers.register.last_name' | t }}</label>
+      <input class="remelle-customer__input" type="text" name="address[last_name]" id="AddressLastName-{{ section.id }}" autocomplete="family-name">
+
+      <label class="remelle-customer__label" for="AddressAddress1-{{ section.id }}">{{ 'customers.addresses.address1' | t }}</label>
+      <input class="remelle-customer__input" type="text" name="address[address1]" id="AddressAddress1-{{ section.id }}" autocomplete="address-line1">
+
+      <label class="remelle-customer__label" for="AddressAddress2-{{ section.id }}">{{ 'customers.addresses.address2' | t }}</label>
+      <input class="remelle-customer__input" type="text" name="address[address2]" id="AddressAddress2-{{ section.id }}" autocomplete="address-line2">
+
+      <label class="remelle-customer__label" for="AddressCity-{{ section.id }}">{{ 'customers.addresses.city' | t }}</label>
+      <input class="remelle-customer__input" type="text" name="address[city]" id="AddressCity-{{ section.id }}" autocomplete="address-level2">
+
+      <label class="remelle-customer__label" for="AddressCountry-{{ section.id }}">{{ 'customers.addresses.country' | t }}</label>
+      <select class="remelle-customer__input" name="address[country]" id="AddressCountry-{{ section.id }}" autocomplete="country">
+        {{ all_country_option_tags }}
+      </select>
+
+      <label class="remelle-customer__label" for="AddressZip-{{ section.id }}">{{ 'customers.addresses.zip' | t }}</label>
+      <input class="remelle-customer__input" type="text" name="address[zip]" id="AddressZip-{{ section.id }}" autocomplete="postal-code">
+
+      <label class="remelle-customer__label" for="AddressPhone-{{ section.id }}">{{ 'customers.addresses.phone' | t }}</label>
+      <input class="remelle-customer__input" type="tel" name="address[phone]" id="AddressPhone-{{ section.id }}" autocomplete="tel">
+
+      <label class="remelle-customer__check">
+        <input type="checkbox" name="address[default]" value="1">
+        {{ 'customers.addresses.set_default' | t }}
+      </label>
+
+      <button class="remelle-customer__submit" type="submit">{{ 'customers.addresses.save' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-customer__inner--wide {
+    width: min(720px, 100%);
+  }
+
+  .remelle-customer__address {
+    padding: 16px 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .remelle-customer__text-btn {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .remelle-customer__check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.customer_addresses",
+  "enabled_on": {
+    "templates": ["customers/addresses"]
+  },
+  "settings": [],
+  "presets": [
+    {
+      "name": "t:general.customer_addresses"
+    }
+  ]
+}
+{% endschema %}

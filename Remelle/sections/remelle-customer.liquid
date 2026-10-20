@@ -1,0 +1,433 @@
+{%- comment -%}
+  Classic customer accounts only. When New customer accounts are enabled in Admin,
+  Shopify hosts sign-in, account, and orders — this section is not used.
+{%- endcomment -%}
+
+<section class="remelle-customer" aria-labelledby="RemelleCustomerTitle-{{ section.id }}">
+  <div class="remelle-customer__inner">
+    {%- case template -%}
+      {%- when 'customers/login' -%}
+        <h1 class="remelle-customer__title" id="RemelleCustomerTitle-{{ section.id }}">{{ 'customers.login.title' | t }}</h1>
+
+        {%- form 'customer_login', class: 'remelle-customer__form' -%}
+          {%- if form.errors -%}
+            <div class="remelle-customer__errors" role="alert">{{ form.errors | default_errors }}</div>
+          {%- endif -%}
+
+          <label class="remelle-customer__label" for="CustomerEmail-{{ section.id }}">{{ 'customers.login.email' | t }}</label>
+          <input
+            class="remelle-customer__input"
+            type="email"
+            name="customer[email]"
+            id="CustomerEmail-{{ section.id }}"
+            autocomplete="email"
+            autocorrect="off"
+            autocapitalize="off"
+            required
+          >
+
+          <label class="remelle-customer__label" for="CustomerPassword-{{ section.id }}">{{ 'customers.login.password' | t }}</label>
+          <input
+            class="remelle-customer__input"
+            type="password"
+            name="customer[password]"
+            id="CustomerPassword-{{ section.id }}"
+            autocomplete="current-password"
+            required
+          >
+
+          <button class="remelle-customer__submit" type="submit">{{ 'customers.login.submit' | t }}</button>
+        {%- endform -%}
+
+        <p class="remelle-customer__links">
+          <a href="#recover">{{ 'customers.login.forgot' | t }}</a>
+          <a href="{{ routes.account_register_url }}">{{ 'customers.login.create' | t }}</a>
+        </p>
+
+        <div class="remelle-customer__recover" id="recover">
+          <h2 class="remelle-customer__subtitle">{{ 'customers.recover.title' | t }}</h2>
+          {%- form 'recover_customer_password', class: 'remelle-customer__form' -%}
+            {%- if form.posted_successfully? -%}
+              <p class="remelle-customer__success" role="status">{{ 'customers.recover.success' | t }}</p>
+            {%- endif -%}
+            {%- if form.errors -%}
+              <div class="remelle-customer__errors" role="alert">{{ form.errors | default_errors }}</div>
+            {%- endif -%}
+            <label class="remelle-customer__label" for="RecoverEmail-{{ section.id }}">{{ 'customers.login.email' | t }}</label>
+            <input
+              class="remelle-customer__input"
+              type="email"
+              name="email"
+              id="RecoverEmail-{{ section.id }}"
+              autocomplete="email"
+              required
+            >
+            <button class="remelle-customer__submit" type="submit">{{ 'customers.recover.submit' | t }}</button>
+          {%- endform -%}
+        </div>
+
+      {%- when 'customers/register' -%}
+        <h1 class="remelle-customer__title" id="RemelleCustomerTitle-{{ section.id }}">{{ 'customers.register.title' | t }}</h1>
+        {%- form 'create_customer', class: 'remelle-customer__form' -%}
+          {%- if form.errors -%}
+            <div class="remelle-customer__errors" role="alert">{{ form.errors | default_errors }}</div>
+          {%- endif -%}
+
+          <label class="remelle-customer__label" for="RegisterFirstName-{{ section.id }}">{{ 'customers.register.first_name' | t }}</label>
+          <input class="remelle-customer__input" type="text" name="customer[first_name]" id="RegisterFirstName-{{ section.id }}" autocomplete="given-name">
+
+          <label class="remelle-customer__label" for="RegisterLastName-{{ section.id }}">{{ 'customers.register.last_name' | t }}</label>
+          <input class="remelle-customer__input" type="text" name="customer[last_name]" id="RegisterLastName-{{ section.id }}" autocomplete="family-name">
+
+          <label class="remelle-customer__label" for="RegisterEmail-{{ section.id }}">{{ 'customers.login.email' | t }}</label>
+          <input class="remelle-customer__input" type="email" name="customer[email]" id="RegisterEmail-{{ section.id }}" autocomplete="email" required>
+
+          <label class="remelle-customer__label" for="RegisterPassword-{{ section.id }}">{{ 'customers.login.password' | t }}</label>
+          <input class="remelle-customer__input" type="password" name="customer[password]" id="RegisterPassword-{{ section.id }}" autocomplete="new-password" required>
+
+          <button class="remelle-customer__submit" type="submit">{{ 'customers.register.submit' | t }}</button>
+        {%- endform -%}
+        <p class="remelle-customer__links">
+          <a href="{{ routes.account_login_url }}">{{ 'customers.register.sign_in' | t }}</a>
+        </p>
+
+      {%- when 'customers/account' -%}
+        <div class="remelle-customer__account-head">
+          <h1 class="remelle-customer__title" id="RemelleCustomerTitle-{{ section.id }}">{{ 'customers.account.title' | t }}</h1>
+          <a class="remelle-customer__logout" href="{{ routes.account_logout_url }}">{{ 'customers.account.logout' | t }}</a>
+        </div>
+        {%- assign customer_name = customer.first_name | default: customer.email -%}
+        <p class="remelle-customer__welcome">
+          {{ 'customers.account.welcome' | t: name: customer_name }}
+        </p>
+
+        <p class="remelle-customer__links">
+          <a href="{{ routes.account_addresses_url }}">{{ 'customers.addresses.title' | t }}</a>
+        </p>
+
+        <h2 class="remelle-customer__subtitle">{{ 'customers.account.orders' | t }}</h2>
+        {%- if customer.orders.size == 0 -%}
+          <p class="remelle-customer__empty">{{ 'customers.account.no_orders' | t }}</p>
+          <a class="remelle-customer__submit remelle-customer__submit--link" href="{{ routes.all_products_collection_url }}">
+            {{ 'cart.continue_shopping' | t }}
+          </a>
+        {%- else -%}
+          <ul class="remelle-customer__orders" role="list">
+            {%- for order in customer.orders -%}
+              <li class="remelle-customer__order">
+                <a class="remelle-customer__order-link" href="{{ order.customer_url }}">
+                  <span>{{ 'customers.account.order_number' | t: number: order.name }}</span>
+                  <span>{{ order.created_at | date: format: 'date' }}</span>
+                  <span>{{ order.financial_status_label }}</span>
+                  <span>{{ order.total_price | money }}</span>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+      {%- when 'customers/order' -%}
+        <h1 class="remelle-customer__title" id="RemelleCustomerTitle-{{ section.id }}">
+          {{ 'customers.order.title' | t: number: order.name }}
+        </h1>
+        <p class="remelle-customer__meta">
+          {{ order.created_at | date: format: 'date' }} · {{ order.financial_status_label }} · {{ order.fulfillment_status_label }}
+        </p>
+
+        <ul class="remelle-customer__order-lines" role="list">
+          {%- for line_item in order.line_items -%}
+            <li class="remelle-customer__order-line">
+              <div>
+                <p class="remelle-customer__order-name">{{ line_item.title | escape }}</p>
+                <p class="remelle-customer__meta">{{ 'customers.order.quantity' | t: count: line_item.quantity }}</p>
+              </div>
+              <p class="remelle-customer__order-price">{{ line_item.final_line_price | money }}</p>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        <div class="remelle-customer__totals">
+          <div><span>{{ 'customers.order.subtotal' | t }}</span><span>{{ order.line_items_subtotal_price | money }}</span></div>
+          {%- for discount in order.cart_level_discount_applications -%}
+            <div><span>{{ discount.title | escape }}</span><span>-{{ discount.total_allocated_amount | money }}</span></div>
+          {%- endfor -%}
+          <div><span>{{ 'customers.order.shipping' | t }}</span><span>{{ order.shipping_price | money }}</span></div>
+          <div><span>{{ 'customers.order.tax' | t }}</span><span>{{ order.tax_price | money }}</span></div>
+          <div class="remelle-customer__total"><span>{{ 'customers.order.total' | t }}</span><span>{{ order.total_price | money }}</span></div>
+        </div>
+
+        <p class="remelle-customer__links">
+          <a href="{{ routes.account_url }}">{{ 'customers.order.back' | t }}</a>
+        </p>
+
+      {%- when 'customers/reset_password' -%}
+        <h1 class="remelle-customer__title" id="RemelleCustomerTitle-{{ section.id }}">{{ 'customers.reset.title' | t }}</h1>
+        {%- form 'reset_customer_password', class: 'remelle-customer__form' -%}
+          {%- if form.errors -%}
+            <div class="remelle-customer__errors" role="alert">{{ form.errors | default_errors }}</div>
+          {%- endif -%}
+          <label class="remelle-customer__label" for="ResetPassword-{{ section.id }}">{{ 'customers.login.password' | t }}</label>
+          <input class="remelle-customer__input" type="password" name="customer[password]" id="ResetPassword-{{ section.id }}" required>
+          <label class="remelle-customer__label" for="ResetPasswordConfirm-{{ section.id }}">{{ 'customers.reset.confirm' | t }}</label>
+          <input class="remelle-customer__input" type="password" name="customer[password_confirmation]" id="ResetPasswordConfirm-{{ section.id }}" required>
+          <button class="remelle-customer__submit" type="submit">{{ 'customers.reset.submit' | t }}</button>
+        {%- endform -%}
+
+      {%- when 'customers/activate_account' -%}
+        <h1 class="remelle-customer__title" id="RemelleCustomerTitle-{{ section.id }}">{{ 'customers.activate.title' | t }}</h1>
+        {%- form 'activate_customer_password', class: 'remelle-customer__form' -%}
+          {%- if form.errors -%}
+            <div class="remelle-customer__errors" role="alert">{{ form.errors | default_errors }}</div>
+          {%- endif -%}
+          <label class="remelle-customer__label" for="ActivatePassword-{{ section.id }}">{{ 'customers.login.password' | t }}</label>
+          <input class="remelle-customer__input" type="password" name="customer[password]" id="ActivatePassword-{{ section.id }}" required>
+          <label class="remelle-customer__label" for="ActivatePasswordConfirm-{{ section.id }}">{{ 'customers.reset.confirm' | t }}</label>
+          <input class="remelle-customer__input" type="password" name="customer[password_confirmation]" id="ActivatePasswordConfirm-{{ section.id }}" required>
+          <button class="remelle-customer__submit" type="submit">{{ 'customers.activate.submit' | t }}</button>
+        {%- endform -%}
+
+      {%- else -%}
+        <h1 class="remelle-customer__title" id="RemelleCustomerTitle-{{ section.id }}">{{ 'customers.account.title' | t }}</h1>
+        <p class="remelle-customer__empty">{{ 'customers.account.hosted_note' | t }}</p>
+        <a class="remelle-customer__submit remelle-customer__submit--link" href="{{ routes.account_url }}">
+          {{ 'chrome.account' | t }}
+        </a>
+    {%- endcase -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .remelle-customer {
+    padding: 48px 0 120px;
+  }
+
+  .remelle-customer__inner {
+    width: min(560px, 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-customer__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 48px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-customer__subtitle {
+    margin: 40px 0 16px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .remelle-customer__welcome,
+  .remelle-customer__meta,
+  .remelle-customer__empty {
+    margin: 16px 0 0;
+    color: #8a8178;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .remelle-customer__account-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .remelle-customer__logout,
+  .remelle-customer__links a,
+  .remelle-customer__order-link {
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: underline;
+  }
+
+  .remelle-customer__form {
+    display: grid;
+    gap: 8px;
+    margin-top: 32px;
+  }
+
+  .remelle-customer__label {
+    margin-top: 12px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .remelle-customer__input {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid rgba(36, 36, 36, 0.2);
+    background: #ffffff;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+  }
+
+  .remelle-customer__submit {
+    margin-top: 16px;
+    height: 44px;
+    border: 1px solid var(--color-burgundy);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.96px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-customer__submit--link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    margin-top: 24px;
+    text-decoration: none;
+  }
+
+  .remelle-customer__errors {
+    padding: 12px 14px;
+    border: 1px solid var(--color-burgundy);
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .remelle-customer__success {
+    margin: 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+
+  .remelle-customer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .remelle-customer__recover {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-customer__orders,
+  .remelle-customer__order-lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .remelle-customer__order {
+    border-bottom: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-customer__order-link {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+    padding: 16px 0;
+    text-decoration: none;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .remelle-customer__order-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(36, 36, 36, 0.16);
+  }
+
+  .remelle-customer__order-name,
+  .remelle-customer__order-price {
+    margin: 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+  }
+
+  .remelle-customer__totals {
+    display: grid;
+    gap: 10px;
+    margin-top: 24px;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+
+  .remelle-customer__totals > div,
+  .remelle-customer__total {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .remelle-customer__total {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(36, 36, 36, 0.16);
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .remelle-customer a:focus-visible,
+  .remelle-customer button:focus-visible,
+  .remelle-customer input:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 414px) {
+    .remelle-customer__title {
+      font-size: 36px;
+    }
+
+    .remelle-customer__account-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.customer",
+  "enabled_on": {
+    "templates": ["customers/login", "customers/register", "customers/account", "customers/order", "customers/reset_password", "customers/activate_account"]
+  },
+  "settings": [],
+  "presets": [
+    {
+      "name": "t:general.customer"
+    }
+  ]
+}
+{% endschema %}

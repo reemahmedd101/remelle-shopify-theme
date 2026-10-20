@@ -57,4 +57,11 @@
     --radius-control: 2px;
     --radius-swatch: 50%;
   }
+
+  @media (max-width: 768px) {
+    :root {
+      --page-inset: min({{ settings.page_inset }}px, 20px);
+      --header-nav-height: 56px;
+    }
+  }
 {% endstyle %}

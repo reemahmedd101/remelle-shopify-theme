@@ -1,11 +1,7 @@
 {% liquid
   assign about_url = pages['about'].url | default: '/pages/about'
   assign contact_url = pages['contact'].url | default: '/pages/contact'
-  if customer
-    assign account_url = routes.account_url
-  else
-    assign account_url = routes.account_login_url
-  endif
+  assign account_url = routes.account_url
 %}
 
 <header class="site-header">

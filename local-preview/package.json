@@ -1,0 +1,17 @@
+{
+  "name": "local-preview",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "commander": "^10.0.1",
+    "liquidjs": "^10.30.0"
+  },
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}

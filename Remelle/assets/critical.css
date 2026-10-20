@@ -46,6 +46,7 @@ dialog {
 
 p {
   text-wrap: pretty;
+  white-space: pre-line;
 }
 p,
 h1,

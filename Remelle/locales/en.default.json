@@ -95,9 +95,14 @@
     "liquid_tips_3": "Assign expensive lookups to a variable once and reuse it across the template"
   },
   "password": {
-    "title": "This shop is private",
+    "title": "Launching soon",
+    "message": "Remelle is preparing the first collection.",
     "password": "Password",
-    "enter": "Enter"
+    "enter": "Enter",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds"
   },
   "search": {
     "title": "Search",

@@ -1,0 +1,32 @@
+---
+description: Remelle Shopify theme conventions for accordions and editable copy
+alwaysApply: true
+---
+
+# Remelle theme conventions
+
+## Accordions / expands
+
+- Every `<details>` accordion starts **closed**.
+- Never set `open` / `open: true` by default in templates, `settings_data.json`, or section presets.
+- An optional theme-editor checkbox to open a row is fine; default it to `false`.
+
+## Editable copy
+
+- Customer-facing text must be editable in Shopify (theme editor section/block settings, or locale keys via Edit default theme content).
+- Do not hardcode English strings in Liquid markup.
+- Prefer section/block `text` / `richtext` / `textarea` settings for page and section copy.
+- Use `{{ 'key' | t }}` only for shared chrome/UI strings that belong in locale files.
+- Schema `default` values are starting copy only; merchants override them in the theme editor.
+
+## Account / contact
+
+- Guest Account uses `routes.account_url` (Shopify hosted accounts).
+- Contact form submissions go to the store Sender email; display `info@remelle.shop` in theme settings.
+
+## Hide / delete sections
+
+- Never lock sections with static `{% section %}` in `layout/` or `templates/`.
+- Use `{% sections 'header-group' %}` / `{% sections 'footer-group' %}` in the layout.
+- Page and template content must live in JSON templates so merchants can hide or remove sections in the theme editor.
+- Every customer-facing section needs a schema `presets` entry so it can be added back after removal.

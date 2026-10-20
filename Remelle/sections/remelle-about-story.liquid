@@ -14,7 +14,14 @@
             loading: 'eager'
         }}
       {%- else -%}
-        <div class="remelle-about-story__placeholder" role="img" aria-label="{{ section.settings.image_alt | escape }}"></div>
+        <img
+          class="remelle-about-story__image"
+          src="{{ 'Story image frame.png' | asset_url }}"
+          alt="{{ section.settings.image_alt | escape }}"
+          width="624"
+          height="570"
+          loading="eager"
+        >
       {%- endif -%}
     </div>
 
@@ -35,13 +42,17 @@
 </section>
 
 {% stylesheet %}
+  .remelle-about-story {
+    padding-block: 64px;
+  }
+
   .remelle-about-story__inner {
     display: flex;
     align-items: center;
     gap: 88px;
     width: min(var(--page-width), 100%);
     margin-inline: auto;
-    padding: 64px var(--page-inset);
+    padding-inline: var(--page-inset);
   }
 
   .remelle-about-story__media {
@@ -52,8 +63,7 @@
     overflow: hidden;
   }
 
-  .remelle-about-story__image,
-  .remelle-about-story__placeholder {
+  .remelle-about-story__image {
     display: block;
     width: 100%;
     height: 100%;

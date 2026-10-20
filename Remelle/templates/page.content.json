@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-page",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

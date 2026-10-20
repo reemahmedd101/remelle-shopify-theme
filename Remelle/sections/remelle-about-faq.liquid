@@ -1,7 +1,7 @@
 {%- liquid
   assign contact_link = section.settings.link
   if contact_link == blank
-    assign contact_link = pages.contact.url | default: '/pages/contact'
+    assign contact_link = pages['contact'].url | default: '/pages/contact'
   endif
 -%}
 
@@ -242,6 +242,7 @@
           "type": "checkbox",
           "id": "open",
           "label": "t:labels.open_row",
+          "info": "t:labels.open_row_info",
           "default": false
         }
       ]

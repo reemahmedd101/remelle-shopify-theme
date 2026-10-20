@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "contact": {
+      "type": "remelle-contact",
+      "settings": {}
+    }
+  },
+  "order": ["contact"]
+}

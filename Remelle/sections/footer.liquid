@@ -47,6 +47,11 @@
               urls: returns_url,
               class: 'site-footer__link'
             %}
+            {%- if section.settings.contact_email != blank -%}
+              <a class="site-footer__link" href="mailto:{{ section.settings.contact_email | escape }}">
+                {{ section.settings.contact_email | escape }}
+              </a>
+            {%- endif -%}
           </div>
         </div>
 
@@ -155,6 +160,12 @@
       "type": "link_list",
       "id": "menu_inquiries",
       "label": "t:labels.menu_inquiries"
+    },
+    {
+      "type": "text",
+      "id": "contact_email",
+      "label": "t:labels.contact_email",
+      "default": "info@remelle.shop"
     },
     {
       "type": "text",

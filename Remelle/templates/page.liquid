@@ -3,6 +3,8 @@
   {% section 'remelle-about-values' %}
   {% section 'remelle-about-faq' %}
   {% section 'remelle-about-invitation' %}
+{%- elsif page.handle == 'contact' -%}
+  {% section 'remelle-contact' %}
 {%- else -%}
   <section class="block-container">
     <h1>{{ page.title }}</h1>

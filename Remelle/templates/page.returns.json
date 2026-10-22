@@ -1,0 +1,44 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-returns",
+      "blocks": {
+        "returns": {
+          "type": "clause",
+          "settings": {
+            "heading": "Returns & Exchanges",
+            "content": "<p>You have 2 days from the date of receiving your order to request a return or exchange.</p><p>Items must be returned in their original condition, unworn, unused, unwashed, and with all original tags attached.</p><p>Items that show signs of wear, damage, washing, or have missing tags will not be accepted for return or exchange.</p>"
+          }
+        },
+        "delivery": {
+          "type": "clause",
+          "settings": {
+            "heading": "Check Your Order Upon Delivery",
+            "content": "<p>You are welcome to check your order while the courier is at your door to make sure everything is as expected.</p><p>If you decide to return the order after receiving and checking it, the return shipping fee will be paid by the customer.</p>"
+          }
+        },
+        "refuse": {
+          "type": "clause",
+          "settings": {
+            "heading": "If You Refuse the Order",
+            "content": "<p>If you decide not to receive the order when the courier arrives, the shipping fee will still be charged to you, as the courier has already been dispatched for delivery.</p>"
+          }
+        },
+        "cancellation": {
+          "type": "clause",
+          "settings": {
+            "heading": "Cancellation After Dispatch",
+            "content": "<p>If your order is already out for delivery and you decide to cancel it, a 75 EGP delivery/cancellation fee will apply.</p><p>This fee is charged due to the shipping company's policy and delivery costs.</p><p>We appreciate your understanding and cooperation.</p>"
+          }
+        }
+      },
+      "block_order": ["returns", "delivery", "refuse", "cancellation"],
+      "settings": {
+        "heading": "Return & Exchange Policy",
+        "intro": "<p>At Remelle, we want you to love every piece you receive. Please read our return and exchange policy carefully before placing your order.</p>",
+        "closing": "<p>Thank you for choosing Remelle.</p>"
+      }
+    }
+  },
+  "order": ["main"]
+}

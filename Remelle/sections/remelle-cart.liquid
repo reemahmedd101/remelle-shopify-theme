@@ -809,33 +809,8 @@
 {% endstylesheet %}
 
 {%- comment -%}
-  Quantity +/- uses assets/remelle-cart.js (loaded in layout/theme.liquid).
+  Quantity and discount controls are bound in assets/remelle-cart.js.
 {%- endcomment -%}
-
-{% javascript %}
-  document.querySelectorAll('.remelle-cart').forEach((section) => {
-    const discountInput = section.querySelector('[data-cart-discount]');
-    const discountApply = section.querySelector('[data-cart-discount-apply]');
-    if (!discountInput || !discountApply) return;
-    const applyDiscount = () => {
-      const code = discountInput.value.trim();
-      if (!code) {
-        discountInput.focus();
-        return;
-      }
-      window.location.assign(
-        `/discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent('/cart')}`
-      );
-    };
-    discountApply.addEventListener('click', applyDiscount);
-    discountInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        applyDiscount();
-      }
-    });
-  });
-{% endjavascript %}
 
 {% schema %}
 {

@@ -1,0 +1,211 @@
+{%- liquid
+  assign page_heading = section.settings.heading
+  if page_heading == blank
+    assign page_heading = page.title
+  endif
+-%}
+
+<section class="remelle-returns" aria-labelledby="RemelleReturns-{{ section.id }}">
+  <article class="remelle-returns__inner">
+    {%- if page_heading != blank -%}
+      <h1 class="remelle-returns__title" id="RemelleReturns-{{ section.id }}">{{ page_heading | escape }}</h1>
+    {%- endif -%}
+
+    {%- if section.settings.intro != blank -%}
+      <div class="remelle-returns__intro">{{ section.settings.intro }}</div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="remelle-returns__sections">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.heading != blank or block.settings.content != blank -%}
+            <section class="remelle-returns__section" {{ block.shopify_attributes }}>
+              {%- if block.settings.heading != blank -%}
+                <h2 class="remelle-returns__heading">{{ block.settings.heading | escape }}</h2>
+              {%- endif -%}
+              {%- if block.settings.content != blank -%}
+                <div class="remelle-returns__copy">{{ block.settings.content }}</div>
+              {%- endif -%}
+            </section>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- elsif page.content != blank -%}
+      <div class="remelle-returns__sections">
+        <div class="remelle-returns__copy">{{ page.content }}</div>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.closing != blank -%}
+      <div class="remelle-returns__closing">{{ section.settings.closing }}</div>
+    {%- endif -%}
+  </article>
+</section>
+
+{% stylesheet %}
+  .remelle-returns {
+    padding: 72px 0 140px;
+  }
+
+  .remelle-returns__inner {
+    width: min(620px, 100%);
+    margin-inline: auto;
+    padding-inline: var(--page-inset);
+  }
+
+  .remelle-returns__title {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-returns__intro,
+  .remelle-returns__closing {
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-returns__intro {
+    margin-top: 48px;
+  }
+
+  .remelle-returns__intro p,
+  .remelle-returns__closing p {
+    margin: 0;
+  }
+
+  .remelle-returns__intro p + p,
+  .remelle-returns__closing p + p {
+    margin-top: 10px;
+  }
+
+  .remelle-returns__sections {
+    display: grid;
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .remelle-returns__title + .remelle-returns__sections {
+    margin-top: 48px;
+  }
+
+  .remelle-returns__closing {
+    margin-top: 24px;
+  }
+
+  .remelle-returns__heading {
+    margin: 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .remelle-returns__copy {
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .remelle-returns__heading + .remelle-returns__copy {
+    margin-top: 10px;
+  }
+
+  .remelle-returns__copy p,
+  .remelle-returns__copy li {
+    margin: 0;
+  }
+
+  .remelle-returns__copy p + p,
+  .remelle-returns__copy li + li {
+    margin-top: 10px;
+  }
+
+  .remelle-returns__copy strong,
+  .remelle-returns__intro strong,
+  .remelle-returns__closing strong {
+    color: var(--color-burgundy);
+    font-weight: 600;
+  }
+
+  .remelle-returns__copy a {
+    color: var(--color-burgundy);
+  }
+
+  .remelle-returns__copy a:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 768px) {
+    .remelle-returns {
+      padding: 48px 0 96px;
+    }
+
+    .remelle-returns__title {
+      font-size: 40px;
+      line-height: 1;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.returns",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "info": "t:labels.page_heading_info",
+      "default": "Return & Exchange Policy"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "t:labels.intro"
+    },
+    {
+      "type": "richtext",
+      "id": "closing",
+      "label": "t:labels.closing"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "clause",
+      "name": "t:general.policy_section",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:labels.heading"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "t:labels.information_text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.returns"
+    }
+  ]
+}
+{% endschema %}

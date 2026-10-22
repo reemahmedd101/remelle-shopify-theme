@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "accessibility": {
     "close": "Close",
@@ -35,6 +44,7 @@
     "pants": "Pants",
     "policies": "Policies",
     "primary": "Primary",
+    "delivery_conditions": "Delivery and Conditions",
     "return_exchange": "Return & Exchange",
     "shop": "Shop",
     "wordmark": "Remelle"
@@ -48,9 +58,6 @@
     "checkout": "Checkout",
     "confirm": "Confirm",
     "continue_shopping": "Continue shopping",
-    "popup_confirm": "Please confirm",
-    "popup_error": "Something went wrong",
-    "popup_success": "Success",
     "discount_code": "Discount code",
     "discount_hint": "Codes can also be entered at checkout.",
     "discount_placeholder": "Enter code",
@@ -61,8 +68,12 @@
       "one": "{{ count }} item",
       "other": "{{ count }} items"
     },
+    "max_quantity": "That is the maximum available.",
     "missing_variant": "Select a product option first.",
     "order_summary": "Order summary",
+    "popup_confirm": "Please confirm",
+    "popup_error": "Something went wrong",
+    "popup_success": "Success",
     "product": "Product",
     "quantity": "Quantity",
     "remove": "Remove",
@@ -74,7 +85,7 @@
     "total": "Total",
     "update": "Update cart",
     "update_error": "Unable to update quantity.",
-    "updated": "Cart updated.",
+    "updated": "Quantity updated.",
     "view_cart": "View cart"
   },
   "customers": {

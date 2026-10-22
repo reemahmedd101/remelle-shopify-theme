@@ -16,6 +16,13 @@
     }
   })();
 
+  const copy = (value, fallback) => {
+    if (value == null || value === '' || String(value).indexOf('Translation missing') === 0) {
+      return fallback;
+    }
+    return value;
+  };
+
   const ensurePopupHost = () => {
     let host = document.getElementById('RemellePopupHost');
     if (host) return host;
@@ -256,16 +263,17 @@
           const title =
             (result.item && (result.item.product_title || result.item.title)) || '';
           const successMessage = title
-            ? (strings.addedNamed || '“{{ title }}” was added to your cart.').replace(
+            ? copy(strings.addedNamed, '“{{ title }}” was added to your cart.').replace(
                 '{{ title }}',
                 title
               )
-            : strings.addedSuccess || strings.added || 'Added successfully';
+            : copy(strings.addedSuccess, copy(strings.added, 'Added successfully'));
 
           showToast(successMessage, {
             type: 'success',
-            actionHref: strings.cartUrl || '/cart',
-            actionLabel: strings.viewCart || 'View cart',
+            actionHref: copy(strings.cartUrl, '/cart'),
+            actionLabel: copy(strings.viewCart, 'View cart'),
+            duration: 0,
           });
 
           if (statusNode) {
@@ -333,6 +341,7 @@
     }
 
     input.disabled = true;
+    if (section) section.dataset.cartPending = 'true';
     try {
       const response = await fetch('/cart/change.js', {
         method: 'POST',
@@ -352,16 +361,16 @@
         );
       }
       updateCartCount(payload.item_count || 0);
+      await refreshCartSection();
 
-      // Only show a popup when an item is removed. Quiet qty +/- just refreshes.
+      // Quantity changes stay on the page. A popup is only for a completed removal.
       if (removed) {
-        await showPopup(strings.removed || 'Item removed from your cart.', {
+        await showPopup(copy(strings.removed, 'Item removed from your cart.'), {
           type: 'success',
-          duration: 2200,
-          closeLabel: strings.close || 'Close',
+          duration: 0,
+          closeLabel: copy(strings.close, 'Close'),
         });
       }
-      window.location.reload();
       return true;
     } catch (error) {
       input.value = String(Math.max(1, previous));
@@ -370,8 +379,74 @@
       });
       return false;
     } finally {
-      input.disabled = false;
+      if (section) delete section.dataset.cartPending;
+      if (input.isConnected) input.disabled = false;
     }
+  };
+
+  const refreshCartSection = async () => {
+    const current = document.querySelector('.remelle-cart');
+    const wrapper = current && current.closest('[id^="shopify-section-"]');
+    if (!wrapper) {
+      window.location.reload();
+      return;
+    }
+
+    const sectionId = wrapper.id.replace(/^shopify-section-/, '');
+    const url = new URL(window.location.href);
+    url.searchParams.set('section_id', sectionId);
+
+    const response = await fetch(url.toString(), {
+      headers: { Accept: 'text/html' },
+      credentials: 'same-origin',
+    });
+    if (!response.ok) {
+      window.location.reload();
+      return;
+    }
+
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const next = doc.getElementById(wrapper.id);
+    if (!next) {
+      window.location.reload();
+      return;
+    }
+
+    const y = window.scrollY;
+    wrapper.replaceWith(next);
+    window.scrollTo(0, y);
+    bindCartQuantity();
+    bindCartDiscount();
+  };
+
+  const bindCartDiscount = () => {
+    document.querySelectorAll('.remelle-cart').forEach((section) => {
+      if (section.dataset.remelleDiscountBound === 'true') return;
+      const discountInput = section.querySelector('[data-cart-discount]');
+      const discountApply = section.querySelector('[data-cart-discount-apply]');
+      if (!discountInput || !discountApply) return;
+      section.dataset.remelleDiscountBound = 'true';
+
+      const applyDiscount = () => {
+        const code = discountInput.value.trim();
+        if (!code) {
+          discountInput.focus();
+          return;
+        }
+        window.location.assign(
+          `/discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent('/cart')}`
+        );
+      };
+
+      discountApply.addEventListener('click', applyDiscount);
+      discountInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          applyDiscount();
+        }
+      });
+    });
   };
 
   const bindCartQuantity = () => {
@@ -381,13 +456,21 @@
 
       section.querySelectorAll('[data-cart-qty]').forEach((button) => {
         button.addEventListener('click', () => {
+          if (section.dataset.cartPending === 'true') return;
           const line = button.closest('[data-cart-line]');
           const input = line && line.querySelector('[data-cart-qty-input]');
-          if (!input) return;
+          if (!input || input.disabled) return;
           const previous = Number(input.value || 1);
           const delta = Number(button.getAttribute('data-cart-qty'));
           const max = input.max ? Number(input.max) : Infinity;
           const next = Math.max(0, Math.min(max, previous + delta));
+          if (delta > 0 && next === previous && Number.isFinite(max)) {
+            showToast(copy(strings.maxQuantity, 'That is the maximum available.'), {
+              type: 'error',
+              duration: 3200,
+            });
+            return;
+          }
           input.value = String(next === 0 ? previous : next);
           changeLineQuantity(input, next, { previous });
         });
@@ -415,6 +498,7 @@
   const boot = () => {
     bindProductForms();
     bindCartQuantity();
+    bindCartDiscount();
   };
 
   if (document.readyState === 'loading') {

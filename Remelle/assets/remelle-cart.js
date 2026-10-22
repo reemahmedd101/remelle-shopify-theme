@@ -1,27 +1,172 @@
 /**
- * Remelle cart helpers: AJAX add-to-cart and live cart count updates.
+ * Remelle cart helpers: AJAX add-to-cart, live nav count, toasts, cart qty.
  * Uses Shopify Cart AJAX API only — no mocked product or price data.
  */
 (() => {
   const CART_ADD = '/cart/add.js';
   const CART_GET = '/cart.js';
 
-  const updateCartCount = (count) => {
-    document.querySelectorAll('[data-cart-count]').forEach((node) => {
-      node.textContent = String(count);
-    });
-    document.querySelectorAll('[data-cart-link]').forEach((link) => {
-      const label = link.getAttribute('data-cart-label');
-      const text = link.querySelector('[data-cart-text]');
-      if (label && text) {
-        text.innerHTML = `${label} (<span data-cart-count>${count}</span>)`;
+  const strings = (() => {
+    const node = document.getElementById('RemelleCartStrings');
+    if (!node) return {};
+    try {
+      return JSON.parse(node.textContent);
+    } catch (error) {
+      return {};
+    }
+  })();
+
+  const copy = (value, fallback) => {
+    if (value == null || value === '' || String(value).indexOf('Translation missing') === 0) {
+      return fallback;
+    }
+    return value;
+  };
+
+  const ensurePopupHost = () => {
+    let host = document.getElementById('RemellePopupHost');
+    if (host) return host;
+    host = document.createElement('div');
+    host.id = 'RemellePopupHost';
+    host.className = 'remelle-popup-host';
+    document.body.appendChild(host);
+    return host;
+  };
+
+  const closePopup = (overlay) => {
+    if (!overlay) return;
+    overlay.classList.remove('is-visible');
+    document.documentElement.classList.remove('popup-open');
+    window.setTimeout(() => overlay.remove(), 220);
+  };
+
+  const showPopup = (message, options = {}) => {
+    if (!message) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      const host = ensurePopupHost();
+      host.replaceChildren();
+
+      const overlay = document.createElement('div');
+      overlay.className = `remelle-popup remelle-popup--${options.type || 'success'}`;
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-live', options.type === 'error' ? 'assertive' : 'polite');
+
+      const panel = document.createElement('div');
+      panel.className = 'remelle-popup__panel';
+
+      const title = document.createElement('p');
+      title.className = 'remelle-popup__eyebrow';
+      title.textContent =
+        options.title ||
+        (options.type === 'error'
+          ? strings.errorTitle || 'Something went wrong'
+          : options.confirm
+            ? strings.confirmTitle || 'Please confirm'
+            : strings.successTitle || 'Success');
+
+      const text = document.createElement('p');
+      text.className = 'remelle-popup__message';
+      text.textContent = message;
+
+      const actions = document.createElement('div');
+      actions.className = 'remelle-popup__actions';
+
+      const finish = (value) => {
+        closePopup(overlay);
+        resolve(value);
+      };
+
+      if (options.confirm) {
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'remelle-popup__btn remelle-popup__btn--ghost';
+        cancel.textContent = options.cancelLabel || strings.cancel || 'Cancel';
+        cancel.addEventListener('click', () => finish(false));
+
+        const ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'remelle-popup__btn';
+        ok.textContent = options.confirmLabel || strings.confirm || 'Remove';
+        ok.addEventListener('click', () => finish(true));
+
+        actions.append(cancel, ok);
+      } else {
+        if (options.actionHref && options.actionLabel) {
+          const action = document.createElement('a');
+          action.className = 'remelle-popup__btn remelle-popup__btn--ghost';
+          action.href = options.actionHref;
+          action.textContent = options.actionLabel;
+          actions.appendChild(action);
+        }
+
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'remelle-popup__btn';
+        close.textContent = options.closeLabel || strings.continueShopping || strings.close || 'Continue';
+        close.addEventListener('click', () => finish(true));
+        actions.appendChild(close);
+      }
+
+      panel.append(title, text, actions);
+      overlay.appendChild(panel);
+      overlay.addEventListener('click', (event) => {
+        if (event.target === overlay && !options.confirm) finish(true);
+      });
+
+      const onKey = (event) => {
+        if (event.key === 'Escape') {
+          document.removeEventListener('keydown', onKey);
+          finish(options.confirm ? false : true);
+        }
+      };
+      document.addEventListener('keydown', onKey);
+
+      host.appendChild(overlay);
+      document.documentElement.classList.add('popup-open');
+      requestAnimationFrame(() => overlay.classList.add('is-visible'));
+
+      const timeout = options.duration == null ? (options.confirm ? 0 : 3800) : options.duration;
+      if (timeout > 0 && !options.confirm) {
+        window.setTimeout(() => finish(true), timeout);
       }
     });
+  };
+
+  const showToast = showPopup;
+
+  const pulseCartLinks = () => {
+    document.querySelectorAll('[data-cart-link]').forEach((link) => {
+      link.classList.remove('is-cart-updated');
+      // Force reflow so the animation can replay.
+      void link.offsetWidth;
+      link.classList.add('is-cart-updated');
+    });
+  };
+
+  const updateCartCount = (count) => {
+    const safeCount = Number(count) || 0;
+    document.querySelectorAll('[data-cart-count]').forEach((node) => {
+      node.textContent = String(safeCount);
+    });
+    document.querySelectorAll('[data-cart-link]').forEach((link) => {
+      const label = link.getAttribute('data-cart-label') || strings.cartLabel || 'Cart';
+      let text = link.querySelector('[data-cart-text]');
+      if (!text) {
+        text = document.createElement('span');
+        text.setAttribute('data-cart-text', '');
+        link.appendChild(text);
+      }
+      text.innerHTML = `${label} (<span data-cart-count>${safeCount}</span>)`;
+    });
+    pulseCartLinks();
   };
 
   const refreshCartCount = async () => {
     const response = await fetch(CART_GET, {
       headers: { Accept: 'application/json' },
+      credentials: 'same-origin',
     });
     if (!response.ok) throw new Error('cart_fetch_failed');
     const cart = await response.json();
@@ -37,20 +182,24 @@
     }
   };
 
-  const setButtonState = (button, { busy, label }) => {
+  const setButtonBusy = (button, busy) => {
     if (!button) return;
-    if (busy != null) {
-      button.disabled = busy;
-      button.setAttribute('aria-busy', busy ? 'true' : 'false');
-    }
-    if (label != null) button.textContent = label;
+    button.disabled = Boolean(busy);
+    button.setAttribute('aria-busy', busy ? 'true' : 'false');
   };
 
-  const addFromForm = async (form, button) => {
+  const setTextButtonLabel = (button, label) => {
+    if (!button || !label) return;
+    // Icon-only buttons (product cards) must keep their SVG contents.
+    if (button.classList.contains('remelle-card__add')) return;
+    button.textContent = label;
+  };
+
+  const addFromForm = async (form) => {
     const formData = new FormData(form);
     const id = formData.get('id');
     if (!id) {
-      throw new Error('missing_variant');
+      throw new Error(strings.missingVariant || 'Select a product option first.');
     }
 
     const response = await fetch(CART_ADD, {
@@ -59,6 +208,7 @@
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
       },
+      credentials: 'same-origin',
       body: formData,
     });
 
@@ -66,12 +216,13 @@
     if (!response.ok) {
       const message =
         (payload && (payload.description || payload.message)) ||
+        strings.addError ||
         'Unable to add this item to your cart.';
       throw new Error(message);
     }
 
-    await refreshCartCount();
-    return payload;
+    const cart = await refreshCartCount();
+    return { item: payload, cart };
   };
 
   const bindProductForms = () => {
@@ -80,7 +231,6 @@
       form.dataset.remelleCartBound = 'true';
 
       form.addEventListener('submit', async (event) => {
-        // Native submit remains the fallback if fetch is unavailable.
         if (!window.fetch) return;
         event.preventDefault();
 
@@ -104,53 +254,266 @@
         }
 
         try {
-          setButtonState(button, {
-            busy: true,
-            label: button && button.dataset.addingLabel ? button.dataset.addingLabel : originalLabel,
+          setButtonBusy(button, true);
+          if (button && button.dataset.addingLabel) {
+            setTextButtonLabel(button, button.dataset.addingLabel);
+          }
+
+          const result = await addFromForm(form);
+          const title =
+            (result.item && (result.item.product_title || result.item.title)) || '';
+          const successMessage = title
+            ? copy(strings.addedNamed, '“{{ title }}” was added to your cart.').replace(
+                '{{ title }}',
+                title
+              )
+            : copy(strings.addedSuccess, copy(strings.added, 'Added successfully'));
+
+          showToast(successMessage, {
+            type: 'success',
+            actionHref: copy(strings.cartUrl, '/cart'),
+            actionLabel: copy(strings.viewCart, 'View cart'),
+            duration: 0,
           });
-          await addFromForm(form, button);
+
           if (statusNode) {
             statusNode.hidden = false;
-            statusNode.textContent =
-              (button && button.dataset.addedLabel) || 'Added to cart';
+            statusNode.textContent = strings.added || 'Added to cart';
           }
+
           if (button && button.classList.contains('remelle-pdp__add')) {
-            setButtonState(button, {
-              busy: false,
-              label: button.dataset.addedLabel || 'Added to cart',
-            });
+            setTextButtonLabel(button, button.dataset.addedLabel || strings.added || 'Added to cart');
             window.setTimeout(() => {
               if (!button.disabled) {
-                setButtonState(button, { label: button.dataset.label || originalLabel });
+                setTextButtonLabel(button, button.dataset.label || originalLabel);
               }
             }, 1600);
-          } else {
-            setButtonState(button, { busy: false, label: originalLabel });
           }
         } catch (error) {
-          setButtonState(button, { busy: false, label: button && button.dataset.label ? button.dataset.label : originalLabel });
-          const message = error && error.message ? error.message : 'Unable to add this item to your cart.';
+          const message =
+            (error && error.message) || strings.addError || 'Unable to add this item to your cart.';
+          showToast(message, { type: 'error', duration: 5000 });
           if (errorNode) {
             errorNode.hidden = false;
             errorNode.textContent = message;
-          } else {
-            window.alert(message);
           }
+          if (button && button.classList.contains('remelle-pdp__add')) {
+            setTextButtonLabel(button, button.dataset.label || originalLabel);
+          }
+        } finally {
+          setButtonBusy(button, false);
         }
       });
     });
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindProductForms);
-  } else {
+  const confirmRemove = async (section) => {
+    const message =
+      (section && section.getAttribute('data-remove-confirm')) ||
+      strings.removeConfirm ||
+      'Remove this item from your cart?';
+    return showPopup(message, {
+      type: 'confirm',
+      confirm: true,
+      title: strings.confirmTitle || 'Please confirm',
+      confirmLabel: strings.remove || 'Remove',
+      cancelLabel: strings.cancel || 'Cancel',
+      duration: 0,
+    });
+  };
+
+  const changeLineQuantity = async (input, quantity, options = {}) => {
+    const key = input.getAttribute('data-line-key');
+    if (!key) return false;
+
+    const previous = options.previous != null ? options.previous : Number(input.value || 1);
+    const section = input.closest('.remelle-cart');
+    let removed = false;
+
+    if (quantity <= 0) {
+      const confirmed = await confirmRemove(section);
+      if (!confirmed) {
+        input.value = String(Math.max(1, previous));
+        return false;
+      }
+      quantity = 0;
+      removed = true;
+    }
+
+    input.disabled = true;
+    if (section) section.dataset.cartPending = 'true';
+    try {
+      const response = await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ id: key, quantity }),
+      });
+      const payload = await parseJsonSafe(response);
+      if (!response.ok) {
+        throw new Error(
+          (payload && (payload.description || payload.message)) ||
+            strings.updateError ||
+            'Unable to update quantity.'
+        );
+      }
+      updateCartCount(payload.item_count || 0);
+      await refreshCartSection();
+
+      // Quantity changes stay on the page. A popup is only for a completed removal.
+      if (removed) {
+        await showPopup(copy(strings.removed, 'Item removed from your cart.'), {
+          type: 'success',
+          duration: 0,
+          closeLabel: copy(strings.close, 'Close'),
+        });
+      }
+      return true;
+    } catch (error) {
+      input.value = String(Math.max(1, previous));
+      showToast((error && error.message) || strings.updateError || 'Unable to update quantity.', {
+        type: 'error',
+      });
+      return false;
+    } finally {
+      if (section) delete section.dataset.cartPending;
+      if (input.isConnected) input.disabled = false;
+    }
+  };
+
+  const refreshCartSection = async () => {
+    const current = document.querySelector('.remelle-cart');
+    const wrapper = current && current.closest('[id^="shopify-section-"]');
+    if (!wrapper) {
+      window.location.reload();
+      return;
+    }
+
+    const sectionId = wrapper.id.replace(/^shopify-section-/, '');
+    const url = new URL(window.location.href);
+    url.searchParams.set('section_id', sectionId);
+
+    const response = await fetch(url.toString(), {
+      headers: { Accept: 'text/html' },
+      credentials: 'same-origin',
+    });
+    if (!response.ok) {
+      window.location.reload();
+      return;
+    }
+
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const next = doc.getElementById(wrapper.id);
+    if (!next) {
+      window.location.reload();
+      return;
+    }
+
+    const y = window.scrollY;
+    wrapper.replaceWith(next);
+    window.scrollTo(0, y);
+    bindCartQuantity();
+    bindCartDiscount();
+  };
+
+  const bindCartDiscount = () => {
+    document.querySelectorAll('.remelle-cart').forEach((section) => {
+      if (section.dataset.remelleDiscountBound === 'true') return;
+      const discountInput = section.querySelector('[data-cart-discount]');
+      const discountApply = section.querySelector('[data-cart-discount-apply]');
+      if (!discountInput || !discountApply) return;
+      section.dataset.remelleDiscountBound = 'true';
+
+      const applyDiscount = () => {
+        const code = discountInput.value.trim();
+        if (!code) {
+          discountInput.focus();
+          return;
+        }
+        window.location.assign(
+          `/discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent('/cart')}`
+        );
+      };
+
+      discountApply.addEventListener('click', applyDiscount);
+      discountInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          applyDiscount();
+        }
+      });
+    });
+  };
+
+  const bindCartQuantity = () => {
+    document.querySelectorAll('.remelle-cart').forEach((section) => {
+      if (section.dataset.remelleQtyBound === 'true') return;
+      section.dataset.remelleQtyBound = 'true';
+
+      section.querySelectorAll('[data-cart-qty]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (section.dataset.cartPending === 'true') return;
+          const line = button.closest('[data-cart-line]');
+          const input = line && line.querySelector('[data-cart-qty-input]');
+          if (!input || input.disabled) return;
+          const previous = Number(input.value || 1);
+          const delta = Number(button.getAttribute('data-cart-qty'));
+          const max = input.max ? Number(input.max) : Infinity;
+          const next = Math.max(0, Math.min(max, previous + delta));
+          if (delta > 0 && next === previous && Number.isFinite(max)) {
+            showToast(copy(strings.maxQuantity, 'That is the maximum available.'), {
+              type: 'error',
+              duration: 3200,
+            });
+            return;
+          }
+          input.value = String(next === 0 ? previous : next);
+          changeLineQuantity(input, next, { previous });
+        });
+      });
+
+      section.querySelectorAll('[data-cart-qty-input]').forEach((input) => {
+        input.addEventListener('focus', () => {
+          input.dataset.previousQty = String(input.value || 1);
+        });
+        input.addEventListener('change', () => {
+          const previous = Number(input.dataset.previousQty || input.value || 1);
+          const max = input.max ? Number(input.max) : Infinity;
+          const next = Math.max(0, Math.min(max, Number(input.value || 0)));
+          if (next === 0) {
+            input.value = String(previous);
+          } else {
+            input.value = String(next);
+          }
+          changeLineQuantity(input, next, { previous });
+        });
+      });
+    });
+  };
+
+  const boot = () => {
     bindProductForms();
+    bindCartQuantity();
+    bindCartDiscount();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
   }
-  document.addEventListener('shopify:section:load', bindProductForms);
+  document.addEventListener('shopify:section:load', boot);
 
   window.RemelleCart = {
     refreshCartCount,
     updateCartCount,
     addFromForm,
+    changeLineQuantity,
+    showToast,
+    showPopup,
   };
 })();

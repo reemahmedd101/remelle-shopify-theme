@@ -1,6 +1,9 @@
 {%- liquid
   assign contact_email = section.settings.email | default: 'info@remelle.shop'
+  assign contact_phone = section.settings.phone
+  assign contact_address = section.settings.address
   assign email_href = 'mailto:' | append: contact_email
+  assign phone_href = contact_phone | replace: ' ', '' | prepend: 'tel:'
 -%}
 
 <section class="remelle-contact" aria-labelledby="RemelleContact-{{ section.id }}">
@@ -17,8 +20,24 @@
       {%- if section.settings.text != blank -%}
         <div class="remelle-contact__text">{{ section.settings.text }}</div>
       {%- endif -%}
-      {%- if contact_email != blank -%}
-        <a class="remelle-contact__email" href="{{ email_href }}">{{ contact_email | escape }}</a>
+      {%- if contact_email != blank or contact_phone != blank or contact_address != blank -%}
+        <ul class="remelle-contact__details">
+          {%- if contact_email != blank -%}
+            <li>
+              <a class="remelle-contact__email" href="{{ email_href }}">{{ contact_email | escape }}</a>
+            </li>
+          {%- endif -%}
+          {%- if contact_phone != blank -%}
+            <li>
+              <a class="remelle-contact__email" href="{{ phone_href }}">{{ contact_phone | escape }}</a>
+            </li>
+          {%- endif -%}
+          {%- if contact_address != blank -%}
+            <li>
+              <p class="remelle-contact__address">{{ contact_address | escape }}</p>
+            </li>
+          {%- endif -%}
+        </ul>
       {%- endif -%}
     </div>
 
@@ -140,9 +159,18 @@
     margin: 0;
   }
 
+  .remelle-contact__details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
   .remelle-contact__email {
     display: inline-block;
-    margin-top: 24px;
     color: var(--color-burgundy);
     font-family: var(--font-sans);
     font-size: 16px;
@@ -155,6 +183,15 @@
   .remelle-contact__email:focus-visible {
     outline: 1px solid var(--color-burgundy);
     outline-offset: 3px;
+  }
+
+  .remelle-contact__address {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22px;
   }
 
   .remelle-contact__form-wrap {
@@ -294,6 +331,18 @@
       "id": "email",
       "label": "t:labels.contact_email",
       "default": "info@remelle.shop"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "t:labels.contact_phone",
+      "default": "01060660633"
+    },
+    {
+      "type": "text",
+      "id": "address",
+      "label": "t:labels.contact_address",
+      "default": "Cairo, Egypt"
     },
     {
       "type": "text",

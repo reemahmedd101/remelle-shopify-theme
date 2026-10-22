@@ -42,26 +42,32 @@
           "type": "question",
           "settings": {
             "question": "What defines Remelle's design philosophy?",
-            "answer": "<p>Intention and authenticity. Our collections draw from art, architecture and cultural heritage, bringing sculptural silhouettes and meticulous detail to timeless statement pieces.</p>",
+            "answer": "<p>Intention and authenticity. Remelle is shaped by a personal vision of fashion—where art, architecture, culture, and everyday life meet. Our collections explore sculptural silhouettes, considered proportions, and meticulous details to create pieces that feel distinctive yet enduring. Every design is created with purpose, designed to become part of your identity rather than simply follow a season.</p>",
             "open": false
           }
         },
         "trends": {
           "type": "question",
           "settings": {
-            "question": "Are Remelle pieces designed around trends?"
+            "question": "Are Remelle pieces designed around trends?",
+            "answer": "<p>Not exclusively—and never at the expense of our identity. Trends may influence the world around us, but Remelle is guided by a stronger point of view. We create pieces that feel relevant today while remaining meaningful beyond a single season. Our focus is on distinctive silhouettes, thoughtful construction, and timeless statement pieces that can be worn and interpreted in your own way.</p>",
+            "open": false
           }
         },
         "style": {
           "type": "question",
           "settings": {
-            "question": "How can I style the collection?"
+            "question": "How can I style the collection?",
+            "answer": "<p>There are no rules—only possibilities. Remelle pieces are designed to make a statement while giving you room to make them your own. Style a sculptural piece with understated essentials for a refined look, or layer it with contrasting textures and accessories for something more expressive. Each piece is designed to move between occasions, allowing you to dress it up, dress it down, and reinterpret it through your own personal style.</p>",
+            "open": false
           }
         },
         "details": {
           "type": "question",
           "settings": {
-            "question": "Where can I find details about each piece?"
+            "question": "Where can I find details about each piece?",
+            "answer": "<p>Every Remelle piece has its own story. Explore the individual product page for detailed information about the design, fit, materials, sizing, and care. We believe knowing the thought and craftsmanship behind a piece makes wearing it even more meaningful.</p>",
+            "open": false
           }
         }
       },

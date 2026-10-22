@@ -1,0 +1,36 @@
+{
+  "sections": {
+    "main": {
+      "type": "remelle-returns",
+      "blocks": {
+        "delivery": {
+          "type": "clause",
+          "settings": {
+            "heading": "Check Your Order Upon Delivery",
+            "content": "<p>You are welcome to check your order while the courier is at your door to make sure everything is as expected.</p><p>If you decide to return the order after receiving and checking it, the return shipping fee will be paid by the customer.</p>"
+          }
+        },
+        "refuse": {
+          "type": "clause",
+          "settings": {
+            "heading": "If You Refuse the Order",
+            "content": "<p>If you decide not to receive the order when the courier arrives, the shipping fee will still be charged to you, as the courier has already been dispatched for delivery.</p>"
+          }
+        },
+        "cancellation": {
+          "type": "clause",
+          "settings": {
+            "heading": "Cancellation After Dispatch",
+            "content": "<p>If your order is already out for delivery and you decide to cancel it, a <strong>75 EGP</strong> delivery/cancellation fee will apply.</p><p>This fee is charged due to the shipping company's policy and delivery costs.</p><p>We appreciate your understanding and cooperation.</p>"
+          }
+        }
+      },
+      "block_order": ["delivery", "refuse", "cancellation"],
+      "settings": {
+        "heading": "Delivery and Conditions",
+        "closing": "<p>Thank you for choosing Remelle.</p>"
+      }
+    }
+  },
+  "order": ["main"]
+}

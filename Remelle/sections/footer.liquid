@@ -3,6 +3,7 @@
   assign about_url = pages['about'].url | default: '/pages/about'
   assign contact_url = pages['contact'].url | default: '/pages/contact'
   assign returns_url = pages['returns'].url | default: '/pages/returns'
+  assign delivery_url = pages['delivery-and-conditions'].url | default: '/pages/delivery-and-conditions'
 %}
 
 <footer class="site-footer">
@@ -40,13 +41,19 @@
         <div>
           <p class="site-footer__title">{{ section.settings.inquiries_title | escape }}</p>
           <div class="site-footer__links">
-            {% capture returns_title %}{{ 'chrome.return_exchange' | t }}{% endcapture %}
+            {% capture inquiries_titles %}{{ 'chrome.return_exchange' | t }}|{{ 'chrome.delivery_conditions' | t }}{% endcapture %}
+            {% capture inquiries_urls %}{{ returns_url }}|{{ delivery_url }}{% endcapture %}
             {% render 'menu-links',
               menu: section.settings.menu_inquiries,
-              titles: returns_title,
-              urls: returns_url,
+              titles: inquiries_titles,
+              urls: inquiries_urls,
               class: 'site-footer__link'
             %}
+            {%- if shop.privacy_policy != blank -%}
+              <a class="site-footer__link" href="{{ shop.privacy_policy.url }}">
+                {{ shop.privacy_policy.title | escape }}
+              </a>
+            {%- endif -%}
             {%- if section.settings.contact_email != blank -%}
               <a class="site-footer__link" href="mailto:{{ section.settings.contact_email | escape }}">
                 {{ section.settings.contact_email | escape }}

@@ -2,7 +2,11 @@
   "sections": {
     "contact": {
       "type": "remelle-contact",
-      "settings": {}
+      "settings": {
+        "email": "info@remelle.shop",
+        "phone": "01060660633",
+        "address": "Cairo, Egypt"
+      }
     }
   },
   "order": ["contact"]

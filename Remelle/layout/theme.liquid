@@ -17,6 +17,31 @@
     {% render 'meta-tags' %}
 
     {{ content_for_header }}
+    <script type="application/json" id="RemelleCartStrings">
+      {
+        "added": {{ 'product.added' | t | json }},
+        "addedSuccess": {{ 'cart.added_success' | t | json }},
+        "addedNamed": {{ 'cart.added_named' | t | json }},
+        "viewCart": {{ 'cart.view_cart' | t | json }},
+        "cartUrl": {{ routes.cart_url | json }},
+        "cartLabel": {{ 'chrome.cart' | t | json }},
+        "updated": {{ 'cart.updated' | t | json }},
+        "removed": {{ 'cart.removed' | t | json }},
+        "removeConfirm": {{ 'cart.remove_confirm' | t | json }},
+        "addError": {{ 'cart.add_error' | t | json }},
+        "updateError": {{ 'cart.update_error' | t | json }},
+        "missingVariant": {{ 'cart.missing_variant' | t | json }},
+        "maxQuantity": {{ 'cart.max_quantity' | t | json }},
+        "close": {{ 'accessibility.close' | t | json }},
+        "continueShopping": {{ 'cart.continue_shopping' | t | json }},
+        "cancel": {{ 'cart.cancel' | t | json }},
+        "confirm": {{ 'cart.confirm' | t | json }},
+        "remove": {{ 'cart.remove' | t | json }},
+        "successTitle": {{ 'cart.popup_success' | t | json }},
+        "errorTitle": {{ 'cart.popup_error' | t | json }},
+        "confirmTitle": {{ 'cart.popup_confirm' | t | json }}
+      }
+    </script>
     <script src="{{ 'remelle-cart.js' | asset_url }}" defer></script>
   </head>
 
@@ -25,9 +50,26 @@
     {% sections 'header-group' %}
 
     <main id="MainContent" tabindex="-1">
-      {{ content_for_layout }}
+      {%- if request.page_type == 'policy' -%}
+        {%- capture layout_content -%}{{ content_for_layout }}{%- endcapture -%}
+        {%- assign child_parts = layout_content | split: "<h2>Children's Data</h2>" -%}
+        {%- if child_parts.size > 1 -%}
+          {%- assign child_rest = child_parts[1] | split: '<h2>Security and Retention of Your Information</h2>' -%}
+          {%- capture layout_content -%}{{ child_parts[0] }}<h2>Security and Retention of Your Information</h2>{{ child_rest[1] }}{%- endcapture -%}
+        {%- endif -%}
+        {%- assign address_parts = layout_content | split: ' or contact us at ' -%}
+        {%- if address_parts.size > 1 -%}
+          {%- assign address_rest = address_parts[1] | split: 'Egypt.' -%}
+          {%- capture layout_content -%}{{ address_parts[0] }}.{{ address_rest[1] }}{%- endcapture -%}
+        {%- endif -%}
+        {%- assign layout_content = layout_content | replace: 'reemahmedd10@gmail.com', '<a href="mailto:info@remelle.shop">info@remelle.shop</a>' -%}
+        {{ layout_content }}
+      {%- else -%}
+        {{ content_for_layout }}
+      {%- endif -%}
     </main>
 
     {% sections 'footer-group' %}
+    <div id="RemellePopupHost" class="remelle-popup-host"></div>
   </body>
 </html>

@@ -1,5 +1,15 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "accessibility": {
+    "close": "Close",
     "skip_to_content": "Skip to content"
   },
   "404": {
@@ -34,13 +44,19 @@
     "pants": "Pants",
     "policies": "Policies",
     "primary": "Primary",
+    "delivery_conditions": "Delivery and Conditions",
     "return_exchange": "Return & Exchange",
     "shop": "Shop",
     "wordmark": "Remelle"
   },
   "cart": {
+    "add_error": "Unable to add this item to your cart.",
+    "added_named": "“{{ title }}” was added to your cart.",
+    "added_success": "Added successfully",
     "apply": "Apply",
+    "cancel": "Cancel",
     "checkout": "Checkout",
+    "confirm": "Confirm",
     "continue_shopping": "Continue shopping",
     "discount_code": "Discount code",
     "discount_hint": "Codes can also be entered at checkout.",
@@ -52,15 +68,25 @@
       "one": "{{ count }} item",
       "other": "{{ count }} items"
     },
+    "max_quantity": "That is the maximum available.",
+    "missing_variant": "Select a product option first.",
     "order_summary": "Order summary",
+    "popup_confirm": "Please confirm",
+    "popup_error": "Something went wrong",
+    "popup_success": "Success",
     "product": "Product",
     "quantity": "Quantity",
     "remove": "Remove",
+    "remove_confirm": "Remove this item from your cart?",
+    "removed": "Item removed from your cart.",
     "subtotal": "Subtotal",
     "taxes_shipping": "Taxes and shipping calculated at checkout.",
     "title": "Cart",
     "total": "Total",
-    "update": "Update cart"
+    "update": "Update cart",
+    "update_error": "Unable to update quantity.",
+    "updated": "Quantity updated.",
+    "view_cart": "View cart"
   },
   "customers": {
     "account": {

@@ -1,0 +1,63 @@
+<section class="remelle-returns remelle-policy" aria-labelledby="RemellePolicy-{{ section.id }}">
+  <article class="remelle-returns__inner">
+    <h1 class="remelle-returns__title" id="RemellePolicy-{{ section.id }}">{{ policy.title | escape }}</h1>
+    {%- if policy.body != blank -%}
+      <div class="remelle-returns__sections">
+        <div class="remelle-returns__copy remelle-policy__body">{{ policy.body }}</div>
+      </div>
+    {%- endif -%}
+  </article>
+</section>
+
+{% stylesheet %}
+  .remelle-policy__body h2,
+  .remelle-policy__body h3 {
+    margin: 24px 0 0;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .remelle-policy__body h2:first-child,
+  .remelle-policy__body h3:first-child {
+    margin-top: 0;
+  }
+
+  .remelle-policy__body p + h2,
+  .remelle-policy__body ul + h2,
+  .remelle-policy__body ol + h2,
+  .remelle-policy__body p + h3,
+  .remelle-policy__body ul + h3,
+  .remelle-policy__body ol + h3 {
+    margin-top: 24px;
+  }
+
+  .remelle-policy__body h2 + p,
+  .remelle-policy__body h3 + p,
+  .remelle-policy__body h2 + ul,
+  .remelle-policy__body h3 + ul,
+  .remelle-policy__body h2 + ol,
+  .remelle-policy__body h3 + ol {
+    margin-top: 10px;
+  }
+
+  .remelle-policy__body ul,
+  .remelle-policy__body ol {
+    margin: 10px 0 0;
+    padding-left: 1.2em;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.policy",
+  "settings": [],
+  "presets": [
+    {
+      "name": "t:general.policy"
+    }
+  ]
+}
+{% endschema %}

@@ -91,7 +91,12 @@
         <li><a class="site-header__drawer-link" href="{{ account_url }}">{{ account_label | escape }}</a></li>
         <li><a class="site-header__drawer-link" href="{{ contact_url }}">{{ contact_label | escape }}</a></li>
         <li>
-          <a class="site-header__drawer-link" href="{{ routes.cart_url }}" data-cart-link>
+          <a
+            class="site-header__drawer-link"
+            href="{{ routes.cart_url }}"
+            data-cart-link
+            data-cart-label="{{ cart_base_label | escape }}"
+          >
             <span data-cart-text>{{ cart_base_label | escape }} (<span data-cart-count>{{ cart.item_count }}</span>)</span>
           </a>
         </li>

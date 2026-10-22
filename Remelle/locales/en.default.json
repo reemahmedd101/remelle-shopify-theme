@@ -1,5 +1,6 @@
 {
   "accessibility": {
+    "close": "Close",
     "skip_to_content": "Skip to content"
   },
   "404": {
@@ -39,9 +40,17 @@
     "wordmark": "Remelle"
   },
   "cart": {
+    "add_error": "Unable to add this item to your cart.",
+    "added_named": "“{{ title }}” was added to your cart.",
+    "added_success": "Added successfully",
     "apply": "Apply",
+    "cancel": "Cancel",
     "checkout": "Checkout",
+    "confirm": "Confirm",
     "continue_shopping": "Continue shopping",
+    "popup_confirm": "Please confirm",
+    "popup_error": "Something went wrong",
+    "popup_success": "Success",
     "discount_code": "Discount code",
     "discount_hint": "Codes can also be entered at checkout.",
     "discount_placeholder": "Enter code",
@@ -52,15 +61,21 @@
       "one": "{{ count }} item",
       "other": "{{ count }} items"
     },
+    "missing_variant": "Select a product option first.",
     "order_summary": "Order summary",
     "product": "Product",
     "quantity": "Quantity",
     "remove": "Remove",
+    "remove_confirm": "Remove this item from your cart?",
+    "removed": "Item removed from your cart.",
     "subtotal": "Subtotal",
     "taxes_shipping": "Taxes and shipping calculated at checkout.",
     "title": "Cart",
     "total": "Total",
-    "update": "Update cart"
+    "update": "Update cart",
+    "update_error": "Unable to update quantity.",
+    "updated": "Cart updated.",
+    "view_cart": "View cart"
   },
   "customers": {
     "account": {

@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
@@ -41,10 +50,15 @@
           }
         }
       },
-      "block_order": ["manufacturing", "fabric_costs", "composition", "delivery", "returns"],
+      "block_order": [
+        "manufacturing",
+        "fabric_costs",
+        "composition",
+        "delivery",
+        "returns"
+      ],
       "settings": {
-        "add_label": "Add to basket",
-        "show_dynamic_checkout": true
+        "add_label": "Add to basket"
       }
     },
     "recommendations": {
@@ -52,5 +66,8 @@
       "settings": {}
     }
   },
-  "order": ["main", "recommendations"]
+  "order": [
+    "main",
+    "recommendations"
+  ]
 }

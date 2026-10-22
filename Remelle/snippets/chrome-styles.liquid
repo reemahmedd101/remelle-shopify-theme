@@ -44,6 +44,25 @@
     white-space: normal;
   }
 
+  /* Announcement + nav are sibling section wrappers — stack sticky offsets. */
+  .shopify-section-group-header-group:has(.announcement) {
+    position: sticky;
+    top: 0;
+    z-index: 41;
+    background: var(--color-burgundy);
+  }
+
+  .shopify-section-group-header-group:has(.site-header) {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--color-beige);
+  }
+
+  body:has(.announcement) .shopify-section-group-header-group:has(.site-header) {
+    top: var(--header-announcement-height);
+  }
+
   .announcement {
     display: flex;
     align-items: center;
@@ -414,6 +433,133 @@
   html.nav-open,
   html.nav-open body {
     overflow: hidden;
+  }
+
+  .site-header__cart.is-cart-updated,
+  .site-header__drawer-link.is-cart-updated {
+    animation: remelle-cart-pulse 0.7s ease;
+  }
+
+  @keyframes remelle-cart-pulse {
+    0% {
+      transform: scale(1);
+    }
+    35% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  html.popup-open,
+  html.popup-open body {
+    overflow: hidden;
+  }
+
+  .remelle-popup-host {
+    position: relative;
+    z-index: 90;
+  }
+
+  .remelle-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(6, 5, 5, 0.42);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  .remelle-popup.is-visible {
+    opacity: 1;
+  }
+
+  .remelle-popup.is-visible .remelle-popup__panel {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .remelle-popup__panel {
+    width: min(420px, 100%);
+    padding: 32px 28px;
+    background: var(--color-off-white);
+    color: #242424;
+    font-family: var(--font-sans);
+    box-shadow: 0 24px 64px rgba(6, 5, 5, 0.22);
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+
+  .remelle-popup__eyebrow {
+    margin: 0 0 12px;
+    color: var(--color-burgundy);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-popup--error .remelle-popup__eyebrow {
+    color: #242424;
+  }
+
+  .remelle-popup__message {
+    margin: 0;
+    color: #242424;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.35;
+  }
+
+  .remelle-popup__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 28px;
+  }
+
+  .remelle-popup__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 20px;
+    border: 1px solid var(--color-burgundy);
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.96px;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .remelle-popup__btn--ghost {
+    background: transparent;
+    color: var(--color-burgundy);
+  }
+
+  .remelle-popup__btn:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 414px) {
+    .remelle-popup__actions {
+      flex-direction: column;
+    }
+
+    .remelle-popup__btn {
+      width: 100%;
+    }
   }
 
   @media (max-width: 1024px) {

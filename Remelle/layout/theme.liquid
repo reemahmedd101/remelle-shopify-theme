@@ -17,6 +17,30 @@
     {% render 'meta-tags' %}
 
     {{ content_for_header }}
+    <script type="application/json" id="RemelleCartStrings">
+      {
+        "added": {{ 'product.added' | t | json }},
+        "addedSuccess": {{ 'cart.added_success' | t | json }},
+        "addedNamed": {{ 'cart.added_named' | t | json }},
+        "viewCart": {{ 'cart.view_cart' | t | json }},
+        "cartUrl": {{ routes.cart_url | json }},
+        "cartLabel": {{ 'chrome.cart' | t | json }},
+        "updated": {{ 'cart.updated' | t | json }},
+        "removed": {{ 'cart.removed' | t | json }},
+        "removeConfirm": {{ 'cart.remove_confirm' | t | json }},
+        "addError": {{ 'cart.add_error' | t | json }},
+        "updateError": {{ 'cart.update_error' | t | json }},
+        "missingVariant": {{ 'cart.missing_variant' | t | json }},
+        "close": {{ 'accessibility.close' | t | json }},
+        "continueShopping": {{ 'cart.continue_shopping' | t | json }},
+        "cancel": {{ 'cart.cancel' | t | json }},
+        "confirm": {{ 'cart.confirm' | t | json }},
+        "remove": {{ 'cart.remove' | t | json }},
+        "successTitle": {{ 'cart.popup_success' | t | json }},
+        "errorTitle": {{ 'cart.popup_error' | t | json }},
+        "confirmTitle": {{ 'cart.popup_confirm' | t | json }}
+      }
+    </script>
     <script src="{{ 'remelle-cart.js' | asset_url }}" defer></script>
   </head>
 
@@ -29,5 +53,6 @@
     </main>
 
     {% sections 'footer-group' %}
+    <div id="RemellePopupHost" class="remelle-popup-host"></div>
   </body>
 </html>

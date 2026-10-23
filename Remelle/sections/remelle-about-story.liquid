@@ -114,6 +114,42 @@
   .remelle-about-story__body p + p {
     margin-top: 22px;
   }
+
+  @media (max-width: 1024px) {
+    .remelle-about-story__inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 32px;
+    }
+
+    .remelle-about-story__media,
+    .remelle-about-story__copy {
+      flex: none;
+      width: 100%;
+      max-width: none;
+    }
+
+    .remelle-about-story__media {
+      height: auto;
+      aspect-ratio: 624 / 570;
+    }
+
+    .remelle-about-story__heading,
+    .remelle-about-story__body {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .remelle-about-story {
+      padding-block: 48px;
+    }
+
+    .remelle-about-story__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

@@ -103,6 +103,27 @@
   .remelle-about-values__text p {
     margin: 0;
   }
+
+  @media (max-width: 768px) {
+    .remelle-about-values__inner {
+      padding-block: 56px;
+    }
+
+    .remelle-about-values__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+
+    .remelle-about-values__grid {
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .remelle-about-values__title {
+      font-size: 28px;
+      line-height: 1.1;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

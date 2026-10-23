@@ -196,6 +196,43 @@
     outline: 1px solid var(--color-burgundy);
     outline-offset: 3px;
   }
+
+  @media (max-width: 768px) {
+    .remelle-story {
+      padding-block: 56px;
+    }
+
+    .remelle-story__heading,
+    .remelle-story__statement {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+
+    .remelle-story__row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .remelle-story__media,
+    .remelle-story__copy {
+      flex: none;
+      width: 100%;
+    }
+
+    .remelle-story__body {
+      margin-top: 20px;
+    }
+
+    .remelle-story__button {
+      max-width: 100%;
+      height: auto;
+      min-height: 48px;
+      padding-block: 14px;
+      white-space: normal;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

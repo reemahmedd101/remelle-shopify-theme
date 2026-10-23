@@ -732,9 +732,25 @@
       gap: 24px;
     }
 
+    .remelle-pdp__gallery {
+      grid-template-columns: 1fr;
+    }
+
+    .remelle-pdp__tile--wide {
+      grid-column: auto;
+      aspect-ratio: 4 / 5;
+    }
+
+    .remelle-pdp__heading,
+    .remelle-pdp__option--color,
+    .remelle-pdp__quantity,
+    .remelle-pdp__buy {
+      max-width: none;
+    }
+
     .remelle-pdp__title {
       font-size: 28px;
-      line-height: 1;
+      line-height: 1.1;
     }
 
     .remelle-pdp__price {

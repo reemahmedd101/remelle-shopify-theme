@@ -54,6 +54,23 @@
   .remelle-page__content p + p {
     margin-top: 22px;
   }
+
+  .remelle-page__content img,
+  .remelle-page__content table,
+  .remelle-page__content iframe {
+    max-width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .remelle-page {
+      padding-block: 48px 80px;
+    }
+
+    .remelle-page__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

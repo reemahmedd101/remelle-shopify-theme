@@ -96,6 +96,22 @@
     line-height: 56px;
     letter-spacing: -0.02em;
   }
+
+  @media (max-width: 768px) {
+    .remelle-editorial {
+      height: min(520px, 70svh);
+    }
+
+    .remelle-editorial__copy {
+      padding-top: 40px;
+      padding-right: var(--page-inset);
+    }
+
+    .remelle-editorial__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

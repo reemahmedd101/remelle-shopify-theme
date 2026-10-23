@@ -299,6 +299,34 @@
     outline: 1px solid var(--color-burgundy);
     outline-offset: 3px;
   }
+
+  @media (max-width: 1024px) {
+    .remelle-contact {
+      padding: 72px var(--page-inset) 96px;
+    }
+
+    .remelle-contact__inner {
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .remelle-contact__intro,
+    .remelle-contact__form-wrap {
+      flex: none;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .remelle-contact {
+      padding-block: 48px 80px;
+    }
+
+    .remelle-contact__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

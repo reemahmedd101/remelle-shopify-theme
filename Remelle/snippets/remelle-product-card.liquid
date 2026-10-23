@@ -210,6 +210,13 @@
       max-width: 323px;
     }
 
+    .remelle-products .remelle-card,
+    .remelle-recs .remelle-card {
+      flex: 0 0 calc(100vw - (var(--page-inset) * 2) - 20px);
+      width: calc(100vw - (var(--page-inset) * 2) - 20px);
+      max-width: none;
+    }
+
     .remelle-card__photo,
     .remelle-card.remelle-card--shop .remelle-card__photo {
       height: auto;
@@ -217,9 +224,9 @@
     }
   }
 
-  @media (max-width: 414px) {
-    .remelle-card,
-    .remelle-card.remelle-card--shop {
+  @media (max-width: 600px) {
+    .remelle-listing .remelle-card,
+    .remelle-listing .remelle-card.remelle-card--shop {
       flex: 1 1 100%;
       width: 100%;
       max-width: none;

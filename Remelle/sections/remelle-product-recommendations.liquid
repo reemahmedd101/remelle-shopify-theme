@@ -211,6 +211,26 @@
     outline: 1px solid var(--color-burgundy);
     outline-offset: 3px;
   }
+
+  @media (max-width: 768px) {
+    .remelle-recs {
+      padding-top: 64px;
+    }
+
+    .remelle-recs__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+
+    .remelle-recs__track {
+      margin-top: 32px;
+      scroll-snap-type: x mandatory;
+    }
+
+    .remelle-recs .remelle-card {
+      scroll-snap-align: start;
+    }
+  }
 {% endstylesheet %}
 
 {% javascript %}

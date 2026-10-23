@@ -222,6 +222,35 @@
     outline: 1px solid var(--color-burgundy);
     outline-offset: 3px;
   }
+
+  @media (max-width: 768px) {
+    .remelle-products {
+      padding-top: 56px;
+    }
+
+    .remelle-products__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .remelle-products__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+
+    .remelle-products__track {
+      margin-top: 32px;
+      padding-left: var(--page-inset);
+      padding-right: var(--page-inset);
+      scroll-padding-inline: var(--page-inset);
+      scroll-snap-type: x mandatory;
+    }
+
+    .remelle-products .remelle-card {
+      scroll-snap-align: start;
+    }
+  }
 {% endstylesheet %}
 
 {% javascript %}

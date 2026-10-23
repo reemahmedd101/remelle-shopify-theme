@@ -284,21 +284,36 @@
   }
 
   @media (max-width: 720px) {
+    .remelle-hero {
+      height: min(740px, calc(100svh - var(--header-height)));
+    }
+
     .remelle-hero__heading {
-      font-size: clamp(40px, 10vw, 74px);
+      font-size: clamp(36px, 10vw, 74px);
     }
 
     .remelle-hero__copy {
-      top: 96px;
-      width: calc(100% - 48px);
-      left: 24px;
+      top: auto;
+      bottom: 72px;
+      left: var(--page-inset);
+      width: calc(100% - var(--page-inset) * 2);
+    }
+
+    .remelle-hero__description {
+      max-width: 34em;
     }
 
     .remelle-hero__button {
       max-width: 100%;
-      height: auto;
-      min-height: 48px;
-      padding-block: 14px;
+      height: 48px;
+      padding-block: 0;
+      font-size: 11px;
+      letter-spacing: 0.64px;
+      white-space: nowrap;
+    }
+
+    .remelle-hero__index {
+      bottom: 24px;
     }
   }
 {% endstylesheet %}

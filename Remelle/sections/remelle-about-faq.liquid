@@ -184,6 +184,37 @@
   .remelle-about-faq__answer p {
     margin: 0;
   }
+
+  @media (max-width: 1024px) {
+    .remelle-about-faq__inner {
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .remelle-about-faq__intro,
+    .remelle-about-faq__list {
+      flex: none;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .remelle-about-faq__inner {
+      padding-block: 56px;
+    }
+
+    .remelle-about-faq__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+
+    .remelle-about-faq__row summary {
+      align-items: flex-start;
+      padding-block: 16px;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

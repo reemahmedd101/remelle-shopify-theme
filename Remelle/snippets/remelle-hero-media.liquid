@@ -1,0 +1,146 @@
+{%- doc -%}
+  Renders a hero slide image with optional mobile art direction.
+  When both images are set, desktop and mobile each get their own
+  <source media> so the mobile crop never appears on desktop.
+
+  @param {image} [image] - Desktop image
+  @param {image} [image_mobile] - Mobile image
+  @param {string} [alt] - Alt text
+  @param {boolean} [eager] - Load eagerly for the first slide
+  @param {number} [section_index] - Section index for preload decisions
+  @param {boolean} [fallback_asset] - Use theme asset when no image is set
+{%- enddoc -%}
+
+{%- liquid
+  assign slide_alt = alt | default: ''
+  assign has_desktop = false
+  assign has_mobile = false
+  assign use_art_direction = false
+  if image != blank
+    assign has_desktop = true
+  endif
+  if image_mobile != blank
+    assign has_mobile = true
+  endif
+  if has_desktop and has_mobile and image.id != image_mobile.id
+    assign use_art_direction = true
+  endif
+-%}
+
+{%- if use_art_direction -%}
+  {%- liquid
+    assign mobile_750 = image_mobile | image_url: width: 750, format: 'jpg'
+    assign mobile_1100 = image_mobile | image_url: width: 1100, format: 'jpg'
+    assign mobile_1500 = image_mobile | image_url: width: 1500, format: 'jpg'
+    assign mobile_srcset = mobile_750 | append: ' 750w, ' | append: mobile_1100 | append: ' 1100w, ' | append: mobile_1500 | append: ' 1500w'
+
+    assign desktop_750 = image | image_url: width: 750, format: 'jpg'
+    assign desktop_1100 = image | image_url: width: 1100, format: 'jpg'
+    assign desktop_1500 = image | image_url: width: 1500, format: 'jpg'
+    assign desktop_2000 = image | image_url: width: 2000, format: 'jpg'
+    assign desktop_2880 = image | image_url: width: 2880, format: 'jpg'
+    assign desktop_srcset = desktop_750 | append: ' 750w, ' | append: desktop_1100 | append: ' 1100w, ' | append: desktop_1500 | append: ' 1500w, ' | append: desktop_2000 | append: ' 2000w, ' | append: desktop_2880 | append: ' 2880w'
+  -%}
+  <picture>
+    <source
+      media="(max-width: 720px)"
+      srcset="{{ mobile_srcset }}"
+      sizes="100vw"
+      type="image/jpeg"
+    >
+    <source
+      media="(min-width: 721px)"
+      srcset="{{ desktop_srcset }}"
+      sizes="100vw"
+      type="image/jpeg"
+    >
+    {%- if eager -%}
+      {{
+        image
+        | image_url: width: 2880, format: 'jpg'
+        | image_tag:
+          alt: slide_alt,
+          loading: 'eager',
+          fetchpriority: 'high',
+          class: 'remelle-hero__image',
+          sizes: '100vw',
+          widths: '750, 1100, 1500, 2000, 2880'
+      }}
+    {%- else -%}
+      {{
+        image
+        | image_url: width: 2880, format: 'jpg'
+        | image_tag:
+          alt: slide_alt,
+          loading: 'lazy',
+          class: 'remelle-hero__image',
+          sizes: '100vw',
+          widths: '750, 1100, 1500, 2000, 2880'
+      }}
+    {%- endif -%}
+  </picture>
+{%- elsif has_desktop -%}
+  {%- liquid
+    if eager and section_index == 1
+      echo image | image_url: width: 2880, format: 'jpg' | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_alt, loading: 'eager', fetchpriority: 'high', preload: true, class: 'remelle-hero__image'
+    elsif eager
+      echo image | image_url: width: 2880, format: 'jpg' | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_alt, loading: 'eager', fetchpriority: 'high', class: 'remelle-hero__image'
+    else
+      echo image | image_url: width: 2880, format: 'jpg' | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_alt, loading: 'lazy', class: 'remelle-hero__image'
+    endif
+  -%}
+{%- elsif has_mobile -%}
+  {%- comment -%} Mobile-only upload: still art-directed so desktop does not treat it as the only source without a media query. {%- endcomment -%}
+  {%- liquid
+    assign mobile_750 = image_mobile | image_url: width: 750, format: 'jpg'
+    assign mobile_1100 = image_mobile | image_url: width: 1100, format: 'jpg'
+    assign mobile_1500 = image_mobile | image_url: width: 1500, format: 'jpg'
+    assign mobile_srcset = mobile_750 | append: ' 750w, ' | append: mobile_1100 | append: ' 1100w, ' | append: mobile_1500 | append: ' 1500w'
+  -%}
+  <picture>
+    <source
+      media="(max-width: 720px)"
+      srcset="{{ mobile_srcset }}"
+      sizes="100vw"
+      type="image/jpeg"
+    >
+    {%- if eager -%}
+      {{
+        image_mobile
+        | image_url: width: 1500, format: 'jpg'
+        | image_tag:
+          alt: slide_alt,
+          loading: 'eager',
+          fetchpriority: 'high',
+          class: 'remelle-hero__image',
+          sizes: '100vw',
+          widths: '750, 1100, 1500'
+      }}
+    {%- else -%}
+      {{
+        image_mobile
+        | image_url: width: 1500, format: 'jpg'
+        | image_tag:
+          alt: slide_alt,
+          loading: 'lazy',
+          class: 'remelle-hero__image',
+          sizes: '100vw',
+          widths: '750, 1100, 1500'
+      }}
+    {%- endif -%}
+  </picture>
+{%- elsif fallback_asset -%}
+  <img
+    class="remelle-hero__image"
+    src="{{ 'Image wash.png' | asset_url }}"
+    alt="{{ slide_alt | escape }}"
+    width="1440"
+    height="740"
+    {% if eager %}
+      loading="eager"
+      fetchpriority="high"
+    {% else %}
+      loading="lazy"
+    {% endif %}
+  >
+{%- endif -%}

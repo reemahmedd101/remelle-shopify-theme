@@ -1,5 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-    stroke-width="var(--icon-stroke-width)"
-    d="M3.392 6.875h13.216v8.016c0 .567-.224 1.112-.624 1.513-.4.402-.941.627-1.506.627H5.522a2.13 2.13 0 0 1-1.506-.627 2.15 2.15 0 0 1-.624-1.513zM8.818 2.969h2.333c.618 0 1.211.247 1.649.686a2.35 2.35 0 0 1 .683 1.658v1.562H6.486V5.313c0-.622.246-1.218.683-1.658a2.33 2.33 0 0 1 1.65-.686" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path
+    fill="none"
+    stroke="currentColor"
+    stroke-width="var(--icon-stroke-width, 1.5)"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M2.75 4.25h2.6L7.1 8.1"
+  />
+  <path
+    fill="none"
+    stroke="currentColor"
+    stroke-width="var(--icon-stroke-width, 1.5)"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M6.6 8.1h12.55l-1.55 8.15H8.55L6.6 8.1Z"
+  />
+  <path
+    fill="none"
+    stroke="currentColor"
+    stroke-width="var(--icon-stroke-width, 1.5)"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M5.35 11.1v3.55c0 1.55 1.05 2.85 2.5 2.85h10.4"
+  />
+  <circle
+    cx="10.1"
+    cy="20.15"
+    r="1.35"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="var(--icon-stroke-width, 1.5)"
+  />
+  <circle
+    cx="17.15"
+    cy="20.15"
+    r="1.35"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="var(--icon-stroke-width, 1.5)"
+  />
 </svg>

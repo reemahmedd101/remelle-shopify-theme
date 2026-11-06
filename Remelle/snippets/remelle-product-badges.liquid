@@ -1,0 +1,302 @@
+{% doc %}
+  Renders product badges (New, Sale, Limited, low stock).
+
+  @param {product} product - Product to evaluate
+  @param {string} [variant] - Pass pdp for product page styles; cards use default
+  @param {boolean} [show_new_badge]
+  @param {string} [badge_label]
+  @param {string} [badge_tag]
+  @param {object} [new_products]
+  @param {boolean} [show_sale_badge]
+  @param {string} [sale_label]
+  @param {string} [sale_tag]
+  @param {object} [sale_products]
+  @param {boolean} [show_limited_badge]
+  @param {string} [limited_label]
+  @param {string} [limited_tag]
+  @param {object} [limited_products]
+  @param {boolean} [show_low_stock_badge]
+  @param {string} [low_stock_label]
+  @param {number} [low_stock_threshold]
+  @param {object} [low_stock_products]
+{% enddoc %}
+
+{%- liquid
+  assign show_new = false
+  assign show_sale = false
+  assign show_limited = false
+  assign show_preorder = false
+  assign show_coming_soon = false
+  assign show_low_stock = false
+  assign stock_left = 0
+  assign stock_tracked = false
+  assign product_handle = product.handle
+  assign is_pdp = false
+  if variant == 'pdp'
+    assign is_pdp = true
+  endif
+
+  assign new_label_text = badge_label | default: settings.badge_label | default: 'New in'
+  assign sale_label_text = sale_label | default: settings.sale_label | default: 'Sale'
+  assign limited_text = limited_label | default: settings.limited_label | default: 'Limited pieces'
+  assign preorder_text = preorder_label | default: settings.preorder_label
+  if preorder_text == blank
+    assign preorder_text = 'products.preorder_badge' | t
+  endif
+  assign coming_soon_text = coming_soon_label | default: settings.coming_soon_label
+  if coming_soon_text == blank
+    assign coming_soon_text = 'products.coming_soon_badge' | t
+  endif
+  assign low_stock_text = low_stock_label | default: settings.low_stock_label | default: 'Only __COUNT__ left'
+  assign new_tag_setting = badge_tag | default: settings.badge_tag | downcase | strip
+  assign sale_tag_setting = sale_tag | default: settings.sale_tag | downcase | strip
+  assign limited_tag_setting = limited_tag | default: settings.limited_tag | downcase | strip
+  assign preorder_tag_setting = preorder_tag | default: settings.preorder_tag | downcase | strip
+  assign coming_soon_tag_setting = coming_soon_tag | default: settings.coming_soon_tag | downcase | strip
+  assign stock_threshold = low_stock_threshold | default: settings.low_stock_threshold | default: 5 | plus: 0
+  if stock_threshold <= 0
+    assign stock_threshold = 5
+  endif
+
+  assign new_list = new_products | default: settings.new_products
+  assign sale_list = sale_products | default: settings.sale_products
+  assign limited_list = limited_products | default: settings.limited_products
+  assign preorder_section_list = preorder_products
+  assign preorder_theme_list = settings.preorder_products
+  assign coming_section_list = coming_soon_products
+  assign coming_theme_list = settings.coming_soon_products
+  assign low_stock_list = low_stock_products | default: settings.low_stock_products
+
+  assign new_enabled = false
+  if show_new_badge == true or settings.show_new_badge == true or new_list != blank
+    assign new_enabled = true
+  endif
+  assign sale_enabled = false
+  if show_sale_badge == true or settings.show_sale_badge == true or sale_list != blank
+    assign sale_enabled = true
+  endif
+  assign limited_enabled = false
+  if show_limited_badge == true or settings.show_limited_badge == true or limited_list != blank
+    assign limited_enabled = true
+  endif
+  assign preorder_enabled = false
+  if show_preorder_badge == true or settings.show_preorder_badge == true or preorder_section_list != blank or preorder_theme_list != blank
+    assign preorder_enabled = true
+  endif
+  assign coming_enabled = false
+  if show_coming_soon_badge == true or settings.show_coming_soon_badge == true or coming_section_list != blank or coming_theme_list != blank
+    assign coming_enabled = true
+  endif
+  assign low_stock_enabled = false
+  if show_low_stock_badge == true or settings.show_low_stock_badge == true or low_stock_list != blank
+    assign low_stock_enabled = true
+  endif
+
+  if new_enabled and new_label_text != blank
+    if new_list != blank
+      for item in new_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_new = true
+        endif
+      endfor
+    elsif new_tag_setting != blank
+      assign new_terms = new_tag_setting | split: ','
+      for tag in product.tags
+        assign tag_value = tag | downcase | strip
+        for term in new_terms
+          assign term_value = term | strip
+          if tag_value == term_value or term_value == 'new' and tag_value == 'new in'
+            assign show_new = true
+          endif
+        endfor
+      endfor
+    endif
+  endif
+
+  if sale_enabled and sale_label_text != blank
+    if sale_list != blank
+      for item in sale_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_sale = true
+        endif
+      endfor
+    elsif sale_tag_setting != blank
+      assign sale_terms = sale_tag_setting | split: ','
+      for tag in product.tags
+        assign tag_value = tag | downcase | strip
+        for term in sale_terms
+          assign term_value = term | strip
+          if tag_value == term_value
+            assign show_sale = true
+          endif
+        endfor
+      endfor
+    endif
+  endif
+
+  if product.metafields.custom.limited_label != blank
+    assign limited_text = product.metafields.custom.limited_label.value | default: product.metafields.custom.limited_label
+  endif
+
+  if limited_enabled and limited_text != blank
+    if limited_list != blank
+      for item in limited_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_limited = true
+        endif
+      endfor
+    endif
+    assign limited_metafield = product.metafields.custom.show_limited_pieces
+    if show_limited == false and limited_metafield == true
+      assign show_limited = true
+    endif
+    if show_limited == false and limited_metafield.value == true
+      assign show_limited = true
+    endif
+    if show_limited == false and limited_tag_setting != blank
+      for tag in product.tags
+        assign tag_value = tag | downcase | strip
+        if tag_value == limited_tag_setting
+          assign show_limited = true
+        endif
+      endfor
+    endif
+  endif
+
+  if preorder_enabled and preorder_text != blank
+    if preorder_section_list != blank
+      for item in preorder_section_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_preorder = true
+        endif
+      endfor
+    endif
+    if show_preorder == false and preorder_theme_list != blank
+      for item in preorder_theme_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_preorder = true
+        endif
+      endfor
+    endif
+    if show_preorder == false and preorder_section_list == blank and preorder_theme_list == blank and preorder_tag_setting != blank
+      for tag in product.tags
+        assign tag_value = tag | downcase | strip
+        if tag_value == preorder_tag_setting or tag_value == 'pre order' or tag_value == 'preorder'
+          assign show_preorder = true
+        endif
+      endfor
+    endif
+  endif
+
+  if coming_enabled and coming_soon_text != blank
+    if coming_section_list != blank
+      for item in coming_section_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_coming_soon = true
+        endif
+      endfor
+    endif
+    if show_coming_soon == false and coming_theme_list != blank
+      for item in coming_theme_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_coming_soon = true
+        endif
+      endfor
+    endif
+    if show_coming_soon == false and coming_section_list == blank and coming_theme_list == blank and coming_soon_tag_setting != blank
+      for tag in product.tags
+        assign tag_value = tag | downcase | strip
+        if tag_value == coming_soon_tag_setting or tag_value == 'coming-soon'
+          assign show_coming_soon = true
+        endif
+      endfor
+    endif
+  endif
+
+  for variant_item in product.variants
+    if variant_item.inventory_management != blank
+      assign stock_tracked = true
+      if variant_item.inventory_quantity > 0
+        assign stock_left = stock_left | plus: variant_item.inventory_quantity
+      endif
+    endif
+  endfor
+
+  if product.metafields.custom.low_stock_label != blank
+    assign low_stock_text = product.metafields.custom.low_stock_label.value | default: product.metafields.custom.low_stock_label
+  endif
+  assign low_stock_text = low_stock_text | replace: '__COUNT__', stock_left | replace: '[count]', stock_left
+
+  if low_stock_enabled and low_stock_text != blank and stock_tracked and stock_left > 0 and stock_left <= stock_threshold
+    if low_stock_list != blank
+      for item in low_stock_list
+        if item.id == product.id or item.handle == product_handle or item == product_handle
+          assign show_low_stock = true
+        endif
+      endfor
+    else
+      assign show_low_stock = true
+    endif
+    assign low_stock_metafield = product.metafields.custom.show_low_stock
+    if show_low_stock == false and low_stock_metafield == true
+      assign show_low_stock = true
+    endif
+    if show_low_stock == false and low_stock_metafield.value == true
+      assign show_low_stock = true
+    endif
+  endif
+-%}
+
+{%- if variant == 'preorder' -%}
+  {%- if show_preorder -%}
+    <p class="remelle-pdp__preorder">{{ preorder_text | escape }}</p>
+  {%- endif -%}
+{%- elsif show_new or show_sale or show_limited or show_coming_soon or show_low_stock or show_preorder and preorder_placement != 'details' -%}
+  {%- if is_pdp -%}
+    {%- if show_new or show_sale or show_limited or show_coming_soon or show_preorder and preorder_placement != 'details' -%}
+      <div class="remelle-pdp__badges">
+        {%- if show_coming_soon -%}
+          <p class="remelle-pdp__badge remelle-pdp__badge--coming">{{ coming_soon_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_preorder and preorder_placement != 'details' -%}
+          <p class="remelle-pdp__badge remelle-pdp__badge--preorder">{{ preorder_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_limited -%}
+          <p class="remelle-pdp__badge remelle-pdp__badge--limited">{{ limited_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_new -%}
+          <p class="remelle-pdp__badge">{{ new_label_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_sale -%}
+          <p class="remelle-pdp__badge remelle-pdp__badge--sale">{{ sale_label_text | escape }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+    {%- if show_low_stock -%}
+      <p class="remelle-pdp__stock">{{ low_stock_text | escape }}</p>
+    {%- endif -%}
+  {%- else -%}
+    {%- if show_new or show_sale or show_limited or show_preorder or show_coming_soon -%}
+      <div class="remelle-card__badges">
+        {%- if show_coming_soon -%}
+          <p class="remelle-card__badge remelle-card__badge--coming">{{ coming_soon_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_preorder -%}
+          <p class="remelle-card__badge remelle-card__badge--preorder">{{ preorder_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_limited -%}
+          <p class="remelle-card__badge remelle-card__badge--limited">{{ limited_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_new -%}
+          <p class="remelle-card__badge">{{ new_label_text | escape }}</p>
+        {%- endif -%}
+        {%- if show_sale -%}
+          <p class="remelle-card__badge remelle-card__badge--sale">{{ sale_label_text | escape }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+    {%- if show_low_stock -%}
+      <p class="remelle-card__stock">{{ low_stock_text | escape }}</p>
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}

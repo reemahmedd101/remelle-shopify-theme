@@ -9,8 +9,7 @@
       {%- assign editorial_alt = section.settings.image_alt | default: section.settings.image.alt -%}
       {{
         section.settings.image
-        | image_url: width: 2880
-        | image_tag:
+        | image_url: width: 2880, format: 'jpg' | image_tag:
           widths: '750, 1100, 1500, 2000, 2880',
           sizes: '100vw',
           alt: editorial_alt,

@@ -42,10 +42,27 @@
         "confirmTitle": {{ 'cart.popup_confirm' | t | json }}
       }
     </script>
+    <script>
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches === false) {
+        document.documentElement.classList.add('js-motion');
+      }
+    </script>
+    <script type="application/json" id="RemelleEmailStrings">
+      {
+        "invalid": {{ 'chrome.email_invalid' | t | json }}
+      }
+    </script>
+    <script type="application/json" id="RemelleCustomer">
+      {
+        "id": {% if customer %}{{ customer.id }}{% else %}null{% endif %}
+      }
+    </script>
+    <script src="{{ 'remelle-motion.js' | asset_url }}" defer></script>
     <script src="{{ 'remelle-cart.js' | asset_url }}" defer></script>
+    <script src="{{ 'remelle-email.js' | asset_url }}" defer></script>
   </head>
 
-  <body>
+  <body class="template-{{ request.page_type }}">
     <a class="skip-to-content visually-hidden" href="#MainContent">{{ 'accessibility.skip_to_content' | t }}</a>
     {% sections 'header-group' %}
 
@@ -70,6 +87,29 @@
     </main>
 
     {% sections 'footer-group' %}
+    {%- unless request.page_type == 'cart' or request.page_type == 'product' -%}
+      <a
+        class="remelle-float-cart"
+        href="{{ routes.cart_url }}"
+        data-float-cart
+        data-count-template="{{ 'chrome.cart_count' | t: count: '__COUNT__' | escape }}"
+        aria-label="{{ 'chrome.cart_count' | t: count: cart.item_count }}"
+        {% if cart.item_count == 0 %}hidden{% endif %}
+      >
+        <span class="remelle-float-cart__icon" aria-hidden="true">
+          <img
+            class="remelle-float-cart__image"
+            src="{{ 'cart.png' | asset_url }}"
+            alt=""
+            width="26"
+            height="26"
+            loading="lazy"
+            decoding="async"
+          >
+        </span>
+        <span class="remelle-float-cart__count" data-cart-count aria-live="polite">{{ cart.item_count }}</span>
+      </a>
+    {%- endunless -%}
     <div id="RemellePopupHost" class="remelle-popup-host"></div>
   </body>
 </html>

@@ -1,9 +1,8 @@
 {%- liquid
-  assign slide_one = section.settings.image
-  assign slide_two = section.settings.image_2
-  assign show_index = false
-  if slide_two != blank
-    assign show_index = true
+  assign button_label = section.settings.button_label
+  assign button_link = section.settings.button_link
+  if button_link == blank
+    assign button_link = routes.all_products_collection_url
   endif
 
   assign heading_source = section.settings.heading | newline_to_br
@@ -12,60 +11,123 @@
     assign heading_lines = heading_source | split: '<br>'
   endif
 
-  assign button_label = section.settings.button_label
-  assign button_link = section.settings.button_link
-  if button_link == blank
-    assign button_link = routes.all_products_collection_url
+  assign slide_blocks = section.blocks | where: 'type', 'slide'
+  assign use_blocks = false
+  assign slide_count = 0
+
+  if slide_blocks.size > 0
+    for block in slide_blocks
+      if block.settings.image != blank or block.settings.image_mobile != blank
+        assign use_blocks = true
+        assign slide_count = slide_count | plus: 1
+      endif
+    endfor
   endif
+
+  unless use_blocks
+    if section.settings.image != blank or section.settings.image_mobile != blank
+      assign slide_count = slide_count | plus: 1
+    else
+      assign slide_count = slide_count | plus: 1
+    endif
+    if section.settings.image_2 != blank or section.settings.image_2_mobile != blank
+      assign slide_count = slide_count | plus: 1
+    endif
+  endunless
 -%}
 
 <section
   class="remelle-hero"
+  data-remelle-hero
+  data-interval="3000"
   {% if section.settings.heading != blank %}
     aria-labelledby="RemelleHeroTitle-{{ section.id }}"
   {% endif %}
+  aria-roledescription="{{ 'hero.carousel' | t | escape }}"
 >
   <div class="remelle-hero__slides">
-    <div class="remelle-hero__slide remelle-hero__slide--1">
-      {%- if slide_one != blank -%}
+    {%- if use_blocks -%}
+      {%- assign rendered_slides = 0 -%}
+      {%- for block in slide_blocks -%}
         {%- liquid
-          assign slide_one_alt = section.settings.image_alt | default: slide_one.alt
-          if section.index == 1
-            echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'eager', fetchpriority: 'high', preload: true, class: 'remelle-hero__image'
-          else
-            echo slide_one | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_one_alt, loading: 'lazy', class: 'remelle-hero__image'
-          endif
+          assign slide_image = block.settings.image
+          assign slide_mobile = block.settings.image_mobile
         -%}
-      {%- else -%}
-        <img
-          class="remelle-hero__image"
-          src="{{ 'Image wash.png' | asset_url }}"
-          alt="{{ section.settings.image_alt | escape }}"
-          width="1440"
-          height="740"
-          {% if section.index == 1 %}
-            loading="eager"
-            fetchpriority="high"
-          {% else %}
-            loading="lazy"
-          {% endif %}
-        >
-      {%- endif -%}
-    </div>
-    {%- if slide_two != blank -%}
-      <div class="remelle-hero__slide remelle-hero__slide--2">
-        {%- assign slide_two_alt = section.settings.image_2_alt | default: slide_two.alt -%}
-        {{ slide_two | image_url: width: 2880 | image_tag: widths: '750, 1100, 1500, 2000, 2880', sizes: '100vw', alt: slide_two_alt, loading: 'lazy', class: 'remelle-hero__image' }}
+        {%- if slide_image != blank or slide_mobile != blank -%}
+          {%- liquid
+            assign slide_alt = block.settings.image_alt | default: slide_image.alt | default: shop.name
+            assign is_first = false
+            if rendered_slides == 0
+              assign is_first = true
+            endif
+            assign rendered_slides = rendered_slides | plus: 1
+          -%}
+          <div
+            class="remelle-hero__slide{% if is_first %} is-active{% endif %}"
+            data-hero-slide
+            data-heading="{{ block.settings.heading | escape }}"
+            data-description="{{ block.settings.description | escape }}"
+            data-button-label="{{ block.settings.button_label | escape }}"
+            data-button-link="{{ block.settings.button_link | escape }}"
+            {% unless is_first %}aria-hidden="true"{% endunless %}
+            {{ block.shopify_attributes }}
+          >
+            {%- render 'remelle-hero-media',
+              image: slide_image,
+              image_mobile: slide_mobile,
+              alt: slide_alt,
+              eager: is_first,
+              section_index: section.index
+            -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- else -%}
+      {%- liquid
+        assign slide_one = section.settings.image
+        assign slide_one_mobile = section.settings.image_mobile
+        assign slide_one_alt = section.settings.image_alt | default: slide_one.alt
+        assign slide_two = section.settings.image_2
+        assign slide_two_mobile = section.settings.image_2_mobile
+        assign slide_two_alt = section.settings.image_2_alt | default: slide_two.alt
+      -%}
+      <div class="remelle-hero__slide is-active" data-hero-slide>
+        {%- render 'remelle-hero-media',
+          image: slide_one,
+          image_mobile: slide_one_mobile,
+          alt: slide_one_alt,
+          eager: true,
+          section_index: section.index,
+          fallback_asset: true
+        -%}
       </div>
+      {%- if slide_two != blank or slide_two_mobile != blank -%}
+        <div class="remelle-hero__slide" data-hero-slide aria-hidden="true">
+          {%- render 'remelle-hero-media',
+            image: slide_two,
+            image_mobile: slide_two_mobile,
+            alt: slide_two_alt,
+            eager: false,
+            section_index: section.index
+          -%}
+        </div>
+      {%- endif -%}
     {%- endif -%}
   </div>
 
-  <div class="remelle-hero__copy">
+  <div
+    class="remelle-hero__copy"
+    data-hero-copy
+    data-default-heading="{{ section.settings.heading | escape }}"
+    data-default-description="{{ section.settings.description | escape }}"
+    data-default-button-label="{{ button_label | escape }}"
+    data-default-button-link="{{ button_link | escape }}"
+  >
     {%- if section.settings.eyebrow != blank -%}
       <p class="remelle-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
     {%- endif -%}
     {%- if section.settings.heading != blank -%}
-      <h1 class="remelle-hero__heading" id="RemelleHeroTitle-{{ section.id }}">
+      <h1 class="remelle-hero__heading" id="RemelleHeroTitle-{{ section.id }}" data-hero-heading>
         {%- for line in heading_lines -%}
           {%- assign line_text = line | strip -%}
           {%- if line_text != blank -%}
@@ -73,39 +135,42 @@
           {%- endif -%}
         {%- endfor -%}
       </h1>
+    {%- else -%}
+      <h1 class="remelle-hero__heading" id="RemelleHeroTitle-{{ section.id }}" data-hero-heading hidden></h1>
     {%- endif -%}
     {%- if section.settings.description != blank -%}
-      <p class="remelle-hero__description">{{ section.settings.description | escape }}</p>
+      <p class="remelle-hero__description" data-hero-description>{{ section.settings.description | escape | newline_to_br }}</p>
+    {%- else -%}
+      <p class="remelle-hero__description" data-hero-description hidden></p>
     {%- endif -%}
     {%- if button_label != blank -%}
-      <a class="remelle-hero__button" href="{{ button_link }}">
-        {{ button_label | escape }}
+      <a class="remelle-hero__button" href="{{ button_link }}" data-hero-button>
+        <span data-hero-button-label>{{ button_label | escape }}</span>
+        {% render 'icon-arrow-up-right' %}
+      </a>
+    {%- else -%}
+      <a class="remelle-hero__button" href="{{ button_link }}" data-hero-button hidden>
+        <span data-hero-button-label></span>
         {% render 'icon-arrow-up-right' %}
       </a>
     {%- endif -%}
   </div>
 
-  {%- if show_index -%}
-    <fieldset class="remelle-hero__index">
-      <legend class="remelle-hero__legend">{{ 'hero.slides' | t }}</legend>
-      <label class="remelle-hero__digit remelle-hero__digit--1">
-        <input
-          class="remelle-hero__control remelle-hero__control--1"
-          type="radio"
-          name="remelle-hero-{{ section.id }}"
-          checked
+  {%- if slide_count > 1 -%}
+    <div class="remelle-hero__index" role="tablist" aria-label="{{ 'hero.slides' | t | escape }}">
+      {%- for i in (1..slide_count) -%}
+        <button
+          class="remelle-hero__digit{% if forloop.first %} is-active{% endif %}"
+          type="button"
+          role="tab"
+          data-hero-digit
+          aria-label="{{ 'hero.slide_n' | t: number: i | escape }}"
+          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
         >
-        <span>01</span>
-      </label>
-      <label class="remelle-hero__digit remelle-hero__digit--2">
-        <input
-          class="remelle-hero__control remelle-hero__control--2"
-          type="radio"
-          name="remelle-hero-{{ section.id }}"
-        >
-        <span>02</span>
-      </label>
-    </fieldset>
+          <span>{% if i < 10 %}0{% endif %}{{ i }}</span>
+        </button>
+      {%- endfor -%}
+    </div>
   {%- endif -%}
 </section>
 
@@ -128,20 +193,25 @@
     inset: 0;
   }
 
-  .remelle-hero__slide--2 {
+  .remelle-hero__slide {
     opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.9s ease, visibility 0.9s ease;
+    z-index: 0;
   }
 
-  .remelle-hero__slide--2:only-child {
+  .remelle-hero__slide.is-active {
     opacity: 1;
+    visibility: visible;
+    z-index: 1;
   }
 
-  .remelle-hero:has(.remelle-hero__control--2:checked) .remelle-hero__slide--1 {
-    opacity: 0;
-  }
-
-  .remelle-hero:has(.remelle-hero__control--2:checked) .remelle-hero__slide--2 {
-    opacity: 1;
+  .remelle-hero__slide picture {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
   }
 
   .remelle-hero__image {
@@ -159,13 +229,9 @@
     pointer-events: none;
   }
 
-  .remelle-hero__slide--2::after {
-    background: linear-gradient(to bottom, rgba(20, 8, 7, 0.03), rgba(20, 8, 7, 0.53));
-  }
-
   .remelle-hero__copy {
     position: absolute;
-    z-index: 1;
+    z-index: 2;
     top: 314px;
     left: max(var(--page-inset), calc((100% - var(--page-width)) / 2 + var(--page-inset)));
     width: min(720px, calc(100% - var(--page-inset) * 2));
@@ -195,14 +261,21 @@
     letter-spacing: -0.01em;
   }
 
+  .remelle-hero__heading[hidden],
+  .remelle-hero__description[hidden],
+  .remelle-hero__button[hidden] {
+    display: none;
+  }
+
   .remelle-hero__description {
     margin: 12px 0 0;
     color: #d6d6d6;
     font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 400;
-    line-height: 22px;
+    line-height: 18px;
     letter-spacing: 0;
+    white-space: normal;
   }
 
   .remelle-hero__button {
@@ -236,22 +309,9 @@
     outline-offset: 3px;
   }
 
-  .remelle-hero__legend,
-  .remelle-hero__control {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
   .remelle-hero__index {
     position: absolute;
-    z-index: 1;
+    z-index: 2;
     right: max(var(--page-inset), calc((100% - var(--page-width)) / 2 + var(--page-inset)));
     bottom: 42px;
     display: flex;
@@ -263,6 +323,9 @@
   }
 
   .remelle-hero__digit {
+    padding: 0;
+    border: 0;
+    background: transparent;
     color: #fffdfc;
     opacity: 0.3;
     font-family: var(--font-sans);
@@ -273,12 +336,11 @@
     cursor: pointer;
   }
 
-  .remelle-hero:has(.remelle-hero__control--1:checked) .remelle-hero__digit--1,
-  .remelle-hero:has(.remelle-hero__control--2:checked) .remelle-hero__digit--2 {
+  .remelle-hero__digit.is-active {
     opacity: 1;
   }
 
-  .remelle-hero__digit:has(:focus-visible) span {
+  .remelle-hero__digit:focus-visible span {
     outline: 1px solid #fffdfc;
     outline-offset: 4px;
   }
@@ -316,7 +378,166 @@
       bottom: 24px;
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .remelle-hero__slide {
+      transition: none;
+    }
+  }
 {% endstylesheet %}
+
+{% javascript %}
+  (() => {
+    const heroes = document.querySelectorAll('[data-remelle-hero]');
+
+    heroes.forEach((hero) => {
+      if (hero.dataset.remelleHeroBound === 'true') return;
+      hero.dataset.remelleHeroBound = 'true';
+
+      const slides = Array.from(hero.querySelectorAll('[data-hero-slide]'));
+      const digits = Array.from(hero.querySelectorAll('[data-hero-digit]'));
+      if (slides.length < 2) return;
+
+      const copy = hero.querySelector('[data-hero-copy]');
+      const headingEl = hero.querySelector('[data-hero-heading]');
+      const descriptionEl = hero.querySelector('[data-hero-description]');
+      const buttonEl = hero.querySelector('[data-hero-button]');
+      const buttonLabelEl = hero.querySelector('[data-hero-button-label]');
+      const interval = Number(hero.dataset.interval) || 3000;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let index = Math.max(
+        0,
+        slides.findIndex((slide) => slide.classList.contains('is-active'))
+      );
+      let timer = null;
+      let paused = false;
+
+      const setLines = (node, text) => {
+        if (!node) return;
+        node.replaceChildren();
+        String(text || '')
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .forEach((line) => {
+            const span = document.createElement('span');
+            span.className = 'remelle-hero__line';
+            span.textContent = line;
+            node.appendChild(span);
+          });
+      };
+
+      const setHtmlBreaks = (node, text) => {
+        if (!node) return;
+        node.textContent = '';
+        const parts = String(text || '').split(/\r?\n/);
+        parts.forEach((part, i) => {
+          node.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) node.appendChild(document.createElement('br'));
+        });
+      };
+
+      const applyCopy = (slide) => {
+        if (!copy) return;
+        const heading = (slide.dataset.heading || '').trim() || copy.dataset.defaultHeading || '';
+        const description =
+          (slide.dataset.description || '').trim() || copy.dataset.defaultDescription || '';
+        const buttonLabel =
+          (slide.dataset.buttonLabel || '').trim() || copy.dataset.defaultButtonLabel || '';
+        const buttonLink =
+          (slide.dataset.buttonLink || '').trim() || copy.dataset.defaultButtonLink || '';
+
+        if (headingEl) {
+          setLines(headingEl, heading);
+          headingEl.hidden = !heading;
+        }
+        if (descriptionEl) {
+          setHtmlBreaks(descriptionEl, description);
+          descriptionEl.hidden = !description;
+        }
+        if (buttonEl) {
+          if (buttonLabelEl) buttonLabelEl.textContent = buttonLabel;
+          if (buttonLink) buttonEl.setAttribute('href', buttonLink);
+          buttonEl.hidden = !buttonLabel;
+        }
+      };
+
+      const show = (nextIndex) => {
+        index = ((nextIndex % slides.length) + slides.length) % slides.length;
+        slides.forEach((slide, i) => {
+          const active = i === index;
+          slide.classList.toggle('is-active', active);
+          slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+          if (active) {
+            slide.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+              img.loading = 'eager';
+            });
+          }
+        });
+        digits.forEach((digit, i) => {
+          const active = i === index;
+          digit.classList.toggle('is-active', active);
+          digit.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        applyCopy(slides[index]);
+      };
+
+      const stop = () => {
+        if (timer) {
+          window.clearInterval(timer);
+          timer = null;
+        }
+      };
+
+      const start = () => {
+        stop();
+        if (reduceMotion || paused || slides.length < 2) return;
+        timer = window.setInterval(() => show(index + 1), interval);
+      };
+
+      digits.forEach((digit, i) => {
+        digit.addEventListener('click', () => {
+          show(i);
+          paused = true;
+          stop();
+          window.setTimeout(() => {
+            paused = false;
+            start();
+          }, interval * 2);
+        });
+      });
+
+      hero.addEventListener('mouseenter', () => {
+        paused = true;
+        stop();
+      });
+      hero.addEventListener('mouseleave', () => {
+        paused = false;
+        start();
+      });
+      hero.addEventListener('focusin', () => {
+        paused = true;
+        stop();
+      });
+      hero.addEventListener('focusout', (event) => {
+        if (hero.contains(event.relatedTarget)) return;
+        paused = false;
+        start();
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          stop();
+        } else if (!paused) {
+          start();
+        }
+      });
+
+      show(index);
+      start();
+    });
+  })();
+{% endjavascript %}
 
 {% schema %}
 {
@@ -326,10 +547,28 @@
   },
   "settings": [
     {
+      "type": "paragraph",
+      "content": "t:labels.hero_slides_help"
+    },
+    {
+      "type": "header",
+      "content": "t:labels.hero_fallback_header"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:labels.hero_fallback_help"
+    },
+    {
       "type": "image_picker",
       "id": "image",
       "label": "t:labels.hero_image",
-      "info": "t:labels.image_fallback_info"
+      "info": "t:labels.hero_image_desktop_info"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "t:labels.hero_image_mobile",
+      "info": "t:labels.hero_image_mobile_info"
     },
     {
       "type": "text",
@@ -344,10 +583,20 @@
       "info": "t:labels.hero_image_2_info"
     },
     {
+      "type": "image_picker",
+      "id": "image_2_mobile",
+      "label": "t:labels.hero_image_2_mobile",
+      "info": "t:labels.hero_image_2_mobile_info"
+    },
+    {
       "type": "text",
       "id": "image_2_alt",
       "label": "t:labels.hero_image_2_alt",
       "default": "Model standing in a dark shirt"
+    },
+    {
+      "type": "header",
+      "content": "t:labels.hero_copy_header"
     },
     {
       "type": "text",
@@ -365,7 +614,7 @@
       "type": "textarea",
       "id": "description",
       "label": "t:labels.description",
-      "default": "Sculptural silhouettes, uncompromising detail and a new language of modern elegance."
+      "default": "Sculptural silhouettes, uncompromising detail\nand a new language of modern elegance."
     },
     {
       "type": "text",
@@ -379,9 +628,64 @@
       "label": "t:labels.button_link"
     }
   ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "t:labels.hero_slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.hero_image",
+          "info": "t:labels.hero_image_desktop_info"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "t:labels.hero_image_mobile",
+          "info": "t:labels.hero_image_mobile_info"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "t:labels.hero_image_alt"
+        },
+        {
+          "type": "textarea",
+          "id": "heading",
+          "label": "t:labels.heading",
+          "info": "t:labels.hero_slide_copy_info"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "t:labels.description"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "t:labels.button_label"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "t:labels.button_link"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
   "presets": [
     {
-      "name": "t:general.hero"
+      "name": "t:general.hero",
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        }
+      ]
     }
   ]
 }

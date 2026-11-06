@@ -1,69 +1,121 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
     "main": {
       "type": "remelle-product",
       "blocks": {
-        "manufacturing": {
-          "type": "information",
-          "settings": {
-            "title": "Manufacturing",
-            "use_product_description": false,
-            "content": ""
-          }
-        },
-        "fabric_costs": {
-          "type": "information",
-          "settings": {
-            "title": "Fabric costs",
-            "use_product_description": false,
-            "content": ""
-          }
-        },
         "composition": {
           "type": "information",
           "settings": {
             "title": "Washing guide",
-            "content": "<p>Dry clean only. Do not machine wash, bleach, or tumble dry.</p>"
+            "content": "<ul><li>Hand wash gently in cold water.</li><li>Do not bleach.</li><li>Do not wring or twist.</li><li>Dry clean when recommended.</li></ul>"
           }
         },
         "delivery": {
           "type": "information",
           "settings": {
             "title": "Care guide",
-            "content": "<p>Brush lightly after wearing and air between uses. Store it on a wide hanger.</p>"
+            "content": "<ul><li>Steam iron only on low temperature.</li><li>Avoid high heat.</li><li>For leather, use suitable leather care products.</li><li>Store in a cool, dry place.</li></ul>"
           }
         },
         "returns": {
           "type": "information",
           "settings": {
-            "title": "Delivery & Returns",
-            "content": "<p>Free delivery on your first order. Unworn items can be returned or exchanged.</p>"
+            "title": "Return policy",
+            "content": "<p>Free delivery on your first order. Unworn items can be returned or exchanged for 2 days.</p>"
           }
         }
       },
       "block_order": [
-        "manufacturing",
-        "fabric_costs",
         "composition",
         "delivery",
         "returns"
       ],
       "settings": {
-        "add_label": "Add to basket"
+        "add_label": "Add to basket",
+        "show_new_badge": true,
+        "new_products": [
+          "the-allure-blazer-in-black",
+          "the-allure-blazer-in-dark-red",
+          "the-black-balloon-pants",
+          "the-wrap-hoodie",
+          "the-wrap-hoodie-in-light-beige",
+          "the-etoile-coat-in-choco-brown",
+          "coat"
+        ],
+        "badge_label": "New in",
+        "badge_tag": "",
+        "show_sale_badge": false,
+        "sale_products": [],
+        "sale_label": "Sale",
+        "sale_tag": "",
+        "show_limited_badge": true,
+        "limited_products": [
+          "coat",
+          "the-etoile-coat-in-choco-brown"
+        ],
+        "limited_label": "Limited pieces",
+        "limited_tag": "limited",
+        "show_preorder_badge": true,
+        "preorder_products": [
+          "the-starlight-jacket-in-black",
+          "the-starlight-jacket-in-white"
+        ],
+        "preorder_label": "Pre-order",
+        "preorder_tag": "pre-order",
+        "preorder_size_rules": "coat | One size\ncoat | S/M",
+        "show_low_stock_badge": true,
+        "low_stock_products": [
+          "coat",
+          "the-etoile-coat-in-choco-brown",
+          "the-wrap-hoodie-in-light-beige",
+          "the-wrap-hoodie",
+          "the-black-balloon-pants",
+          "the-allure-blazer-in-dark-red",
+          "the-allure-blazer-in-black"
+        ],
+        "low_stock_label": "Only __COUNT__ left!",
+        "low_stock_threshold": 10
       }
     },
     "recommendations": {
       "type": "remelle-product-recommendations",
-      "settings": {}
+      "settings": {
+        "show_new_badge": true,
+        "new_products": [
+          "the-allure-blazer-in-black",
+          "the-allure-blazer-in-dark-red",
+          "the-black-balloon-pants",
+          "the-wrap-hoodie",
+          "the-wrap-hoodie-in-light-beige",
+          "the-etoile-coat-in-choco-brown",
+          "coat"
+        ],
+        "badge_label": "New in",
+        "badge_tag": "",
+        "show_sale_badge": false,
+        "sale_products": [],
+        "sale_label": "Sale",
+        "sale_tag": "",
+        "show_limited_badge": true,
+        "limited_products": [
+          "coat",
+          "the-etoile-coat-in-choco-brown"
+        ],
+        "limited_label": "Limited pieces",
+        "limited_tag": "limited",
+        "show_low_stock_badge": true,
+        "low_stock_products": [
+          "coat",
+          "the-etoile-coat-in-choco-brown",
+          "the-wrap-hoodie-in-light-beige",
+          "the-wrap-hoodie",
+          "the-black-balloon-pants",
+          "the-allure-blazer-in-dark-red",
+          "the-allure-blazer-in-black"
+        ],
+        "low_stock_label": "Only __COUNT__ left!",
+        "low_stock_threshold": 10
+      }
     }
   },
   "order": [

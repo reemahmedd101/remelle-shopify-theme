@@ -1,0 +1,57 @@
+{% doc %}
+  Writes true when this variant should use the pre-order button.
+
+  A whole product marked pre-order applies to every size. Any other size applies
+  when Shopify is set to keep selling it after stock runs out, when its variant
+  metafield custom.pre_order is true, or when the theme setting lists
+  "product-handle | size".
+
+  @param {product} product - Product that owns the variant
+  @param {variant} variant - Variant to check
+  @param {boolean} [preorder_product] - When true, every size is a pre-order
+  @param {string} [rules] - Lines of "product-handle | size"
+{% enddoc %}
+
+{%- liquid
+  assign is_preorder = false
+  if preorder_product
+    assign is_preorder = true
+  endif
+
+  assign variant_flag = variant.metafields.custom.pre_order.value | append: '' | downcase | strip
+  if variant_flag == blank
+    assign variant_flag = variant.metafields.custom.preorder.value | append: '' | downcase | strip
+  endif
+  if variant_flag == 'true' or variant_flag == 'yes' or variant_flag == 'pre order' or variant_flag == 'pre-order' or variant_flag == 'preorder'
+    assign is_preorder = true
+  endif
+
+  if variant.inventory_management != blank and variant.inventory_policy == 'continue' and variant.inventory_quantity <= 0
+    assign is_preorder = true
+  endif
+
+  assign size_value = ''
+  for option in product.options
+    assign option_name = option | downcase
+    if option_name == 'size'
+      assign size_value = variant.options[forloop.index0] | downcase | strip
+    endif
+  endfor
+
+  if rules != blank and size_value != blank
+    assign product_title = product.title | downcase | strip
+    assign rule_lines = rules | newline_to_br | split: '<br />'
+    for rule_line in rule_lines
+      assign rule_clean = rule_line | strip | replace: '&#13;', ''
+      assign rule_parts = rule_clean | split: '|'
+      assign rule_key = rule_parts[0] | strip | downcase
+      assign rule_size = rule_parts[1] | strip | downcase
+      if rule_size == size_value
+        if rule_key == product.handle or rule_key == product_title
+          assign is_preorder = true
+        endif
+      endif
+    endfor
+  endif
+-%}
+{%- if is_preorder -%}true{%- else -%}false{%- endif -%}

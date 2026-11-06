@@ -22,8 +22,7 @@
               {%- if collection.featured_image -%}
                 {{
                   collection.featured_image
-                  | image_url: width: 800
-                  | image_tag:
+                  | image_url: width: 800, format: 'jpg' | image_tag:
                     widths: '323, 646',
                     sizes: '(max-width: 768px) 50vw, 323px',
                     alt: collection.title,

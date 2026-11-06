@@ -13,10 +13,15 @@
   "sections": {
     "footer": {
       "type": "footer",
-      "settings": {}
+      "settings": {
+        "instagram_label": "Instagram",
+        "instagram_url": "https://www.instagram.com/itsremelle",
+        "tiktok_label": "TikTok",
+        "tiktok_url": "https://www.tiktok.com/@itsremelle",
+        "whatsapp_label": "WhatsApp",
+        "whatsapp_url": "https://wa.me/message/PITJI67ACSURN1"
+      }
     }
   },
-  "order": [
-    "footer"
-  ]
+  "order": ["footer"]
 }

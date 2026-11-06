@@ -32,6 +32,104 @@
     assign summary_heading = 'cart.order_summary' | t
   endif
   assign cart_form_id = 'RemelleCartForm-' | append: section.id
+
+  assign offer_mode = section.settings.offer_mode | default: 'quantity'
+  assign offer_qty_threshold = section.settings.offer_item_goal | default: 2 | plus: 0
+  if offer_qty_threshold < 1
+    assign offer_qty_threshold = 1
+  endif
+  assign offer_amount_threshold = section.settings.free_shipping_threshold | default: 3000 | plus: 0
+  if offer_amount_threshold < 0
+    assign offer_amount_threshold = 0
+  endif
+
+  assign offer_discount_title = ''
+  assign offer_discount_applied = false
+  for discount in cart.discount_applications
+    assign offer_discount_applied = true
+    if offer_discount_title == blank and discount.title != blank
+      assign offer_discount_title = discount.title
+    endif
+  endfor
+  if offer_discount_applied == false
+    for item in cart.items
+      for allocation in item.line_level_discount_allocations
+        assign offer_discount_applied = true
+        if offer_discount_title == blank and allocation.discount_application.title != blank
+          assign offer_discount_title = allocation.discount_application.title
+        endif
+      endfor
+    endfor
+  endif
+
+  assign offer_unlocked = false
+  assign offer_progress = 0
+  assign offer_remaining_count = 0
+  assign offer_remaining_money = ''
+  assign offer_progress_msg = ''
+  assign offer_success_msg = section.settings.free_shipping_success
+  if offer_success_msg == blank
+    assign offer_success_msg = 'cart.free_shipping_success' | t
+  endif
+
+  if offer_mode == 'quantity'
+    assign offer_remaining_count = offer_qty_threshold | minus: cart.item_count
+    if offer_remaining_count < 0
+      assign offer_remaining_count = 0
+    endif
+    if offer_qty_threshold > 0
+      assign offer_progress = cart.item_count | times: 100 | divided_by: offer_qty_threshold
+      if offer_progress > 100
+        assign offer_progress = 100
+      endif
+    else
+      assign offer_progress = 100
+    endif
+    if offer_remaining_count == 0 or offer_discount_applied
+      assign offer_unlocked = true
+    endif
+    assign offer_progress_msg = section.settings.offer_quantity_progress
+    if offer_progress_msg == blank
+      assign offer_progress_msg = 'cart.offer_quantity_progress' | t
+    endif
+    assign offer_progress_msg = offer_progress_msg | replace: '__COUNT__', offer_remaining_count
+  else
+    assign offer_amount_cents = offer_amount_threshold | times: 100
+    assign offer_remaining_cents = offer_amount_cents | minus: cart.total_price
+    if offer_remaining_cents < 0
+      assign offer_remaining_cents = 0
+    endif
+    assign offer_remaining_money = offer_remaining_cents | money
+    if offer_amount_cents > 0
+      assign offer_progress = cart.total_price | times: 100 | divided_by: offer_amount_cents
+      if offer_progress > 100
+        assign offer_progress = 100
+      endif
+    else
+      assign offer_progress = 100
+    endif
+    if offer_remaining_cents == 0 or offer_discount_applied
+      assign offer_unlocked = true
+    endif
+    assign offer_progress_msg = section.settings.free_shipping_progress
+    if offer_progress_msg == blank
+      assign offer_progress_msg = 'cart.free_shipping_progress' | t
+    endif
+    assign offer_progress_msg = offer_progress_msg | replace: '__AMOUNT__', offer_remaining_money
+  endif
+
+  if offer_unlocked and offer_discount_title != blank
+    assign offer_success_msg = offer_discount_title
+  endif
+
+  assign show_offer_bar = false
+  if section.settings.show_free_shipping_bar and cart.item_count > 0
+    if offer_mode == 'quantity' and offer_qty_threshold > 0
+      assign show_offer_bar = true
+    elsif offer_mode != 'quantity' and offer_amount_threshold > 0
+      assign show_offer_bar = true
+    endif
+  endif
 -%}
 
 <section
@@ -88,8 +186,7 @@
                     {%- if item.image -%}
                       {{
                         item.image
-                        | image_url: width: 480
-                        | image_tag:
+                        | image_url: width: 480, format: 'jpg' | image_tag:
                           widths: '160, 320, 480',
                           sizes: '(max-width: 768px) 96px, 160px',
                           alt: item.image.alt | default: item.product.title,
@@ -229,6 +326,31 @@
               {{ 'cart.discount_hint' | t }}
             </p>
           </div>
+
+          {%- if show_offer_bar -%}
+            <div
+              class="remelle-cart__shipping{% if offer_unlocked %} remelle-cart__shipping--unlocked{% endif %}"
+              data-free-shipping
+              data-offer-mode="{{ offer_mode | escape }}"
+              role="status"
+              aria-live="polite"
+            >
+              {%- if offer_unlocked -%}
+                <p class="remelle-cart__shipping-text">{{ offer_success_msg | escape }}</p>
+              {%- else -%}
+                <p class="remelle-cart__shipping-text">{{ offer_progress_msg | escape }}</p>
+              {%- endif -%}
+              <div
+                class="remelle-cart__shipping-track"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ offer_progress }}"
+              >
+                <span class="remelle-cart__shipping-fill" style="width: {{ offer_progress }}%;"></span>
+              </div>
+            </div>
+          {%- endif -%}
 
           <div class="remelle-cart__summary">
             <div class="remelle-cart__subtotal">
@@ -675,6 +797,37 @@
     line-height: 1.4;
   }
 
+  .remelle-cart__shipping {
+    margin-top: 24px;
+    padding: 14px 0 0;
+  }
+
+  .remelle-cart__shipping-text {
+    margin: 0 0 10px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .remelle-cart__shipping--unlocked .remelle-cart__shipping-text {
+    font-weight: 600;
+  }
+
+  .remelle-cart__shipping-track {
+    height: 3px;
+    overflow: hidden;
+    background: rgba(103, 13, 13, 0.12);
+  }
+
+  .remelle-cart__shipping-fill {
+    display: block;
+    height: 100%;
+    background: var(--color-burgundy);
+    transition: width 0.35s ease;
+  }
+
   .remelle-cart__summary {
     margin-top: 28px;
     padding-top: 24px;
@@ -866,6 +1019,69 @@
       "id": "checkout_label",
       "label": "t:labels.checkout",
       "default": "Checkout"
+    },
+    {
+      "type": "header",
+      "content": "t:labels.free_shipping_header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_free_shipping_bar",
+      "label": "t:labels.show_free_shipping_bar",
+      "info": "t:labels.show_free_shipping_bar_info",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "offer_mode",
+      "label": "t:labels.offer_mode",
+      "info": "t:labels.offer_mode_info",
+      "options": [
+        {
+          "value": "quantity",
+          "label": "t:labels.offer_mode_quantity"
+        },
+        {
+          "value": "amount",
+          "label": "t:labels.offer_mode_amount"
+        }
+      ],
+      "default": "quantity"
+    },
+    {
+      "type": "number",
+      "id": "offer_item_goal",
+      "label": "t:labels.offer_quantity_threshold",
+      "info": "t:labels.offer_quantity_threshold_info",
+      "default": 2
+    },
+    {
+      "type": "text",
+      "id": "offer_quantity_progress",
+      "label": "t:labels.offer_quantity_progress",
+      "info": "t:labels.offer_quantity_progress_info",
+      "default": "Add __COUNT__ more items to unlock your offer"
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "t:labels.free_shipping_threshold",
+      "info": "t:labels.free_shipping_threshold_info",
+      "default": 3000
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_progress",
+      "label": "t:labels.free_shipping_progress",
+      "info": "t:labels.free_shipping_progress_info",
+      "default": "Add __AMOUNT__ more for free shipping"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_success",
+      "label": "t:labels.free_shipping_success",
+      "info": "t:labels.free_shipping_success_info",
+      "default": "Yay — you've unlocked your offer"
     }
   ],
   "presets": [

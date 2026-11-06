@@ -5,8 +5,7 @@
         {%- assign story_alt = section.settings.image_alt | default: section.settings.image.alt -%}
         {{
           section.settings.image
-          | image_url: width: 1400
-          | image_tag:
+          | image_url: width: 1400, format: 'jpg' | image_tag:
             widths: '624, 900, 1248, 1400',
             sizes: '624px',
             alt: story_alt,
@@ -175,19 +174,19 @@
       "type": "text",
       "id": "eyebrow",
       "label": "t:labels.eyebrow",
-      "default": "01 — Our story"
+      "default": "About Remelle"
     },
     {
       "type": "text",
       "id": "heading",
       "label": "t:labels.heading",
-      "default": "Luxury, redefined"
+      "default": "More than a collection. A point of view."
     },
     {
       "type": "richtext",
       "id": "body",
       "label": "t:labels.description",
-      "default": "<p>Beyond fleeting trends, Remelle creates timeless statement pieces with meticulous craftsmanship and an unwavering commitment to quality. Each collection is made to be seen and remembered.</p><p>Drawing from art, architecture and cultural heritage, each collection transcends seasons. Every garment is designed as a statement of modern sophistication, exceptional in feeling, exacting in finish and entirely individual.</p>"
+      "default": "<p>Remelle started with something simple: a love for getting dressed.</p><p>Before it was a brand, it was an instinct — putting pieces together, playing with silhouettes, textures and details, and finding a way to make every look feel like me.</p><p>I started sharing my outfits and styling on TikTok, simply because fashion has always been a part of how I express myself. The response made me realize that what I was creating went beyond individual outfits. People connected with the way I saw fashion.</p><p>And that became the beginning of Remelle.</p>"
     }
   ],
   "presets": [

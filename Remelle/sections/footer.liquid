@@ -13,8 +13,8 @@
         <div>
           <p class="site-footer__title">{{ section.settings.shop_title | escape }}</p>
           <div class="site-footer__links">
-            {% capture shop_titles %}{{ 'chrome.new_collection' | t }}|{{ 'chrome.coats_tops' | t }}|{{ 'chrome.pants' | t }}{% endcapture %}
-            {% capture shop_urls %}{{ shop_url }}|{{ shop_url }}|{{ shop_url }}{% endcapture %}
+            {% capture shop_titles %}{{ 'chrome.new_collection' | t }}{% endcapture %}
+            {% capture shop_urls %}{{ shop_url }}{% endcapture %}
             {% render 'menu-links',
               menu: section.settings.menu_shop,
               titles: shop_titles,
@@ -87,6 +87,12 @@
                 {% render 'icon-arrow-up-right' %}
               </span>
             {% endif %}
+            {% if section.settings.whatsapp_url != blank %}
+              <a class="site-footer__social" href="{{ section.settings.whatsapp_url }}">
+                {{ section.settings.whatsapp_label | escape }}
+                {% render 'icon-arrow-up-right' %}
+              </a>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -103,6 +109,8 @@
               name="contact[email]"
               autocomplete="email"
               required
+              inputmode="email"
+              spellcheck="false"
               placeholder="{{ section.settings.newsletter_placeholder | escape }}"
             >
             <button class="newsletter__send" type="submit">
@@ -235,12 +243,23 @@
       "type": "text",
       "id": "tiktok_label",
       "label": "t:labels.tiktok_label",
-      "default": "Tiktok"
+      "default": "TikTok"
     },
     {
       "type": "url",
       "id": "tiktok_url",
       "label": "t:labels.tiktok_url"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_label",
+      "label": "t:labels.whatsapp_label",
+      "default": "WhatsApp"
+    },
+    {
+      "type": "url",
+      "id": "whatsapp_url",
+      "label": "t:labels.whatsapp_url"
     },
     {
       "type": "text",

@@ -1,10 +1,12 @@
 /**
- * Remelle cart helpers: AJAX add-to-cart, live nav count, toasts, cart qty.
+ * Remelle cart helpers: AJAX add-to-cart, live nav count, floating cart, cart qty.
  * Uses Shopify Cart AJAX API only — no mocked product or price data.
  */
 (() => {
   const CART_ADD = '/cart/add.js';
   const CART_GET = '/cart.js';
+  const CART_CLEAR = '/cart/clear.js';
+  const SAVED_CART_KEY = 'remelle:saved-cart';
 
   const strings = (() => {
     const node = document.getElementById('RemelleCartStrings');
@@ -13,6 +15,17 @@
       return JSON.parse(node.textContent);
     } catch (error) {
       return {};
+    }
+  })();
+
+  const customerId = (() => {
+    const node = document.getElementById('RemelleCustomer');
+    if (!node) return null;
+    try {
+      const data = JSON.parse(node.textContent);
+      return data && data.id != null ? String(data.id) : null;
+    } catch (error) {
+      return null;
     }
   })();
 
@@ -145,6 +158,24 @@
     });
   };
 
+  const syncFloatCart = (count) => {
+    const floatCart = document.querySelector('[data-float-cart]');
+    if (!floatCart) return;
+    const template = floatCart.getAttribute('data-count-template');
+    if (template) {
+      floatCart.setAttribute('aria-label', template.replace('__COUNT__', String(count)));
+    }
+    floatCart.hidden = count <= 0;
+  };
+
+  const pulseFloatCart = () => {
+    const floatCart = document.querySelector('[data-float-cart]');
+    if (!floatCart || floatCart.hidden) return;
+    floatCart.classList.remove('is-pop');
+    void floatCart.offsetWidth;
+    floatCart.classList.add('is-pop');
+  };
+
   const updateCartCount = (count) => {
     const safeCount = Number(count) || 0;
     document.querySelectorAll('[data-cart-count]').forEach((node) => {
@@ -160,6 +191,7 @@
       }
       text.innerHTML = `${label} (<span data-cart-count>${safeCount}</span>)`;
     });
+    syncFloatCart(safeCount);
     pulseCartLinks();
   };
 
@@ -259,35 +291,11 @@
             setTextButtonLabel(button, button.dataset.addingLabel);
           }
 
-          const result = await addFromForm(form);
-          const title =
-            (result.item && (result.item.product_title || result.item.title)) || '';
-          const successMessage = title
-            ? copy(strings.addedNamed, '“{{ title }}” was added to your cart.').replace(
-                '{{ title }}',
-                title
-              )
-            : copy(strings.addedSuccess, copy(strings.added, 'Added successfully'));
-
-          showToast(successMessage, {
-            type: 'success',
-            actionHref: copy(strings.cartUrl, '/cart'),
-            actionLabel: copy(strings.viewCart, 'View cart'),
-            duration: 0,
-          });
-
-          if (statusNode) {
-            statusNode.hidden = false;
-            statusNode.textContent = strings.added || 'Added to cart';
-          }
+          await addFromForm(form);
+          pulseFloatCart();
 
           if (button && button.classList.contains('remelle-pdp__add')) {
-            setTextButtonLabel(button, button.dataset.addedLabel || strings.added || 'Added to cart');
-            window.setTimeout(() => {
-              if (!button.disabled) {
-                setTextButtonLabel(button, button.dataset.label || originalLabel);
-              }
-            }, 1600);
+            setTextButtonLabel(button, button.dataset.label || originalLabel);
           }
         } catch (error) {
           const message =
@@ -495,10 +503,190 @@
     });
   };
 
+  const readSavedCart = () => {
+    try {
+      const raw = window.localStorage.getItem(SAVED_CART_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.items) || !data.items.length) return null;
+      return data;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const writeSavedCart = (payload) => {
+    try {
+      if (!payload || !payload.items || !payload.items.length) {
+        window.localStorage.removeItem(SAVED_CART_KEY);
+        return;
+      }
+      window.localStorage.setItem(SAVED_CART_KEY, JSON.stringify(payload));
+    } catch (error) {
+      // Ignore storage failures (private mode, quota, etc).
+    }
+  };
+
+  const snapshotCartForCustomer = async () => {
+    try {
+      const response = await fetch(CART_GET, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin'
+      });
+      if (!response.ok) return;
+      const cart = await response.json();
+      const items = (cart.items || [])
+        .map((item) => ({
+          id: item.variant_id || item.id,
+          quantity: item.quantity
+        }))
+        .filter((item) => item.id && item.quantity > 0);
+      if (!items.length) {
+        writeSavedCart(null);
+        return;
+      }
+      writeSavedCart({
+        customerId: customerId || null,
+        items,
+        savedAt: Date.now()
+      });
+    } catch (error) {
+      // Continue logout even if snapshot fails.
+    }
+  };
+
+  const clearCart = async () => {
+    try {
+      await fetch(CART_CLEAR, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin'
+      });
+      updateCartCount(0);
+    } catch (error) {
+      // Still continue to sign-out even if clear fails.
+    }
+  };
+
+  const isAccountSignedIn = (account) => {
+    const root = account && account.shadowRoot;
+    if (!root) return false;
+    const login = root.querySelector('.account__login-slot');
+    const sheet = root.querySelector('.account');
+    if (!login || !sheet) return false;
+    return login.hasAttribute('hidden') && !sheet.classList.contains('loading');
+  };
+
+  const isSignedIn = () => {
+    if (customerId) return true;
+    return [...document.querySelectorAll('shopify-account')].some(isAccountSignedIn);
+  };
+
+  const restoreSavedCartIfNeeded = async () => {
+    const saved = readSavedCart();
+    if (!saved) return;
+    if (!isSignedIn()) return;
+    if (customerId && saved.customerId && String(saved.customerId) !== String(customerId)) return;
+
+    try {
+      const current = await refreshCartCount();
+      if ((current.item_count || 0) > 0) {
+        writeSavedCart(null);
+        return;
+      }
+
+      const response = await fetch(CART_ADD, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ items: saved.items })
+      });
+      if (!response.ok) return;
+      writeSavedCart(null);
+      await refreshCartCount();
+      if (window.location.pathname.includes('/cart')) {
+        window.location.reload();
+      }
+    } catch (error) {
+      // Leave saved cart in place for a later retry.
+    }
+  };
+
+  const watchAccountForCartRestore = () => {
+    document.querySelectorAll('shopify-account').forEach((account) => {
+      if (account.dataset.remelleCartRestoreWatch === 'true') return;
+      account.dataset.remelleCartRestoreWatch = 'true';
+
+      const attach = (tries = 0) => {
+        if (!account.shadowRoot) {
+          if (tries < 60) requestAnimationFrame(() => attach(tries + 1));
+          return;
+        }
+        new MutationObserver(() => {
+          if (isAccountSignedIn(account)) restoreSavedCartIfNeeded();
+        }).observe(account.shadowRoot, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ['hidden', 'class']
+        });
+        if (isAccountSignedIn(account)) restoreSavedCartIfNeeded();
+      };
+      attach();
+    });
+  };
+
+  const isLogoutLink = (el) => {
+    if (!(el instanceof HTMLAnchorElement)) return false;
+    if (el.dataset.remelleSignOut === 'true') return true;
+    const href = el.getAttribute('href') || '';
+    if (!href) return false;
+    if (href.includes('/account/logout')) return true;
+    if (href.includes('/customer_authentication/logout')) return true;
+    if (el.classList.contains('remelle-customer__logout') && href.includes('logout')) return true;
+    return false;
+  };
+
+  const bindClearCartOnLogout = () => {
+    if (document.documentElement.dataset.remelleLogoutCartBound === 'true') return;
+    document.documentElement.dataset.remelleLogoutCartBound = 'true';
+
+    document.addEventListener(
+      'click',
+      (event) => {
+        const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+        const link = path.find((node) => isLogoutLink(node));
+        if (!link) return;
+        if (link.dataset.remelleLoggingOut === 'true') {
+          event.preventDefault();
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        link.dataset.remelleLoggingOut = 'true';
+
+        const href = link.href;
+        snapshotCartForCustomer()
+          .then(() => clearCart())
+          .finally(() => {
+            window.top.location.href = href;
+          });
+      },
+      true
+    );
+  };
+
   const boot = () => {
     bindProductForms();
     bindCartQuantity();
     bindCartDiscount();
+    bindClearCartOnLogout();
+    watchAccountForCartRestore();
+    restoreSavedCartIfNeeded();
   };
 
   if (document.readyState === 'loading') {
@@ -511,8 +699,10 @@
   window.RemelleCart = {
     refreshCartCount,
     updateCartCount,
+    pulseFloatCart,
     addFromForm,
     changeLineQuantity,
+    clearCart,
     showToast,
     showPopup,
   };

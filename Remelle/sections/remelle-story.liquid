@@ -24,8 +24,7 @@
           {%- assign story_alt = section.settings.image_alt | default: section.settings.image.alt -%}
           {{
             section.settings.image
-            | image_url: width: 1400
-            | image_tag:
+            | image_url: width: 1400, format: 'jpg' | image_tag:
               widths: '400, 700, 1000, 1400',
               sizes: '(min-width: 1440px) 662px, 50vw',
               alt: story_alt,

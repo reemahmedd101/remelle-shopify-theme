@@ -1,45 +1,169 @@
 {%- liquid
   assign current = product.selected_or_first_available_variant
-  assign add_label = section.settings.add_label
-  if add_label == blank
-    assign add_label = 'product.add_to_basket' | t
+  assign basket_label = section.settings.add_label
+  if basket_label == blank
+    assign basket_label = 'product.add_to_basket' | t
+  endif
+  assign preorder_label = section.settings.preorder_button_label
+  if preorder_label == blank
+    assign preorder_label = 'product.preorder_now' | t
+  endif
+  assign preorder_note = section.settings.preorder_note
+  if preorder_note == blank
+    assign preorder_note = 'product.preorder_note' | t
+  endif
+  assign preorder_button = false
+  assign preorder_list = section.settings.preorder_products
+  if preorder_list == blank
+    assign preorder_list = settings.preorder_products
+  endif
+  assign preorder_on = false
+  if section.settings.show_preorder_badge == true or settings.show_preorder_badge == true or preorder_list != blank
+    assign preorder_on = true
+  endif
+  if preorder_on
+    if preorder_list != blank
+      for preorder_item in preorder_list
+        if preorder_item.id == product.id or preorder_item.handle == product.handle
+          assign preorder_button = true
+        endif
+      endfor
+    else
+      assign preorder_tag = section.settings.preorder_tag | default: settings.preorder_tag | downcase | strip
+      if preorder_tag != blank
+        for tag in product.tags
+          assign tag_value = tag | downcase | strip
+          if tag_value == preorder_tag or tag_value == 'pre order' or tag_value == 'preorder' or tag_value == 'pre-order'
+            assign preorder_button = true
+          endif
+        endfor
+      endif
+    endif
   endif
   assign product_form_id = 'RemelleProductForm-' | append: section.id
 -%}
 
+{%- capture current_preorder_flag -%}
+  {%- render 'remelle-variant-preorder',
+    product: product,
+    variant: current,
+    preorder_product: preorder_button,
+    rules: section.settings.preorder_size_rules
+  -%}
+{%- endcapture -%}
+{%- liquid
+  assign current_is_preorder = false
+  assign current_preorder_flag = current_preorder_flag | strip
+  if current_preorder_flag == 'true'
+    assign current_is_preorder = true
+  endif
+  assign add_label = basket_label
+  if current_is_preorder
+    assign add_label = preorder_label
+  endif
+-%}
+
 <section class="remelle-pdp" aria-labelledby="RemelleProductTitle-{{ section.id }}">
   <div class="remelle-pdp__layout">
-    <div class="remelle-pdp__gallery">
-      {%- if product.images.size > 1 -%}
-        {%- for gallery_image in product.images limit: 2 -%}
-          <div class="remelle-pdp__tile">
-            {{
-              gallery_image
-              | image_url: width: 1200
-              | image_tag:
-                widths: '367, 734, 1100',
-                sizes: '367px',
-                alt: gallery_image.alt | default: product.title,
-                class: 'remelle-pdp__image',
-                loading: 'eager'
-            }}
-          </div>
-        {%- endfor -%}
-      {%- endif -%}
-      <div class="remelle-pdp__tile remelle-pdp__tile--wide">
-        {%- if product.featured_image -%}
-          {{
-            product.featured_image
-            | image_url: width: 1600
-            | image_tag:
-              widths: '742, 1200, 1600',
-              sizes: '742px',
-              alt: product.featured_image.alt | default: product.title,
-              class: 'remelle-pdp__image remelle-pdp__image--main',
-              loading: 'eager'
-          }}
+    <div class="remelle-pdp__gallery{% if product.images.size < 2 %} remelle-pdp__gallery--single{% endif %}">
+      <div class="remelle-pdp__stage">
+        <div
+          class="remelle-pdp__slides"
+          data-gallery-track
+          aria-label="{{ 'product.gallery' | t }}"
+          {% if product.images.size > 1 %}tabindex="0"{% endif %}
+        >
+          {%- if product.images.size > 0 -%}
+            {%- for gallery_image in product.images -%}
+              {%- liquid
+                assign image_loading = 'lazy'
+                assign image_alt = gallery_image.alt | default: product.title
+                if forloop.first
+                  assign image_loading = 'eager'
+                endif
+              -%}
+              <div
+                class="remelle-pdp__slide{% if forloop.first %} is-active{% endif %}"
+                data-gallery-slide
+                data-image-id="{{ gallery_image.id }}"
+                {% unless forloop.first %}aria-hidden="true"{% endunless %}
+              >
+                {{
+                  gallery_image
+                  | image_url: width: 1600, format: 'jpg' | image_tag:
+                    widths: '400, 800, 1200, 1600',
+                    sizes: '(min-width: 1024px) 640px, 100vw',
+                    alt: image_alt,
+                    class: 'remelle-pdp__image',
+                    loading: image_loading
+                }}
+              </div>
+            {%- endfor -%}
+          {%- else -%}
+            <div class="remelle-pdp__slide is-active"></div>
+          {%- endif -%}
+        </div>
+        {%- if product.images.size > 1 -%}
+          <button class="remelle-pdp__nav remelle-pdp__nav--prev" type="button" data-gallery-prev aria-label="{{ 'product.previous_image' | t }}">
+            {% render 'icon-arrow-left' %}
+          </button>
+          <button class="remelle-pdp__nav remelle-pdp__nav--next" type="button" data-gallery-next aria-label="{{ 'product.next_image' | t }}">
+            {% render 'icon-arrow-right' %}
+          </button>
         {%- endif -%}
+        {% render 'remelle-product-badges',
+          product: product,
+          variant: 'pdp',
+          show_new_badge: section.settings.show_new_badge,
+          badge_label: section.settings.badge_label,
+          badge_tag: section.settings.badge_tag,
+          new_products: section.settings.new_products,
+          show_sale_badge: section.settings.show_sale_badge,
+          sale_label: section.settings.sale_label,
+          sale_tag: section.settings.sale_tag,
+          sale_products: section.settings.sale_products,
+          show_limited_badge: section.settings.show_limited_badge,
+          limited_label: section.settings.limited_label,
+          limited_tag: section.settings.limited_tag,
+          limited_products: section.settings.limited_products,
+          show_preorder_badge: section.settings.show_preorder_badge,
+          preorder_label: section.settings.preorder_label,
+          preorder_tag: section.settings.preorder_tag,
+          preorder_products: section.settings.preorder_products,
+          preorder_placement: 'details',
+          show_coming_soon_badge: section.settings.show_coming_soon_badge,
+          coming_soon_label: section.settings.coming_soon_label,
+          coming_soon_tag: section.settings.coming_soon_tag,
+          coming_soon_products: section.settings.coming_soon_products,
+          show_low_stock_badge: section.settings.show_low_stock_badge,
+          low_stock_label: section.settings.low_stock_label,
+          low_stock_threshold: section.settings.low_stock_threshold,
+          low_stock_products: section.settings.low_stock_products
+        %}
       </div>
+      {%- if product.images.size > 1 -%}
+        <div class="remelle-pdp__thumbs" data-gallery-thumbs aria-label="{{ 'product.gallery' | t }}">
+          {%- for gallery_image in product.images -%}
+            <button
+              class="remelle-pdp__thumb{% if forloop.first %} is-active{% endif %}"
+              type="button"
+              data-gallery-thumb
+              data-image-id="{{ gallery_image.id }}"
+              aria-label="{{ 'product.thumbnail' | t: number: forloop.index }}"
+              {% if forloop.first %}aria-current="true"{% endif %}
+            >
+              {{
+                gallery_image
+                | image_url: width: 160, format: 'jpg' | image_tag:
+                  widths: '80, 160',
+                  sizes: '64px',
+                  alt: '',
+                  loading: 'lazy'
+              }}
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
     </div>
 
     <div class="remelle-pdp__buy">
@@ -53,6 +177,14 @@
           {%- endif -%}
           <p class="remelle-pdp__price" data-product-price>{{ current.price | money }}</p>
         </div>
+        {% render 'remelle-product-badges',
+          product: product,
+          variant: 'preorder',
+          show_preorder_badge: section.settings.show_preorder_badge,
+          preorder_label: section.settings.preorder_label,
+          preorder_tag: section.settings.preorder_tag,
+          preorder_products: section.settings.preorder_products
+        %}
       </div>
 
       {%- if product.description != blank -%}
@@ -96,7 +228,6 @@
               elsif pass == 'other' and is_color == false and is_size == false
                 assign show_option = true
               endif
-              assign option_index = option.position | minus: 1
             -%}
             {%- if show_option -%}
             <fieldset class="remelle-pdp__option{% if is_color %} remelle-pdp__option--color{% elsif is_size %} remelle-pdp__option--size{% endif %}">
@@ -110,32 +241,22 @@
                 {%- for value in option.values -%}
                   {%- liquid
                     assign swatch_color = value.swatch.color
-                    assign swatch_image = nil
                     if swatch_color == blank and is_color
                       assign swatch_name = value.name | downcase
                       case swatch_name
-                        when 'burgundy'
+                        when 'burgundy', 'dark red'
                           assign swatch_color = '#670D0D'
                         when 'black'
                           assign swatch_color = '#060505'
                         when 'off white', 'cream', 'ivory', 'white', 'cream white'
-                          assign swatch_color = '#F3EDE4'
-                        when 'brown'
+                          assign swatch_color = '#F5EDE3'
+                        when 'beige', 'light beige'
+                          assign swatch_color = '#F5EDE3'
+                        when 'brown', 'choco brown'
                           assign swatch_color = '#6A4A38'
                         else
                           assign swatch_color = '#D0CBC4'
                       endcase
-                    endif
-                    if is_color
-                      for variant in product.variants
-                        if variant.options[option_index] == value.name and variant.featured_image
-                          assign swatch_image = variant.featured_image
-                          break
-                        endif
-                      endfor
-                      if swatch_image == nil
-                        assign swatch_image = product.featured_image
-                      endif
                     endif
                     assign choice_label = value.name | replace: '/', ' / '
                   -%}
@@ -151,15 +272,8 @@
                       <span
                         class="remelle-pdp__swatch"
                         style="{% if swatch_color != blank %}background: {{ swatch_color }};{% endif %}"
-                      >
-                        {%- if swatch_image -%}
-                          {{
-                            swatch_image
-                            | image_url: width: 200
-                            | image_tag: alt: '', class: 'remelle-pdp__swatch-image', loading: 'lazy'
-                          }}
-                        {%- endif -%}
-                      </span>
+                      ></span>
+                      <span class="remelle-pdp__choice-label">{{ value.name | escape }}</span>
                     {%- else -%}
                       <span class="remelle-pdp__choice-name">{{ choice_label | escape }}</span>
                     {%- endif -%}
@@ -204,6 +318,8 @@
             name="add"
             data-add
             data-label="{{ add_label | escape }}"
+            data-basket-label="{{ basket_label | escape }}"
+            data-preorder-label="{{ preorder_label | escape }}"
             data-adding-label="{{ 'product.adding' | t | escape }}"
             data-added-label="{{ 'product.added' | t | escape }}"
             data-sold-out="{{ 'product.sold_out' | t | escape }}"
@@ -216,9 +332,9 @@
               {{ 'product.sold_out' | t }}
             {%- endif -%}
           </button>
-          <button class="remelle-pdp__wish" type="button" aria-pressed="false" aria-label="{{ 'products.wishlist' | t }}">
-            {% render 'icon-heart' %}
-          </button>
+          {%- if preorder_note != blank -%}
+            <p class="remelle-pdp__preorder-note" data-preorder-note {% unless current_is_preorder %}hidden{% endunless %}>{{ preorder_note | escape }}</p>
+          {%- endif -%}
         </div>
 
         {%- if section.settings.show_dynamic_checkout -%}
@@ -261,12 +377,13 @@
           "id": {{ variant.id }},
           "options": {{ variant.options | json }},
           "available": {{ variant.available | json }},
+          "preorder": {% render 'remelle-variant-preorder', product: product, variant: variant, preorder_product: preorder_button, rules: section.settings.preorder_size_rules %},
           "price": {{ variant.price | money | json }},
           "compare_at_price": {% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
           "inventory_management": {{ variant.inventory_management | json }},
           "inventory_policy": {{ variant.inventory_policy | json }},
           "inventory_quantity": {{ variant.inventory_quantity | json }},
-          "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1600 | json }}{% else %}null{% endif %}
+          "image_id": {% if variant.featured_image %}{{ variant.featured_image.id }}{% else %}null{% endif %}
         }{%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
     ]
@@ -288,30 +405,207 @@
   }
 
   .remelle-pdp__gallery {
-    display: grid;
-    flex: 1.35 1 742px;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    max-width: 742px;
+    --pdp-gallery-space: 96px;
+    display: flex;
+    flex: 1.15 1 560px;
+    flex-direction: column;
+    gap: 12px;
+    width: min(560px, 100%);
+    max-width: 560px;
+    height: calc(100svh - var(--header-height) - var(--pdp-gallery-space));
     min-width: 0;
+    min-height: 0;
   }
 
-  .remelle-pdp__tile {
-    aspect-ratio: 367 / 413;
+  .remelle-pdp__stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
     background: var(--color-beige);
-    overflow: hidden;
   }
 
-  .remelle-pdp__tile--wide {
-    grid-column: 1 / -1;
-    aspect-ratio: 742 / 413;
+  .remelle-pdp__slides {
+    position: relative;
+    height: 100%;
+    background: var(--color-beige);
+    touch-action: pan-y;
   }
 
-  .remelle-pdp__image,
-  .remelle-pdp__swatch-image {
+  .remelle-pdp__slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.7s ease;
+  }
+
+  .remelle-pdp__slide.is-active {
+    z-index: 1;
+    opacity: 1;
+  }
+
+  .remelle-pdp__slide img,
+  .remelle-pdp__image {
+    display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .remelle-pdp__thumbs {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .remelle-pdp__thumbs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .remelle-pdp__thumb {
+    flex: 0 0 64px;
+    width: 64px;
+    height: 72px;
+    padding: 4px;
+    border: 1px solid transparent;
+    background: var(--color-beige);
+    cursor: pointer;
+  }
+
+  .remelle-pdp__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .remelle-pdp__thumb.is-active {
+    border-color: var(--color-burgundy);
+  }
+
+  .remelle-pdp__thumb:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .remelle-pdp__slide,
+    .remelle-pdp__dynamic .shopify-payment-button__button--unbranded {
+      transition: none;
+    }
+  }
+
+  .remelle-pdp__nav {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--color-off-white) 88%, transparent);
+    color: var(--color-burgundy);
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+
+  .remelle-pdp__nav--prev {
+    left: 12px;
+  }
+
+  .remelle-pdp__nav--next {
+    right: 12px;
+  }
+
+  .remelle-pdp__nav:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .remelle-pdp__nav:focus-visible,
+  .remelle-pdp__slides:focus-visible {
+    outline: 1px solid var(--color-burgundy);
+    outline-offset: 3px;
+  }
+
+  .remelle-pdp__badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    pointer-events: none;
+  }
+
+  .remelle-pdp__badge {
+    margin: 0;
+    padding: 2px 6px;
+    border-radius: var(--radius-badge);
+    background: #ffffff;
+    color: #242424;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 12px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .remelle-pdp__badge--limited,
+  .remelle-pdp__badge--preorder,
+  .remelle-pdp__badge--coming {
+    color: #670d0d;
+  }
+
+  .remelle-pdp__preorder {
+    margin: 14px 0 0;
+    color: #670d0d;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .remelle-pdp__badge--sale {
+    background: var(--color-burgundy);
+    color: var(--color-off-white);
+  }
+
+  .remelle-pdp__stock {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    z-index: 3;
+    margin: 0;
+    max-width: calc(100% - 24px);
+    padding: 2px 6px;
+    border-radius: var(--radius-badge);
+    background: #ffffff;
+    color: #670d0d;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 12px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    pointer-events: none;
   }
 
   .remelle-pdp__buy {
@@ -404,10 +698,47 @@
 
   .remelle-pdp__dynamic {
     margin-top: 12px;
+    --shopify-accelerated-checkout-button-block-size: 44px;
+    --shopify-accelerated-checkout-button-border-radius: 0px;
+    --shopify-accelerated-checkout-button-box-shadow: none;
+    --shopify-accelerated-checkout-skeleton-background-color: var(--color-beige);
   }
 
-  .remelle-pdp__dynamic .shopify-payment-button__button {
-    min-height: 44px;
+  .remelle-pdp__dynamic .shopify-payment-button__button--unbranded {
+    min-height: 44px !important;
+    border: 1px solid var(--color-burgundy) !important;
+    border-radius: 0 !important;
+    background: var(--color-burgundy) !important;
+    box-shadow: none !important;
+    color: var(--color-off-white) !important;
+    font-family: var(--font-sans) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.96px !important;
+    text-transform: uppercase !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .remelle-pdp__dynamic .shopify-payment-button__button--unbranded:hover:not([disabled]) {
+    border-color: var(--color-black) !important;
+    background: var(--color-black) !important;
+    color: var(--color-off-white) !important;
+  }
+
+  .remelle-pdp__dynamic .shopify-payment-button__button--unbranded:focus-visible {
+    outline: 1px solid var(--color-burgundy) !important;
+    outline-offset: 3px;
+  }
+
+  .remelle-pdp__dynamic .shopify-payment-button__button--unbranded[disabled],
+  .remelle-pdp__dynamic .shopify-payment-button__button--unbranded[aria-disabled='true'] {
+    opacity: 0.4 !important;
+    cursor: default;
+  }
+
+  .remelle-pdp__dynamic .shopify-payment-button__more-options {
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
   }
 
   .remelle-pdp__description {
@@ -481,26 +812,43 @@
   }
 
   .remelle-pdp__choice--color {
-    flex-direction: column;
-    width: 81px;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
   }
 
   .remelle-pdp__swatch {
     display: block;
-    width: 81px;
-    height: 102px;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(6, 5, 5, 0.16);
+    border-radius: 50%;
     background: var(--color-beige);
-    overflow: hidden;
-    border: 1px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .remelle-pdp__swatch-image {
-    object-fit: contain;
+  .remelle-pdp__choice-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (hover: hover) {
+    .remelle-pdp__choice--color:hover .remelle-pdp__swatch {
+      transform: scale(1.08);
+    }
   }
 
   .remelle-pdp__choice--color:has(:checked) .remelle-pdp__swatch,
   .remelle-pdp__choice input:focus-visible + .remelle-pdp__swatch {
-    border-color: #242424;
+    box-shadow: 0 0 0 2px var(--color-off-white), 0 0 0 3px var(--color-burgundy);
   }
 
   .remelle-pdp__choice--text {
@@ -579,7 +927,6 @@
   .remelle-pdp__qty-btn:focus-visible,
   .remelle-pdp__qty-input:focus-visible,
   .remelle-pdp__add:focus-visible,
-  .remelle-pdp__wish:focus-visible,
   .remelle-pdp__row summary:focus-visible {
     outline: 1px solid var(--color-burgundy);
     outline-offset: 3px;
@@ -587,6 +934,7 @@
 
   .remelle-pdp__purchase {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-top: 24px;
   }
@@ -595,9 +943,9 @@
     flex: 1 1 auto;
     height: 44px;
     padding: 0 20px;
-    border: 1px solid var(--color-off-white);
-    background: var(--color-burgundy);
-    color: var(--color-off-white);
+    border: 1px solid var(--color-beige);
+    background: var(--color-beige);
+    color: var(--color-burgundy);
     font-family: var(--font-sans);
     font-size: 12px;
     font-weight: 600;
@@ -607,32 +955,27 @@
     cursor: pointer;
   }
 
+  .remelle-pdp__preorder-note {
+    flex: 1 0 100%;
+    margin: 2px 0 0;
+    color: #670d0d;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
   .remelle-pdp__add:disabled {
     opacity: 0.4;
     cursor: default;
   }
 
-  .remelle-pdp__wish {
-    display: inline-flex;
-    flex: 0 0 46px;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 44px;
-    padding: 0;
-    border: 1px solid var(--color-burgundy);
-    background: transparent;
-    color: var(--color-burgundy);
-    cursor: pointer;
-  }
-
-  .remelle-pdp__wish .icon-heart {
-    width: 24px;
-    height: 24px;
-  }
-
-  .remelle-pdp__wish[aria-pressed='true'] .icon-heart path {
-    fill: currentColor;
+  @media (hover: hover) {
+    .remelle-pdp__add:hover:not(:disabled) {
+      border-color: var(--color-off-white);
+      background: var(--color-off-white);
+      color: var(--color-burgundy);
+    }
   }
 
   .remelle-pdp__info {
@@ -704,8 +1047,33 @@
     line-height: 22px;
   }
 
-  .remelle-pdp__answer p {
+  .remelle-pdp__answer p,
+  .remelle-pdp__answer ul {
     margin: 0;
+  }
+
+  .remelle-pdp__answer ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  .remelle-pdp__answer li {
+    position: relative;
+    padding-left: 14px;
+  }
+
+  .remelle-pdp__answer li + li {
+    margin-top: 6px;
+  }
+
+  .remelle-pdp__answer li::before {
+    content: "";
+    position: absolute;
+    top: 0.65em;
+    left: 0;
+    width: 5px;
+    height: 1px;
+    background: currentColor;
   }
 
   @media (max-width: 1024px) {
@@ -720,6 +1088,11 @@
       width: 100%;
       max-width: none;
     }
+
+    .remelle-pdp__gallery {
+      --pdp-gallery-space: 80px;
+      height: calc(100svh - var(--header-height) - var(--pdp-gallery-space));
+    }
   }
 
   @media (max-width: 768px) {
@@ -730,15 +1103,6 @@
     .remelle-pdp__layout {
       padding-inline: var(--page-inset);
       gap: 24px;
-    }
-
-    .remelle-pdp__gallery {
-      grid-template-columns: 1fr;
-    }
-
-    .remelle-pdp__tile--wide {
-      grid-column: auto;
-      aspect-ratio: 4 / 5;
     }
 
     .remelle-pdp__heading,
@@ -758,13 +1122,14 @@
       line-height: 1.2;
     }
 
-    .remelle-pdp__choice--color,
-    .remelle-pdp__swatch {
-      width: 72px;
+    .remelle-pdp__gallery {
+      --pdp-gallery-space: 64px;
     }
 
-    .remelle-pdp__swatch {
-      height: 90px;
+    .remelle-pdp__thumb {
+      flex-basis: 52px;
+      width: 52px;
+      height: 60px;
     }
   }
 
@@ -789,8 +1154,110 @@
     const compare = section.querySelector('[data-product-compare]');
     const add = section.querySelector('[data-add]');
     const unavailable = section.querySelector('[data-unavailable]');
-    const gallery = section.querySelector('.remelle-pdp__image--main');
     const quantity = section.querySelector('[data-qty-input]');
+    const gallerySlides = [...section.querySelectorAll('[data-gallery-slide]')];
+    const galleryThumbs = [...section.querySelectorAll('[data-gallery-thumb]')];
+    const galleryThumbRow = section.querySelector('[data-gallery-thumbs]');
+    const galleryStage = section.querySelector('.remelle-pdp__stage');
+    const galleryPrev = section.querySelector('[data-gallery-prev]');
+    const galleryNext = section.querySelector('[data-gallery-next]');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activeIndex = Math.max(0, gallerySlides.findIndex((slide) => slide.classList.contains('is-active')));
+    let galleryTimer = 0;
+    let galleryPaused = false;
+    let galleryHovering = false;
+
+    const setGalleryIndex = (index) => {
+      if (!gallerySlides.length) return;
+      const count = gallerySlides.length;
+      activeIndex = ((index % count) + count) % count;
+      gallerySlides.forEach((slide, slideIndex) => {
+        const active = slideIndex === activeIndex;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+      galleryThumbs.forEach((thumb, thumbIndex) => {
+        const active = thumbIndex === activeIndex;
+        thumb.classList.toggle('is-active', active);
+        if (active) thumb.setAttribute('aria-current', 'true');
+        else thumb.removeAttribute('aria-current');
+      });
+      const activeThumb = galleryThumbs[activeIndex];
+      if (galleryThumbRow && activeThumb) {
+        const left = activeThumb.offsetLeft - (galleryThumbRow.clientWidth - activeThumb.clientWidth) / 2;
+        galleryThumbRow.scrollTo({ left: Math.max(0, left), behavior: reduceMotion ? 'auto' : 'smooth' });
+      }
+    };
+
+    const restartGallery = () => {
+      window.clearInterval(galleryTimer);
+      if (reduceMotion || gallerySlides.length < 2) return;
+      galleryTimer = window.setInterval(() => {
+        if (galleryPaused || document.hidden) return;
+        setGalleryIndex(activeIndex + 1);
+      }, 3000);
+    };
+
+    const showGalleryImage = (imageId, animate) => {
+      if (imageId == null) return;
+      const index = gallerySlides.findIndex((node) => node.getAttribute('data-image-id') === String(imageId));
+      if (index < 0) return;
+      setGalleryIndex(index);
+      if (animate) restartGallery();
+    };
+
+    if (gallerySlides.length > 1 && galleryStage) {
+      if (galleryPrev) {
+        galleryPrev.addEventListener('click', () => {
+          setGalleryIndex(activeIndex - 1);
+          restartGallery();
+        });
+      }
+      if (galleryNext) {
+        galleryNext.addEventListener('click', () => {
+          setGalleryIndex(activeIndex + 1);
+          restartGallery();
+        });
+      }
+      galleryThumbs.forEach((thumb, index) => {
+        thumb.addEventListener('click', () => {
+          setGalleryIndex(index);
+          restartGallery();
+        });
+      });
+
+      let swipeStart = null;
+      galleryStage.addEventListener('pointerdown', (event) => {
+        if (event.target.closest('.remelle-pdp__nav')) return;
+        swipeStart = event.clientX;
+        galleryPaused = true;
+      });
+      const endSwipe = (event) => {
+        if (swipeStart != null && event) {
+          const delta = event.clientX - swipeStart;
+          if (Math.abs(delta) > 36) setGalleryIndex(activeIndex + (delta < 0 ? 1 : -1));
+        }
+        swipeStart = null;
+        galleryPaused = galleryHovering;
+        restartGallery();
+      };
+      galleryStage.addEventListener('pointerup', endSwipe);
+      galleryStage.addEventListener('pointercancel', () => endSwipe(null));
+      galleryStage.addEventListener('mouseenter', () => {
+        galleryHovering = true;
+        galleryPaused = true;
+      });
+      galleryStage.addEventListener('mouseleave', () => {
+        galleryHovering = false;
+        galleryPaused = false;
+      });
+      galleryStage.addEventListener('focusin', () => {
+        galleryPaused = true;
+      });
+      galleryStage.addEventListener('focusout', () => {
+        galleryPaused = galleryHovering;
+      });
+    }
     const dynamicCheckout = section.querySelector('[data-dynamic-checkout]');
 
     const selectedOptions = () =>
@@ -833,12 +1300,20 @@
       markOptionAvailability(chosen);
       const variant = variants.find((item) => item.options.every((option, index) => option === chosen[index]));
 
+      const preorderNote = section.querySelector('[data-preorder-note]');
+      const labelFor = (item) => {
+        if (item && item.preorder && add && add.dataset.preorderLabel) return add.dataset.preorderLabel;
+        if (add && add.dataset.basketLabel) return add.dataset.basketLabel;
+        return add ? add.dataset.label : '';
+      };
+
       if (!variant) {
         if (idInput) idInput.value = '';
         if (add) {
           add.disabled = true;
           add.textContent = add.dataset.unavailableLabel || add.dataset.soldOut;
         }
+        if (preorderNote) preorderNote.hidden = true;
         if (unavailable) unavailable.hidden = false;
         if (dynamicCheckout) dynamicCheckout.hidden = true;
         if (compare) {
@@ -862,14 +1337,14 @@
         }
       }
       if (add) {
+        const label = labelFor(variant);
+        add.dataset.label = label;
         add.disabled = !variant.available;
-        add.textContent = variant.available ? add.dataset.label : add.dataset.soldOut;
+        add.textContent = variant.available ? label : add.dataset.soldOut;
       }
+      if (preorderNote) preorderNote.hidden = !(variant.available && variant.preorder);
       if (dynamicCheckout) dynamicCheckout.hidden = !variant.available;
-      if (gallery && variant.image) {
-        gallery.src = variant.image;
-        gallery.srcset = '';
-      }
+      if (variant.image_id) showGalleryImage(variant.image_id, galleryReady);
       syncQuantityBounds(variant);
 
       const url = new URL(window.location.href);
@@ -894,15 +1369,72 @@
       });
     });
 
-    const wish = section.querySelector('.remelle-pdp__wish');
-    if (wish) {
-      wish.addEventListener('click', () => {
-        const pressed = wish.getAttribute('aria-pressed') === 'true';
-        wish.setAttribute('aria-pressed', pressed ? 'false' : 'true');
+    let galleryReady = false;
+    sync();
+    galleryReady = true;
+    restartGallery();
+
+    // On right-click only: quietly swap the active image to a JPEG blob so the
+    // browser's native "Save image as…" can download .jpg — no auto-download,
+    // and the normal context menu stays intact.
+    const galleryRoot = section.querySelector('.remelle-pdp__gallery');
+    if (galleryRoot) {
+      const toJpegBlob = async (img) => {
+        if (!img || img.dataset.remelleJpeg === '1' || img.dataset.remelleJpegPending === '1') return;
+        const source = img.currentSrc || img.src;
+        if (!source || source.startsWith('blob:') || !/\/cdn\/shop\//.test(source)) return;
+
+        img.dataset.remelleJpegPending = '1';
+        try {
+          const url = new URL(source, window.location.href);
+          url.searchParams.set('format', 'jpg');
+          url.searchParams.set('width', '2000');
+          const response = await fetch(url.href, {
+            mode: 'cors',
+            credentials: 'omit',
+            headers: { Accept: 'image/jpeg,image/*,*/*;q=0.8' }
+          });
+          if (!response.ok) return;
+          const raw = await response.blob();
+          const bitmap = await createImageBitmap(raw);
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            bitmap.close();
+            return;
+          }
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(bitmap, 0, 0);
+          bitmap.close();
+          const jpeg = await new Promise((resolve) => {
+            canvas.toBlob(resolve, 'image/jpeg', 0.92);
+          });
+          if (!jpeg || !img.isConnected) return;
+          const objectUrl = URL.createObjectURL(jpeg);
+          const previous = img.dataset.remelleBlob;
+          img.removeAttribute('srcset');
+          img.removeAttribute('sizes');
+          img.src = objectUrl;
+          img.dataset.remelleJpeg = '1';
+          img.dataset.remelleBlob = objectUrl;
+          if (previous) URL.revokeObjectURL(previous);
+        } catch (_) {
+          /* leave the original image alone */
+        } finally {
+          delete img.dataset.remelleJpegPending;
+        }
+      };
+
+      galleryRoot.addEventListener('contextmenu', () => {
+        const activeImage =
+          galleryRoot.querySelector('.remelle-pdp__slide.is-active .remelle-pdp__image') ||
+          galleryRoot.querySelector('.remelle-pdp__image');
+        toJpegBlob(activeImage);
       });
     }
-
-    sync();
   });
 {% endjavascript %}
 
@@ -920,10 +1452,198 @@
       "default": "Add to basket"
     },
     {
+      "type": "text",
+      "id": "preorder_button_label",
+      "label": "t:labels.preorder_button_label",
+      "info": "t:labels.preorder_button_label_info",
+      "default": "Pre order"
+    },
+    {
+      "type": "textarea",
+      "id": "preorder_size_rules",
+      "label": "t:labels.preorder_size_rules",
+      "info": "t:labels.preorder_size_rules_info"
+    },
+    {
+      "type": "text",
+      "id": "preorder_note",
+      "label": "t:labels.preorder_note",
+      "info": "t:labels.preorder_note_info",
+      "default": "Preorder takes from 10 to 20 days."
+    },
+    {
       "type": "checkbox",
       "id": "show_dynamic_checkout",
       "label": "t:labels.show_dynamic_checkout",
       "default": true
+    },
+    {
+      "type": "paragraph",
+      "content": "t:labels.product_badges_section_info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_new_badge",
+      "label": "t:labels.show_new_badge",
+      "info": "t:labels.new_products_info",
+      "default": false
+    },
+    {
+      "type": "product_list",
+      "id": "new_products",
+      "label": "t:labels.new_products",
+      "info": "t:labels.new_products_picker_info",
+      "limit": 50
+    },
+    {
+      "type": "text",
+      "id": "badge_label",
+      "label": "t:labels.badge_label",
+      "default": "New in"
+    },
+    {
+      "type": "text",
+      "id": "badge_tag",
+      "label": "t:labels.badge_tag",
+      "info": "t:labels.badge_tag_optional_info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "t:labels.show_sale_badge",
+      "info": "t:labels.sale_products_info",
+      "default": false
+    },
+    {
+      "type": "product_list",
+      "id": "sale_products",
+      "label": "t:labels.sale_products",
+      "info": "t:labels.sale_products_picker_info",
+      "limit": 50
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "t:labels.sale_label",
+      "default": "Sale"
+    },
+    {
+      "type": "text",
+      "id": "sale_tag",
+      "label": "t:labels.sale_tag",
+      "info": "t:labels.sale_tag_optional_info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_limited_badge",
+      "label": "t:labels.show_limited_badge",
+      "info": "t:labels.limited_products_info",
+      "default": false
+    },
+    {
+      "type": "product_list",
+      "id": "limited_products",
+      "label": "t:labels.limited_products",
+      "info": "t:labels.limited_products_picker_info",
+      "limit": 50
+    },
+    {
+      "type": "text",
+      "id": "limited_label",
+      "label": "t:labels.limited_label",
+      "default": "Limited pieces"
+    },
+    {
+      "type": "text",
+      "id": "limited_tag",
+      "label": "t:labels.limited_tag",
+      "info": "t:labels.limited_tag_optional_info",
+      "default": "limited"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_preorder_badge",
+      "label": "t:labels.show_preorder_badge",
+      "info": "t:labels.preorder_products_info",
+      "default": false
+    },
+    {
+      "type": "product_list",
+      "id": "preorder_products",
+      "label": "t:labels.preorder_products",
+      "info": "t:labels.preorder_products_picker_info",
+      "limit": 50
+    },
+    {
+      "type": "text",
+      "id": "preorder_label",
+      "label": "t:labels.preorder_label",
+      "default": "Pre-order"
+    },
+    {
+      "type": "text",
+      "id": "preorder_tag",
+      "label": "t:labels.preorder_tag",
+      "info": "t:labels.preorder_tag_optional_info",
+      "default": "pre-order"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_coming_soon_badge",
+      "label": "t:labels.show_coming_soon_badge",
+      "info": "t:labels.coming_soon_products_info",
+      "default": false
+    },
+    {
+      "type": "product_list",
+      "id": "coming_soon_products",
+      "label": "t:labels.coming_soon_products",
+      "info": "t:labels.coming_soon_products_picker_info",
+      "limit": 50
+    },
+    {
+      "type": "text",
+      "id": "coming_soon_label",
+      "label": "t:labels.coming_soon_label",
+      "default": "Coming soon"
+    },
+    {
+      "type": "text",
+      "id": "coming_soon_tag",
+      "label": "t:labels.coming_soon_tag",
+      "info": "t:labels.coming_soon_tag_optional_info",
+      "default": "coming soon"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_low_stock_badge",
+      "label": "t:labels.show_low_stock_badge",
+      "info": "t:labels.low_stock_products_info",
+      "default": false
+    },
+    {
+      "type": "product_list",
+      "id": "low_stock_products",
+      "label": "t:labels.low_stock_products",
+      "info": "t:labels.low_stock_products_picker_info",
+      "limit": 50
+    },
+    {
+      "type": "text",
+      "id": "low_stock_label",
+      "label": "t:labels.low_stock_label",
+      "info": "t:labels.low_stock_label_info",
+      "default": "Only __COUNT__ left"
+    },
+    {
+      "type": "range",
+      "id": "low_stock_threshold",
+      "label": "t:labels.low_stock_threshold",
+      "info": "t:labels.low_stock_threshold_info",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 5
     }
   ],
   "blocks": [

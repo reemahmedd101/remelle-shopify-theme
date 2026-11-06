@@ -1,6 +1,6 @@
 <section class="block-container">
   {% if article.image %}
-    {{ article.image | image_url: width: 1000 | image_tag }}
+    {{ article.image | image_url: width: 1000, format: 'jpg' | image_tag }}
   {% endif %}
 
   <h1>{{ article.title }}</h1>

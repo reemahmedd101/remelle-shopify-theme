@@ -67,9 +67,12 @@
             <span class="remelle-contact__label">{{ section.settings.email_label | escape }}</span>
             <input
               class="remelle-contact__input"
+              id="RemelleContactEmail-{{ section.id }}"
               type="email"
               name="contact[email]"
               autocomplete="email"
+              inputmode="email"
+              spellcheck="false"
               required
               value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
             >
@@ -364,7 +367,7 @@
       "type": "text",
       "id": "phone",
       "label": "t:labels.contact_phone",
-      "default": "01060660633"
+      "default": "01042906003"
     },
     {
       "type": "text",

@@ -38,6 +38,7 @@
     "contact": "Contact",
     "contact_us": "Contact us",
     "email": "Email address",
+    "email_invalid": "Please enter a valid email (name@example.com).",
     "new_collection": "New collection",
     "newsletter_success": "Thank you for subscribing.",
     "open_menu": "Open menu",
@@ -47,6 +48,7 @@
     "delivery_conditions": "Delivery and Conditions",
     "return_exchange": "Return & Exchange",
     "shop": "Shop",
+    "sign_out": "Sign out",
     "wordmark": "Remelle"
   },
   "cart": {
@@ -64,6 +66,9 @@
     "empty_body": "Browse the collection and add pieces when you are ready.",
     "empty_title": "Your cart is empty",
     "eyebrow": "Shopping bag",
+    "free_shipping_progress": "Add __AMOUNT__ more for free shipping",
+    "free_shipping_success": "Yay — you've unlocked your offer",
+    "offer_quantity_progress": "Add __COUNT__ more items to unlock your offer",
     "item_count": {
       "one": "{{ count }} item",
       "other": "{{ count }} items"
@@ -167,17 +172,25 @@
     "use_at_checkout": "Use this gift card at checkout"
   },
   "hero": {
-    "slides": "Campaign slides"
+    "slides": "Campaign slides",
+    "carousel": "Hero slideshow",
+    "slide_n": "Show slide {{ number }}"
   },
   "product": {
     "add_to_basket": "Add to basket",
+    "preorder_now": "Pre order",
+    "preorder_note": "Preorder takes from 10 to 20 days.",
     "adding": "Adding…",
     "added": "Added to cart",
     "sold_out": "Sold out",
     "unavailable": "This combination is unavailable",
     "quantity": "Quantity",
     "decrease": "Decrease quantity",
-    "increase": "Increase quantity"
+    "increase": "Increase quantity",
+    "gallery": "Product images",
+    "previous_image": "Previous image",
+    "next_image": "Next image",
+    "thumbnail": "Show image {{ number }}"
   },
   "products": {
     "add": "Add {{ title }} to cart",
@@ -186,6 +199,10 @@
     "next": "Next products",
     "previous": "Previous products",
     "progress": "Product carousel progress",
+    "preorder_badge": "Pre-order",
+    "coming_soon_badge": "Coming soon",
+    "coming_soon_heading": "Coming soon",
+    "coming_soon_empty": "Select products for this Coming soon section.",
     "wishlist": "Save"
   },
   "hello_world": {

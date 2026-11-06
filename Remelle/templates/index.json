@@ -2,24 +2,148 @@
   "sections": {
     "hero": {
       "type": "remelle-hero",
-      "settings": {}
+      "blocks": {
+        "slide_1": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/NZ5_5849_170def6f-485d-4ba3-a51d-ec2991ead021.jpg",
+            "image_mobile": "shopify://shop_images/NZ5_5849.jpg",
+            "image_alt": "Model seated in an ivory coat",
+            "heading": "",
+            "description": "",
+            "button_label": "",
+            "button_link": ""
+          }
+        },
+        "slide_2": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/NZ5_6058_0cb70868-0310-495d-a2ad-387669a0a62e.jpg",
+            "image_alt": "Model standing in a dark shirt",
+            "heading": "",
+            "description": "",
+            "button_label": "",
+            "button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "slide_1",
+        "slide_2"
+      ],
+      "settings": {
+        "image_alt": "Model seated in an ivory coat",
+        "image_2_alt": "Model standing in a dark shirt",
+        "eyebrow": "Fall / Winter 2026",
+        "heading": "Timeless pieces,\nModern muse",
+        "description": "Sculptural silhouettes, uncompromising detail\nand a new language of modern elegance.",
+        "button_label": "Discover the winter collection",
+        "button_link": ""
+      }
     },
     "house": {
       "type": "remelle-house",
-      "settings": {}
+      "settings": {
+        "eyebrow": "01 \u2014 The brand",
+        "heading": "Luxury, redefined through",
+        "script": "Intention & authenticity",
+        "description": "Beyond fleeting trends, Remelle creates timeless statement pieces with meticulous craftsmanship and an unwavering commitment to quality. Each collection is made to be seen and remembered."
+      }
     },
     "products": {
       "type": "remelle-products",
-      "settings": {}
+      "settings": {
+        "products": [],
+        "collection": "fall-winter26",
+        "products_to_show": 8,
+        "show_new_badge": true,
+        "new_products": [
+          "the-allure-blazer-in-black",
+          "the-allure-blazer-in-dark-red",
+          "the-black-balloon-pants",
+          "the-wrap-hoodie",
+          "the-wrap-hoodie-in-light-beige",
+          "the-etoile-coat-in-choco-brown",
+          "coat"
+        ],
+        "badge_label": "New in",
+        "badge_tag": "",
+        "show_sale_badge": false,
+        "sale_products": [],
+        "sale_label": "Sale",
+        "sale_tag": "",
+        "show_limited_badge": true,
+        "limited_products": [
+          "coat",
+          "the-etoile-coat-in-choco-brown"
+        ],
+        "limited_label": "Limited pieces",
+        "limited_tag": "limited",
+        "show_low_stock_badge": true,
+        "low_stock_products": [
+          "coat",
+          "the-etoile-coat-in-choco-brown",
+          "the-wrap-hoodie-in-light-beige",
+          "the-wrap-hoodie",
+          "the-black-balloon-pants",
+          "the-allure-blazer-in-dark-red",
+          "the-allure-blazer-in-black"
+        ],
+        "low_stock_label": "Only __COUNT__ left!",
+        "low_stock_threshold": 10,
+        "eyebrow": "02 \u2014 New collection",
+        "heading": "Objects of desire",
+        "view_all_label": "View all"
+      }
+    },
+    "coming_soon": {
+      "type": "remelle-coming-soon",
+      "settings": {
+        "eyebrow": "Next arrival",
+        "heading": "Coming soon",
+        "script": "",
+        "description": "A first look at pieces still being finished. Preorder the ones you want to wear first.",
+        "products": [
+          "the-starlight-jacket-in-black",
+          "the-starlight-jacket-in-white"
+        ],
+        "badge_label": "Coming soon",
+        "preorder_label": "Pre-order",
+        "preorder_products": [
+          "the-starlight-jacket-in-black",
+          "the-starlight-jacket-in-white"
+        ]
+      }
     },
     "editorial": {
       "type": "remelle-editorial",
-      "settings": {}
+      "settings": {
+        "image": "shopify://shop_images/NZ5_6058_0cb70868-0310-495d-a2ad-387669a0a62e.jpg",
+        "image_alt": "Three models walking in the winter collection",
+        "eyebrow": "03 \u2014 How we wore it",
+        "heading": "Remelle in action"
+      }
     },
     "story": {
       "type": "remelle-story",
-      "settings": {}
+      "settings": {
+        "eyebrow": "04 \u2014 Who we are",
+        "heading": "Our story",
+        "image": "shopify://shop_images/Minimalist_Ivory_Coat_Rack_Editorial.png",
+        "image_alt": "Model in a black coat holding a Remelle shopping bag",
+        "statement": "A brand shaped by intention",
+        "body": "<p>Remelle was born from a desire to redefine luxury fashion with intention and authenticity. In a world saturated with fleeting trends, the founder envisioned a brand rooted in timeless elegance, meticulous craftsmanship and an unwavering commitment to quality.</p><p>Drawing from art, architecture and cultural heritage, each collection transcends seasons. Every garment is designed as a statement of modern sophistication, exceptional in feeling, exacting in finish and entirely individual.</p>",
+        "button_label": "Read our story",
+        "button_link": ""
+      }
     }
   },
-  "order": ["hero", "house", "products", "editorial", "story"]
+  "order": [
+    "hero",
+    "house",
+    "products",
+    "coming_soon",
+    "editorial",
+    "story"
+  ]
 }

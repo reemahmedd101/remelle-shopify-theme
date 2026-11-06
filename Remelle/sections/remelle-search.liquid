@@ -43,8 +43,7 @@
                   <a class="remelle-search__media" href="{{ result.url }}">
                     {{
                       featured_image
-                      | image_url: width: 400
-                      | image_tag:
+                      | image_url: width: 400, format: 'jpg' | image_tag:
                         widths: '120, 240, 400',
                         sizes: '120px',
                         alt: result.title,

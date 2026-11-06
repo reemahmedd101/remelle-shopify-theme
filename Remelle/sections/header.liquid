@@ -1,7 +1,6 @@
 {% liquid
   assign about_url = pages['about'].url | default: '/pages/about'
-  assign contact_url = pages['contact'].url | default: '/pages/contact'
-  assign account_url = routes.account_url
+  assign account_menu = section.settings.customer_account_menu.handle | default: 'customer-account-main-menu'
   assign shop_url = routes.all_products_collection_url
 
   assign shop_label = section.settings.shop_label
@@ -15,10 +14,6 @@
   assign account_label = section.settings.account_label
   if account_label == blank
     assign account_label = 'chrome.account' | t
-  endif
-  assign contact_label = section.settings.contact_label
-  if contact_label == blank
-    assign contact_label = 'chrome.contact' | t
   endif
   assign cart_base_label = section.settings.cart_label
   if cart_base_label == blank
@@ -52,11 +47,19 @@
     </a>
 
     <div class="site-header__group site-header__group--end">
-      <div class="site-header__desktop-links site-header__desktop-links--end">
-        <a class="site-nav-link" href="{{ account_url }}">{{ account_label | escape }}</a>
-        {% capture contact_title %}{{ contact_label }}{% endcapture %}
-        {% render 'menu-links', menu: section.settings.menu_secondary, titles: contact_title, urls: contact_url, class: 'site-nav-link' %}
-      </div>
+      {% if shop.customer_accounts_enabled %}
+        <shopify-account
+          class="site-header__account"
+          menu="{{ account_menu }}"
+          data-sign-out-url="{{ routes.account_logout_url }}"
+          data-sign-out-label="{{ 'chrome.sign_out' | t | escape }}"
+        >
+          <span slot="signed-out-avatar" class="site-header__account-icon">
+            {{ 'icon-account.svg' | inline_asset_content }}
+            <span class="site-header__account-label">{{ account_label | escape }}</span>
+          </span>
+        </shopify-account>
+      {% endif %}
       <a
         class="site-nav-link site-header__cart"
         href="{{ routes.cart_url }}"
@@ -88,8 +91,6 @@
       <ul class="site-header__drawer-links">
         <li><a class="site-header__drawer-link" href="{{ shop_url }}">{{ shop_label | escape }}</a></li>
         <li><a class="site-header__drawer-link" href="{{ about_url }}">{{ about_label | escape }}</a></li>
-        <li><a class="site-header__drawer-link" href="{{ account_url }}">{{ account_label | escape }}</a></li>
-        <li><a class="site-header__drawer-link" href="{{ contact_url }}">{{ contact_label | escape }}</a></li>
         <li>
           <a
             class="site-header__drawer-link"
@@ -112,10 +113,25 @@
     const drawer = header.querySelector('[data-nav-drawer]');
     if (!openBtn || !drawer) return;
 
+    let closeTimer = 0;
     const setOpen = (open) => {
-      drawer.hidden = !open;
+      window.clearTimeout(closeTimer);
       openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       document.documentElement.classList.toggle('nav-open', open);
+      if (open) {
+        drawer.hidden = false;
+        requestAnimationFrame(() => drawer.classList.add('is-open'));
+        return;
+      }
+      drawer.classList.remove('is-open');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) {
+        drawer.hidden = true;
+        return;
+      }
+      closeTimer = window.setTimeout(() => {
+        drawer.hidden = true;
+      }, 380);
     };
 
     openBtn.addEventListener('click', () => setOpen(true));
@@ -130,6 +146,59 @@
       if (event.key === 'Escape' && !drawer.hidden) setOpen(false);
     });
   });
+
+  const watchAccount = (account, tries = 0) => {
+    if (!account.shadowRoot) {
+      if (tries < 40) requestAnimationFrame(() => watchAccount(account, tries + 1));
+      return;
+    }
+    if (account.dataset.remelleAccountBound === 'true') return;
+    account.dataset.remelleAccountBound = 'true';
+
+    const signOutUrl = account.dataset.signOutUrl;
+    const signOutLabel = account.dataset.signOutLabel;
+    const syncAccount = () => {
+      const root = account.shadowRoot;
+      const login = root.querySelector('.account__login-slot');
+      const menu = root.querySelector('.account__menu-region');
+      const sheet = root.querySelector('.account');
+      if (!login || !menu || !sheet) return;
+
+      const signedIn = login.hasAttribute('hidden') && !sheet.classList.contains('loading');
+      menu.style.display = signedIn ? '' : 'none';
+      if (!signedIn) return;
+
+      const nav = menu.querySelector('nav');
+      if (!nav) return;
+      nav.querySelectorAll('a').forEach((link) => {
+        if (link.dataset.remelleSignOut === 'true') return;
+        const href = link.getAttribute('href') || '';
+        const keep = href.includes('/orders') || href.includes('/profile');
+        if (!keep) link.remove();
+      });
+      if (!signOutUrl || nav.querySelector('[data-remelle-sign-out]')) return;
+
+      const signOut = document.createElement('a');
+      signOut.className = 'button outline';
+      signOut.href = signOutUrl;
+      signOut.target = '_top';
+      signOut.dataset.remelleSignOut = 'true';
+      signOut.textContent = signOutLabel;
+      nav.appendChild(signOut);
+    };
+
+    new MutationObserver(syncAccount).observe(account.shadowRoot, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['hidden', 'class']
+    });
+    syncAccount();
+  };
+
+  document.querySelectorAll('shopify-account[data-sign-out-url]').forEach((account) => {
+    watchAccount(account);
+  });
 {% endjavascript %}
 
 {% schema %}
@@ -140,11 +209,6 @@
       "type": "link_list",
       "id": "menu",
       "label": "t:labels.menu"
-    },
-    {
-      "type": "link_list",
-      "id": "menu_secondary",
-      "label": "t:labels.menu_secondary"
     },
     {
       "type": "text",
@@ -165,10 +229,10 @@
       "default": "Account"
     },
     {
-      "type": "text",
-      "id": "contact_label",
-      "label": "t:labels.contact_label",
-      "default": "Contact"
+      "type": "link_list",
+      "id": "customer_account_menu",
+      "label": "t:labels.customer_account_menu",
+      "default": "customer-account-main-menu"
     },
     {
       "type": "text",

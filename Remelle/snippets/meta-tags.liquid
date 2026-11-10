@@ -114,10 +114,18 @@
 
 {%- liquid
   assign remelle_favicon_svg = 'Remelle icon.svg' | asset_url
+  assign remelle_favicon_32 = 'remelle-icon-32.png' | asset_url
+  assign remelle_favicon_48 = 'remelle-icon-48.png' | asset_url
+  assign remelle_favicon_180 = 'remelle-icon-180.png' | asset_url
+  assign remelle_favicon_192 = 'remelle-icon-192.png' | asset_url
 -%}
 <link rel="icon" href="{{ remelle_favicon_svg }}" type="image/svg+xml" sizes="any">
+<link rel="icon" href="{{ remelle_favicon_32 }}" type="image/png" sizes="32x32">
+<link rel="icon" href="{{ remelle_favicon_48 }}" type="image/png" sizes="48x48">
+<link rel="icon" href="{{ remelle_favicon_192 }}" type="image/png" sizes="192x192">
 <link rel="shortcut icon" href="{{ remelle_favicon_svg }}">
-<link rel="apple-touch-icon" sizes="180x180" href="{{ 'remelle-icon-180.png' | asset_url }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ remelle_favicon_180 }}">
+<link rel="apple-touch-icon" sizes="192x192" href="{{ remelle_favicon_192 }}">
 
 {% if page_description %}
   <meta

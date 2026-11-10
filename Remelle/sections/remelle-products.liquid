@@ -199,7 +199,9 @@
     margin: 48px auto 0;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   .remelle-products__track::-webkit-scrollbar {
@@ -282,6 +284,13 @@
 
     .remelle-products__track {
       margin-top: 32px;
+      scroll-padding-inline: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .remelle-products__track {
+      scroll-behavior: auto;
     }
   }
 {% endstylesheet %}
@@ -295,40 +304,189 @@
     const progress = section.querySelector('.remelle-products__progress');
     const previous = section.querySelector('[data-direction="prev"]');
     const next = section.querySelector('[data-direction="next"]');
-
     const controls = section.querySelector('.remelle-products__controls');
+    if (!track) return;
+
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+    const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const AUTOPLAY_MS = 5000;
+    const RESUME_MS = 5500;
+    let autoplayTimer = null;
+    let resumeTimer = null;
+    let inView = true;
+    let userPaused = false;
+
+    const cards = () => [...track.querySelectorAll('.remelle-card')];
+
+    const maxScroll = () => Math.max(0, track.scrollWidth - track.clientWidth);
 
     const update = () => {
-      if (!track || !fill || !progress) return;
-      const max = track.scrollWidth - track.clientWidth;
+      if (!fill || !progress) return;
+      const max = maxScroll();
       const canScroll = max > 8;
       if (controls) controls.hidden = !canScroll;
       const ratio = track.scrollWidth === 0 ? 0 : (track.clientWidth + track.scrollLeft) / track.scrollWidth;
       const amount = Math.max(0, Math.min(1, ratio));
       fill.style.transform = `scaleX(${amount})`;
       progress.setAttribute('aria-valuenow', String(Math.round(amount * 100)));
-      if (previous) previous.disabled = track.scrollLeft <= 1;
-      if (next) next.disabled = !canScroll || track.scrollLeft >= max - 1;
+      if (previous) previous.disabled = !canScroll ? true : track.scrollLeft <= 1 && !mobileQuery.matches;
+      if (next) next.disabled = !canScroll;
+      if (mobileQuery.matches && canScroll) {
+        if (previous) previous.disabled = false;
+        if (next) next.disabled = false;
+      }
     };
 
     const step = () => {
-      const card = track.querySelector('.remelle-card');
-      if (!card) return 379;
-      return card.getBoundingClientRect().width + 16;
+      const list = cards();
+      if (!list.length) return 379;
+      const first = list[0];
+      const gap = 16;
+      // Prefer offsetWidth so layout is ready even before paint settles.
+      const width = first.offsetWidth || first.getBoundingClientRect().width;
+      return Math.max(1, Math.round(width + gap));
     };
 
-    if (track && previous && next) {
-      previous.addEventListener('click', () => {
-        track.scrollBy({ left: -step(), behavior: 'smooth' });
-      });
-      next.addEventListener('click', () => {
-        track.scrollBy({ left: step(), behavior: 'smooth' });
-      });
-      track.addEventListener('scroll', update, { passive: true });
+    const scrollByStep = (direction) => {
+      const max = maxScroll();
+      if (max <= 8) return;
+      const delta = step() * direction;
+      const current = track.scrollLeft;
+      if (direction > 0 && current >= max - 4) {
+        track.scrollTo({ left: 0, behavior: reduceQuery.matches ? 'auto' : 'smooth' });
+        return;
+      }
+      if (direction < 0 && current <= 4) {
+        track.scrollTo({ left: max, behavior: reduceQuery.matches ? 'auto' : 'smooth' });
+        return;
+      }
+      const target = Math.max(0, Math.min(max, current + delta));
+      track.scrollTo({ left: target, behavior: reduceQuery.matches ? 'auto' : 'smooth' });
+    };
+
+    const stopAutoplay = () => {
+      if (autoplayTimer) {
+        window.clearTimeout(autoplayTimer);
+        autoplayTimer = null;
+      }
+    };
+
+    const canAutoplay = () =>
+      mobileQuery.matches &&
+      !reduceQuery.matches &&
+      document.visibilityState !== 'hidden' &&
+      inView &&
+      !userPaused &&
+      cards().length > 1 &&
+      maxScroll() > 8;
+
+    const scheduleNext = () => {
+      stopAutoplay();
+      if (!canAutoplay()) return;
+      autoplayTimer = window.setTimeout(() => {
+        autoplayTimer = null;
+        if (!canAutoplay()) return;
+        scrollByStep(1);
+        scheduleNext();
+      }, AUTOPLAY_MS);
+    };
+
+    const startAutoplay = () => {
+      userPaused = false;
+      if (resumeTimer) {
+        window.clearTimeout(resumeTimer);
+        resumeTimer = null;
+      }
       update();
-      window.addEventListener('resize', update);
+      scheduleNext();
+    };
+
+    const pauseAutoplay = () => {
+      userPaused = true;
+      stopAutoplay();
+      if (resumeTimer) window.clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => {
+        userPaused = false;
+        startAutoplay();
+      }, RESUME_MS);
+    };
+
+    if (previous) {
+      previous.addEventListener('click', () => {
+        pauseAutoplay();
+        scrollByStep(-1);
+      });
+    }
+    if (next) {
+      next.addEventListener('click', () => {
+        pauseAutoplay();
+        scrollByStep(1);
+      });
     }
 
+    track.addEventListener('scroll', update, { passive: true });
+    track.addEventListener('pointerdown', pauseAutoplay, { passive: true });
+    track.addEventListener('touchstart', pauseAutoplay, { passive: true });
+    track.addEventListener('wheel', pauseAutoplay, { passive: true });
+    track.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') pauseAutoplay();
+    });
+
+    const onViewportChange = () => {
+      update();
+      if (canAutoplay()) startAutoplay();
+      else stopAutoplay();
+    };
+
+    if (typeof mobileQuery.addEventListener === 'function') {
+      mobileQuery.addEventListener('change', onViewportChange);
+      reduceQuery.addEventListener('change', onViewportChange);
+    } else if (typeof mobileQuery.addListener === 'function') {
+      mobileQuery.addListener(onViewportChange);
+      reduceQuery.addListener(onViewportChange);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') stopAutoplay();
+      else startAutoplay();
+    });
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            inView = entry.isIntersecting && entry.intersectionRatio > 0.2;
+            if (inView) startAutoplay();
+            else stopAutoplay();
+          });
+        },
+        { threshold: [0, 0.2, 0.5] }
+      );
+      io.observe(section);
+    }
+
+    update();
+    window.addEventListener('resize', () => {
+      update();
+      if (canAutoplay() && !autoplayTimer && !userPaused) startAutoplay();
+    });
+
+    // Layout may not be scrollable on the first tick (fonts/images). Retry briefly.
+    let tries = 0;
+    const boot = () => {
+      update();
+      if (canAutoplay()) {
+        startAutoplay();
+        return;
+      }
+      tries += 1;
+      if (tries < 20) window.setTimeout(boot, 250);
+    };
+    window.requestAnimationFrame(boot);
+    window.addEventListener('load', () => {
+      update();
+      startAutoplay();
+    });
   });
 {% endjavascript %}
 

@@ -335,13 +335,44 @@
         </button>
       {% endform %}
     {%- elsif quick_variant -%}
-      <a
-        class="remelle-card__add remelle-card__add--link"
-        href="{{ card_url }}"
+      <button
+        class="remelle-card__add remelle-card__add--quick"
+        type="button"
+        data-quick-add
         aria-label="{{ 'products.choose_options' | t: title: card_title }}"
+        {% unless product.available %}disabled{% endunless %}
       >
         {% render 'icon-plus' %}
-      </a>
+      </button>
+      <script type="application/json" data-quick-product>
+        {
+          "id": {{ product.id | json }},
+          "title": {{ product.title | json }},
+          "url": {{ product.url | json }},
+          "image": {% if product.featured_image %}{{ product.featured_image | image_url: width: 720, format: 'jpg' | json }}{% else %}null{% endif %},
+          "price": {{ product.price | money | json }},
+          "options": [
+            {%- for option in product.options_with_values -%}
+              {
+                "name": {{ option.name | json }},
+                "position": {{ option.position }},
+                "values": {{ option.values | json }}
+              }{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          ],
+          "variants": [
+            {%- for variant in product.variants -%}
+              {
+                "id": {{ variant.id }},
+                "available": {{ variant.available | json }},
+                "options": {{ variant.options | json }},
+                "price": {{ variant.price | money | json }},
+                "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 720, format: 'jpg' | json }}{% elsif product.featured_image %}{{ product.featured_image | image_url: width: 720, format: 'jpg' | json }}{% else %}null{% endif %}
+              }{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          ]
+        }
+      </script>
     {%- endif -%}
   </div>
 
@@ -431,8 +462,8 @@
     }
 
     .remelle-products .remelle-card {
-      flex: 0 0 100%;
-      width: 100%;
+      flex: 0 0 calc(100% - 28px);
+      width: calc(100% - 28px);
       max-width: none;
     }
 
@@ -559,6 +590,7 @@
     position: absolute;
     right: 10px;
     bottom: 10px;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     justify-content: center;

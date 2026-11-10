@@ -37,6 +37,17 @@
         "cancel": {{ 'cart.cancel' | t | json }},
         "confirm": {{ 'cart.confirm' | t | json }},
         "remove": {{ 'cart.remove' | t | json }},
+        "addToCart": {{ 'cart.add_to_cart' | t | json }},
+        "adding": {{ 'product.adding' | t | json }},
+        "selectSize": {{ 'cart.select_size' | t | json }},
+        "selectOptions": {{ 'cart.select_options' | t | json }},
+        "quickAddClose": {{ 'cart.quick_add_close' | t | json }},
+        "sizeLabel": {{ 'cart.size' | t | json }},
+        "offerUnitOne": {{ 'cart.offer_unit_one' | t | json }},
+        "offerUnitOther": {{ 'cart.offer_unit_other' | t | json }},
+        "itemCountOne": {{ 'cart.item_count.one' | t: count: '__COUNT__' | json }},
+        "itemCountOther": {{ 'cart.item_count.other' | t: count: '__COUNT__' | json }},
+        "moneyFormat": {{ shop.money_format | json }},
         "successTitle": {{ 'cart.popup_success' | t | json }},
         "errorTitle": {{ 'cart.popup_error' | t | json }},
         "confirmTitle": {{ 'cart.popup_confirm' | t | json }}
@@ -54,7 +65,9 @@
     </script>
     <script type="application/json" id="RemelleCustomer">
       {
-        "id": {% if customer %}{{ customer.id }}{% else %}null{% endif %}
+        "id": {% if customer %}{{ customer.id }}{% else %}null{% endif %},
+        "cartSyncPath": {{ '/apps/remelle-cart/cart' | json }},
+        "savedCart": {% if customer and customer.metafields.custom.remelle_saved_cart.value != blank %}{{ customer.metafields.custom.remelle_saved_cart.value | json }}{% else %}null{% endif %}
       }
     </script>
     <script src="{{ 'remelle-motion.js' | asset_url }}" defer></script>

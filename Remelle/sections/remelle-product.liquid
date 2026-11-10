@@ -12,6 +12,10 @@
   if preorder_note == blank
     assign preorder_note = 'product.preorder_note' | t
   endif
+  assign delivery_note = section.settings.delivery_note
+  if delivery_note == blank
+    assign delivery_note = 'product.delivery_note' | t
+  endif
   assign preorder_button = false
   assign preorder_list = section.settings.preorder_products
   if preorder_list == blank
@@ -333,7 +337,14 @@
             {%- endif -%}
           </button>
           {%- if preorder_note != blank -%}
-            <p class="remelle-pdp__preorder-note" data-preorder-note {% unless current_is_preorder %}hidden{% endunless %}>{{ preorder_note | escape }}</p>
+            <p class="remelle-pdp__shipping-note remelle-pdp__preorder-note" data-preorder-note {% unless current_is_preorder %}hidden{% endunless %}>{{ preorder_note | escape }}</p>
+          {%- endif -%}
+          {%- if delivery_note != blank -%}
+            <p
+              class="remelle-pdp__shipping-note remelle-pdp__delivery-note"
+              data-delivery-note
+              {% unless current.available and current_is_preorder == false %}hidden{% endunless %}
+            >{{ delivery_note | escape }}</p>
           {%- endif -%}
         </div>
 
@@ -601,9 +612,9 @@
     color: #670d0d;
     font-family: var(--font-sans);
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 12px;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     text-transform: uppercase;
     pointer-events: none;
   }
@@ -955,14 +966,27 @@
     cursor: pointer;
   }
 
-  .remelle-pdp__preorder-note {
+  .remelle-pdp__shipping-note,
+  .remelle-pdp__preorder-note,
+  .remelle-pdp__delivery-note,
+  .remelle-pdp .restock-rocket-preorder-description,
+  .remelle-pdp .preorder-description-details,
+  .remelle-pdp .preorder-detail-item,
+  .remelle-pdp .preorder-detail-text {
+    font-family: var(--font-sans) !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  .remelle-pdp__shipping-note,
+  .remelle-pdp__preorder-note,
+  .remelle-pdp__delivery-note {
     flex: 1 0 100%;
     margin: 2px 0 0;
     color: #670d0d;
-    font-family: var(--font-sans);
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.4;
   }
 
   .remelle-pdp__add:disabled {
@@ -1301,10 +1325,17 @@
       const variant = variants.find((item) => item.options.every((option, index) => option === chosen[index]));
 
       const preorderNote = section.querySelector('[data-preorder-note]');
+      const deliveryNote = section.querySelector('[data-delivery-note]');
       const labelFor = (item) => {
         if (item && item.preorder && add && add.dataset.preorderLabel) return add.dataset.preorderLabel;
         if (add && add.dataset.basketLabel) return add.dataset.basketLabel;
         return add ? add.dataset.label : '';
+      };
+      const syncShippingNotes = (item) => {
+        const isPreorder = Boolean(item && item.available && item.preorder);
+        const isInStock = Boolean(item && item.available && !item.preorder);
+        if (preorderNote) preorderNote.hidden = !isPreorder;
+        if (deliveryNote) deliveryNote.hidden = !isInStock;
       };
 
       if (!variant) {
@@ -1313,7 +1344,7 @@
           add.disabled = true;
           add.textContent = add.dataset.unavailableLabel || add.dataset.soldOut;
         }
-        if (preorderNote) preorderNote.hidden = true;
+        syncShippingNotes(null);
         if (unavailable) unavailable.hidden = false;
         if (dynamicCheckout) dynamicCheckout.hidden = true;
         if (compare) {
@@ -1342,7 +1373,7 @@
         add.disabled = !variant.available;
         add.textContent = variant.available ? label : add.dataset.soldOut;
       }
-      if (preorderNote) preorderNote.hidden = !(variant.available && variant.preorder);
+      syncShippingNotes(variant);
       if (dynamicCheckout) dynamicCheckout.hidden = !variant.available;
       if (variant.image_id) showGalleryImage(variant.image_id, galleryReady);
       syncQuantityBounds(variant);
@@ -1470,6 +1501,13 @@
       "label": "t:labels.preorder_note",
       "info": "t:labels.preorder_note_info",
       "default": "Preorder takes from 10 to 20 days."
+    },
+    {
+      "type": "text",
+      "id": "delivery_note",
+      "label": "t:labels.delivery_note",
+      "info": "t:labels.delivery_note_info",
+      "default": "Delivery within 2 to 3 days."
     },
     {
       "type": "checkbox",

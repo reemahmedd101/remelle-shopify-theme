@@ -1,0 +1,10 @@
+# Push targets for Remelle. Use: shopify theme push -e black-friday
+# Keep "current" live until Black Friday is ready to publish.
+
+[environments.black-friday]
+store = "0ck1c2-wi.myshopify.com"
+theme = "190208049339"
+
+[environments.current]
+store = "0ck1c2-wi.myshopify.com"
+theme = "189308829883"

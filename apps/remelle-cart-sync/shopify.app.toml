@@ -1,0 +1,26 @@
+# Remelle cross-device cart sync (App Proxy).
+# Create a custom/dev app in the Partner Dashboard, then set:
+#   Application proxy URL  = your deployed host (e.g. https://remelle-cart-sync.example.com)
+#   Subpath prefix         = apps
+#   Subpath                = remelle-cart
+#
+# Admin API scopes required:
+#   read_customers, write_customers
+#
+# After install, set env SHOPIFY_API_SECRET + SHOPIFY_ADMIN_API_TOKEN on the host.
+
+name = "Remelle Cart Sync"
+client_id = "REPLACE_WITH_CLIENT_ID"
+application_url = "https://REPLACE_WITH_HOST"
+embedded = false
+
+[access_scopes]
+scopes = "read_customers,write_customers"
+
+[auth]
+redirect_urls = [ "https://REPLACE_WITH_HOST/auth/callback" ]
+
+[app_proxy]
+url = "https://REPLACE_WITH_HOST"
+subpath = "remelle-cart"
+prefix = "apps"

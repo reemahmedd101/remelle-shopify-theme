@@ -27,14 +27,28 @@
   if empty_body == blank
     assign empty_body = 'cart.empty_body' | t
   endif
+  assign empty_recs_heading = section.settings.empty_recs_heading
+  if empty_recs_heading == blank
+    assign empty_recs_heading = 'cart.empty_recs_heading' | t
+  endif
+  assign empty_recs_body = section.settings.empty_recs_body
+  if empty_recs_body == blank
+    assign empty_recs_body = 'cart.empty_recs_body' | t
+  endif
   assign summary_heading = section.settings.summary_heading
   if summary_heading == blank
     assign summary_heading = 'cart.order_summary' | t
   endif
   assign cart_form_id = 'RemelleCartForm-' | append: section.id
+  assign empty_rec_limit = 4
+  assign empty_rec_count = 0
+  assign empty_rec_source = section.settings.empty_products
+  if empty_rec_source == blank or empty_rec_source.size == 0
+    assign empty_rec_source = collections.all.products
+  endif
 
   assign offer_mode = section.settings.offer_mode | default: 'quantity'
-  assign offer_qty_threshold = section.settings.offer_item_goal | default: 2 | plus: 0
+  assign offer_qty_threshold = section.settings.offer_item_target | default: 3 | plus: 0
   if offer_qty_threshold < 1
     assign offer_qty_threshold = 1
   endif
@@ -43,32 +57,25 @@
     assign offer_amount_threshold = 0
   endif
 
-  assign offer_discount_title = ''
-  assign offer_discount_applied = false
-  for discount in cart.discount_applications
-    assign offer_discount_applied = true
-    if offer_discount_title == blank and discount.title != blank
-      assign offer_discount_title = discount.title
-    endif
-  endfor
-  if offer_discount_applied == false
-    for item in cart.items
-      for allocation in item.line_level_discount_allocations
-        assign offer_discount_applied = true
-        if offer_discount_title == blank and allocation.discount_application.title != blank
-          assign offer_discount_title = allocation.discount_application.title
-        endif
-      endfor
-    endfor
-  endif
-
   assign offer_unlocked = false
   assign offer_progress = 0
   assign offer_remaining_count = 0
   assign offer_remaining_money = ''
   assign offer_progress_msg = ''
+  assign offer_progress_before = ''
+  assign offer_progress_after = ''
+  assign offer_highlight = ''
+  assign offer_kicker = section.settings.offer_progress_kicker
+  if offer_kicker == blank
+    assign offer_kicker = 'cart.offer_progress_kicker' | t
+  endif
+  assign offer_success_kicker = section.settings.offer_success_kicker
+  if offer_success_kicker == blank
+    assign offer_success_kicker = 'cart.offer_success_kicker' | t
+  endif
   assign offer_success_msg = section.settings.free_shipping_success
-  if offer_success_msg == blank
+  assign offer_success_legacy = "Yay — you've unlocked your offer"
+  if offer_success_msg == blank or offer_success_msg == offer_success_legacy
     assign offer_success_msg = 'cart.free_shipping_success' | t
   endif
 
@@ -85,14 +92,26 @@
     else
       assign offer_progress = 100
     endif
-    if offer_remaining_count == 0 or offer_discount_applied
+    if offer_remaining_count == 0
       assign offer_unlocked = true
     endif
-    assign offer_progress_msg = section.settings.offer_quantity_progress
-    if offer_progress_msg == blank
-      assign offer_progress_msg = 'cart.offer_quantity_progress' | t
+    assign offer_unit = 'cart.offer_unit_other' | t
+    if offer_remaining_count == 1
+      assign offer_unit = 'cart.offer_unit_one' | t
     endif
-    assign offer_progress_msg = offer_progress_msg | replace: '__COUNT__', offer_remaining_count
+    assign offer_highlight = offer_remaining_count | append: ' ' | append: offer_unit
+    assign offer_progress_template = section.settings.offer_quantity_progress
+    if offer_progress_template == blank or offer_progress_template == 'Add __COUNT__ more items to unlock your offer'
+      assign offer_progress_template = 'cart.offer_quantity_progress' | t
+    endif
+    assign offer_progress_msg = offer_progress_template
+    if offer_progress_msg contains '__HIGHLIGHT__'
+      assign offer_progress_parts = offer_progress_msg | split: '__HIGHLIGHT__'
+      assign offer_progress_before = offer_progress_parts[0]
+      assign offer_progress_after = offer_progress_parts[1]
+    else
+      assign offer_progress_msg = offer_progress_msg | replace: '__COUNT__', offer_remaining_count | replace: '__UNIT__', offer_unit
+    endif
   else
     assign offer_amount_cents = offer_amount_threshold | times: 100
     assign offer_remaining_cents = offer_amount_cents | minus: cart.total_price
@@ -108,7 +127,7 @@
     else
       assign offer_progress = 100
     endif
-    if offer_remaining_cents == 0 or offer_discount_applied
+    if offer_remaining_cents == 0
       assign offer_unlocked = true
     endif
     assign offer_progress_msg = section.settings.free_shipping_progress
@@ -116,10 +135,6 @@
       assign offer_progress_msg = 'cart.free_shipping_progress' | t
     endif
     assign offer_progress_msg = offer_progress_msg | replace: '__AMOUNT__', offer_remaining_money
-  endif
-
-  if offer_unlocked and offer_discount_title != blank
-    assign offer_success_msg = offer_discount_title
   endif
 
   assign show_offer_bar = false
@@ -130,6 +145,19 @@
       assign show_offer_bar = true
     endif
   endif
+
+  if offer_mode == 'quantity'
+    assign offer_goal_value = offer_qty_threshold
+  else
+    assign offer_goal_value = offer_amount_threshold
+  endif
+  if offer_mode == 'quantity'
+    assign offer_template_attr = offer_progress_template
+  else
+    assign offer_template_attr = offer_progress_msg
+  endif
+  assign offer_unit_one_label = 'cart.offer_unit_one' | t
+  assign offer_unit_other_label = 'cart.offer_unit_other' | t
 -%}
 
 <section
@@ -137,30 +165,64 @@
   aria-labelledby="RemelleCartTitle-{{ section.id }}"
   data-remove-confirm="{{ 'cart.remove_confirm' | t | escape }}"
 >
-  <div class="remelle-cart__inner">
-    <header class="remelle-cart__header">
-      {%- if page_eyebrow != blank -%}
-        <p class="remelle-cart__eyebrow">{{ page_eyebrow | escape }}</p>
-      {%- endif -%}
-      <div class="remelle-cart__heading-row">
-        <h1 class="remelle-cart__title" id="RemelleCartTitle-{{ section.id }}">
-          {{ page_heading | escape }}
-        </h1>
-        {%- if cart.item_count > 0 -%}
-          <p class="remelle-cart__count">{{ 'cart.item_count' | t: count: cart.item_count }}</p>
+  <div class="remelle-cart__inner{% if cart.item_count == 0 %} remelle-cart__inner--empty{% endif %}">
+    {%- if cart.item_count > 0 -%}
+      <header class="remelle-cart__header">
+        {%- if page_eyebrow != blank -%}
+          <p class="remelle-cart__eyebrow">{{ page_eyebrow | escape }}</p>
         {%- endif -%}
-      </div>
-    </header>
+        <div class="remelle-cart__heading-row">
+          <h1 class="remelle-cart__title" id="RemelleCartTitle-{{ section.id }}">
+            {{ page_heading | escape }}
+          </h1>
+          <p class="remelle-cart__count" data-cart-page-count data-item-count="{{ cart.item_count }}">{{ 'cart.item_count' | t: count: cart.item_count }}</p>
+        </div>
+      </header>
+    {%- endif -%}
 
     {%- if cart.item_count == 0 -%}
-      <div class="remelle-cart__empty">
-        <div class="remelle-cart__empty-copy">
-          <h2 class="remelle-cart__empty-title">{{ empty_heading | escape }}</h2>
-          <p class="remelle-cart__empty-body">{{ empty_body | escape }}</p>
+      <div class="remelle-cart__empty remelle-cart-empty" data-empty-cart>
+        <div class="remelle-cart-empty__hero">
+          {%- if page_eyebrow != blank -%}
+            <p class="remelle-cart-empty__kicker">{{ page_eyebrow | escape }}</p>
+          {%- endif -%}
+          <h1 class="remelle-cart__empty-title" id="RemelleCartTitle-{{ section.id }}">
+            {{ empty_heading | escape }}
+          </h1>
+          <span class="remelle-cart-empty__rule" aria-hidden="true"></span>
+          {%- if empty_body != blank -%}
+            <p class="remelle-cart__empty-body">{{ empty_body | escape }}</p>
+          {%- endif -%}
+          <a class="remelle-cart__cta remelle-cart-empty__cta" href="{{ routes.all_products_collection_url }}">
+            {{ continue_label | escape }}
+          </a>
         </div>
-        <a class="remelle-cart__cta" href="{{ routes.all_products_collection_url }}">
-          {{ continue_label | escape }}
-        </a>
+
+        <div class="remelle-cart-empty__recs">
+          <header class="remelle-cart-empty__intro">
+            {%- if empty_recs_heading != blank -%}
+              <p class="remelle-cart-empty__eyebrow">{{ empty_recs_heading | escape }}</p>
+            {%- endif -%}
+            {%- if empty_recs_body != blank -%}
+              <h2 class="remelle-cart-empty__lede">{{ empty_recs_body | escape }}</h2>
+            {%- endif -%}
+          </header>
+
+          <div class="remelle-cart-empty__grid">
+            {%- for product in empty_rec_source -%}
+              {%- if empty_rec_count >= empty_rec_limit -%}
+                {%- break -%}
+              {%- endif -%}
+              {%- if product.available == false -%}
+                {%- continue -%}
+              {%- endif -%}
+              {%- assign empty_rec_count = empty_rec_count | plus: 1 -%}
+              <div class="remelle-cart-empty__item">
+                {% render 'remelle-product-card', product: product %}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
       </div>
     {%- else -%}
       {% form 'cart', cart, class: 'remelle-cart__form', id: cart_form_id %}
@@ -222,7 +284,7 @@
                       {%- if item.original_price != item.final_price -%}
                         <s>{{ item.original_price | money }}</s>
                       {%- endif -%}
-                      <span>{{ item.final_price | money }}</span>
+                      <span data-line-unit-price data-unit-cents="{{ item.final_price }}">{{ item.final_price | money }}</span>
                     </p>
 
                     <a class="remelle-cart__remove" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
@@ -271,7 +333,7 @@
                   {%- if item.original_line_price != item.final_line_price -%}
                     <s class="remelle-cart__compare">{{ item.original_line_price | money }}</s>
                   {%- endif -%}
-                  <p class="remelle-cart__line-price">{{ item.final_line_price | money }}</p>
+                  <p class="remelle-cart__line-price" data-line-price data-line-cents="{{ item.final_line_price }}">{{ item.final_line_price | money }}</p>
                 </div>
               </li>
             {%- endfor -%}
@@ -328,34 +390,32 @@
           </div>
 
           {%- if show_offer_bar -%}
-            <div
-              class="remelle-cart__shipping{% if offer_unlocked %} remelle-cart__shipping--unlocked{% endif %}"
-              data-free-shipping
-              data-offer-mode="{{ offer_mode | escape }}"
-              role="status"
-              aria-live="polite"
-            >
-              {%- if offer_unlocked -%}
-                <p class="remelle-cart__shipping-text">{{ offer_success_msg | escape }}</p>
-              {%- else -%}
-                <p class="remelle-cart__shipping-text">{{ offer_progress_msg | escape }}</p>
-              {%- endif -%}
-              <div
-                class="remelle-cart__shipping-track"
-                role="progressbar"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="{{ offer_progress }}"
-              >
-                <span class="remelle-cart__shipping-fill" style="width: {{ offer_progress }}%;"></span>
-              </div>
-            </div>
+            {% render 'remelle-cart-offer',
+              variant: 'aside',
+              unlocked: offer_unlocked,
+              progress: offer_progress,
+              kicker: offer_kicker,
+              success_kicker: offer_success_kicker,
+              success_msg: offer_success_msg,
+              progress_before: offer_progress_before,
+              progress_after: offer_progress_after,
+              progress_msg: offer_progress_msg,
+              highlight: offer_highlight,
+              mode: offer_mode,
+              goal: offer_goal_value,
+              progress_kicker_attr: offer_kicker,
+              success_kicker_attr: offer_success_kicker,
+              success_attr: offer_success_msg,
+              progress_template_attr: offer_template_attr,
+              unit_one: offer_unit_one_label,
+              unit_other: offer_unit_other_label
+            %}
           {%- endif -%}
 
           <div class="remelle-cart__summary">
             <div class="remelle-cart__subtotal">
               <span>{{ 'cart.subtotal' | t }}</span>
-              <span data-cart-subtotal>{{ cart.total_price | money }}</span>
+              <span data-cart-subtotal data-subtotal-cents="{{ cart.total_price }}">{{ cart.total_price | money }}</span>
             </div>
             <p class="remelle-cart__taxes">{{ 'cart.taxes_shipping' | t }}</p>
           </div>
@@ -381,6 +441,15 @@
     background: var(--color-off-white);
   }
 
+  .remelle-cart {
+    transition: opacity 0.35s ease;
+  }
+
+  .remelle-cart.is-refreshing,
+  .remelle-cart.is-entering {
+    opacity: 0.28;
+  }
+
   .remelle-cart__inner {
     width: min(var(--page-width), 100%);
     margin-inline: auto;
@@ -388,7 +457,7 @@
   }
 
   .remelle-cart__header {
-    margin-bottom: 48px;
+    margin-bottom: 24px;
   }
 
   .remelle-cart__eyebrow {
@@ -428,29 +497,145 @@
     line-height: 1.2;
   }
 
-  .remelle-cart__empty {
+  .remelle-cart__inner--empty {
+    padding-top: 24px;
+  }
+
+  .remelle-cart__empty,
+  .remelle-cart-empty {
     display: grid;
-    gap: 32px;
+    gap: 80px;
+    max-width: none;
+    padding: 0 0 72px;
+  }
+
+  .remelle-cart-empty__hero {
+    display: grid;
+    justify-items: center;
+    gap: 0;
     max-width: 520px;
-    padding: 24px 0 80px;
+    margin: 28px auto 0;
+    text-align: center;
+  }
+
+  .remelle-cart-empty__kicker {
+    margin: 0 0 18px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
   }
 
   .remelle-cart__empty-title {
     margin: 0;
     color: var(--color-burgundy);
     font-family: var(--font-serif);
-    font-size: 36px;
+    font-size: clamp(40px, 6vw, 56px);
     font-weight: 400;
-    line-height: 1.1;
+    line-height: 1.02;
     letter-spacing: -0.02em;
   }
 
+  .remelle-cart-empty__rule {
+    display: block;
+    width: 40px;
+    height: 1px;
+    margin: 22px 0 0;
+    background: var(--color-burgundy);
+    opacity: 0.45;
+  }
+
   .remelle-cart__empty-body {
-    margin: 16px 0 0;
-    color: #8a8178;
+    max-width: 32ch;
+    margin: 18px 0 0;
+    color: #060505;
     font-family: var(--font-sans);
     font-size: 16px;
-    line-height: 22px;
+    font-weight: 400;
+    line-height: 1.45;
+  }
+
+  .remelle-cart-empty__cta {
+    margin-top: 28px;
+    border-color: var(--color-burgundy);
+  }
+
+  .remelle-cart-empty__recs {
+    display: grid;
+    gap: 28px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(103, 13, 13, 0.12);
+  }
+
+  .remelle-cart-empty__intro {
+    display: grid;
+    gap: 10px;
+  }
+
+  .remelle-cart-empty__eyebrow {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart-empty__lede {
+    margin: 0;
+    color: var(--color-burgundy);
+    font-family: var(--font-serif);
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .remelle-cart-empty__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px 16px;
+  }
+
+  .remelle-cart-empty__item .remelle-card {
+    flex: none;
+    width: 100%;
+    max-width: none;
+  }
+
+  .remelle-cart-empty__item .remelle-card__photo {
+    height: auto;
+    aspect-ratio: 363 / 484;
+  }
+
+  @media (max-width: 1024px) {
+    .remelle-cart-empty__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 16px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .remelle-cart__empty,
+    .remelle-cart-empty {
+      gap: 56px;
+      padding-bottom: 48px;
+    }
+
+    .remelle-cart-empty__hero {
+      margin-top: 12px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .remelle-cart-empty__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   .remelle-cart__cta,
@@ -798,34 +983,102 @@
   }
 
   .remelle-cart__shipping {
-    margin-top: 24px;
-    padding: 14px 0 0;
+    margin-top: 20px;
+    padding: 14px 16px;
+    border: 1px solid rgba(103, 13, 13, 0.12);
+    background: linear-gradient(180deg, #faf5f0 0%, #f5ede3 100%);
+    color: #670d0d;
+    animation: remelle-girl-math-in 0.45s ease;
+  }
+
+  .remelle-cart__shipping.is-unlock-pulse {
+    animation: remelle-girl-math-unlock 0.55s ease;
+  }
+
+  .remelle-cart__shipping-copy {
+    margin: 0 0 10px;
+  }
+
+  .remelle-cart__shipping-kicker {
+    margin: 0 0 6px;
+    color: var(--color-burgundy);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
+  }
+
+  .remelle-cart__shipping--unlocked .remelle-cart__shipping-kicker {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.44px;
+    text-transform: uppercase;
   }
 
   .remelle-cart__shipping-text {
-    margin: 0 0 10px;
-    color: var(--color-burgundy);
+    margin: 0;
+    color: #670d0d;
     font-family: var(--font-sans);
     font-size: 13px;
-    font-weight: 500;
-    line-height: 1.4;
+    font-weight: 400;
+    line-height: 1.45;
   }
 
-  .remelle-cart__shipping--unlocked .remelle-cart__shipping-text {
+  .remelle-cart__shipping-count {
     font-weight: 600;
   }
 
   .remelle-cart__shipping-track {
-    height: 3px;
+    height: 2px;
     overflow: hidden;
-    background: rgba(103, 13, 13, 0.12);
+    background: rgba(103, 13, 13, 0.14);
   }
 
   .remelle-cart__shipping-fill {
     display: block;
     height: 100%;
-    background: var(--color-burgundy);
-    transition: width 0.35s ease;
+    background: #670d0d;
+    transition: width 0.45s ease;
+  }
+
+  @keyframes remelle-girl-math-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes remelle-girl-math-unlock {
+    0% {
+      transform: translateY(0);
+      box-shadow: 0 0 0 0 rgba(103, 13, 13, 0);
+    }
+    40% {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(103, 13, 13, 0.12);
+    }
+    100% {
+      transform: translateY(0);
+      box-shadow: 0 0 0 0 rgba(103, 13, 13, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .remelle-cart__shipping,
+    .remelle-cart__shipping.is-unlock-pulse {
+      animation: none;
+    }
+
+    .remelle-cart__shipping-fill {
+      transition: none;
+    }
   }
 
   .remelle-cart__summary {
@@ -961,10 +1214,6 @@
   }
 {% endstylesheet %}
 
-{%- comment -%}
-  Quantity and discount controls are bound in assets/remelle-cart.js.
-{%- endcomment -%}
-
 {% schema %}
 {
   "name": "t:general.cart",
@@ -994,13 +1243,32 @@
       "type": "text",
       "id": "empty_heading",
       "label": "t:labels.empty_heading",
-      "default": "Your cart is empty"
+      "default": "Your cart is empty."
     },
     {
       "type": "textarea",
       "id": "empty_body",
       "label": "t:labels.empty_body",
-      "default": "Browse the collection and add pieces when you are ready."
+      "default": "Well, this is your sign to find something you love. ♡"
+    },
+    {
+      "type": "text",
+      "id": "empty_recs_heading",
+      "label": "t:labels.empty_recs_heading",
+      "default": "A little something for you"
+    },
+    {
+      "type": "text",
+      "id": "empty_recs_body",
+      "label": "t:labels.empty_recs_body",
+      "default": "Some pieces you might fall for."
+    },
+    {
+      "type": "product_list",
+      "id": "empty_products",
+      "label": "t:labels.empty_products",
+      "info": "t:labels.empty_products_info",
+      "limit": 8
     },
     {
       "type": "text",
@@ -1050,17 +1318,23 @@
     },
     {
       "type": "number",
-      "id": "offer_item_goal",
+      "id": "offer_item_target",
       "label": "t:labels.offer_quantity_threshold",
       "info": "t:labels.offer_quantity_threshold_info",
-      "default": 2
+      "default": 3
+    },
+    {
+      "type": "text",
+      "id": "offer_progress_kicker",
+      "label": "t:labels.offer_progress_kicker",
+      "default": "💌 Girl math check"
     },
     {
       "type": "text",
       "id": "offer_quantity_progress",
       "label": "t:labels.offer_quantity_progress",
       "info": "t:labels.offer_quantity_progress_info",
-      "default": "Add __COUNT__ more items to unlock your offer"
+      "default": "You're just __HIGHLIGHT__ away from FREE DELIVERY. Adding more is basically saving! 🎀"
     },
     {
       "type": "number",
@@ -1078,10 +1352,16 @@
     },
     {
       "type": "text",
+      "id": "offer_success_kicker",
+      "label": "t:labels.offer_success_kicker",
+      "default": "Girl, you did the math! 💅"
+    },
+    {
+      "type": "text",
       "id": "free_shipping_success",
       "label": "t:labels.free_shipping_success",
       "info": "t:labels.free_shipping_success_info",
-      "default": "Yay — you've unlocked your offer"
+      "default": "You've unlocked FREE DELIVERY. Happy shopping! ♡"
     }
   ],
   "presets": [

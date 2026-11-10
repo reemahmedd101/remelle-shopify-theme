@@ -1,0 +1,17 @@
+{
+  "name": "remelle-cart-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "App Proxy backend that persists Remelle logged-in customer carts to a customer metafield for cross-device sync.",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

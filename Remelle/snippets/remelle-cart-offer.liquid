@@ -1,0 +1,57 @@
+{%- comment -%}
+  Girl Math / free delivery progress.
+  Accepts: variant (hero|aside), unlocked, progress, kicker, success_kicker,
+  success_msg, progress_before, progress_after, progress_msg, highlight,
+  mode, goal, progress_kicker_attr, success_kicker_attr, success_attr,
+  progress_template_attr, unit_one, unit_other
+{%- endcomment -%}
+{%- liquid
+  assign offer_variant = variant | default: 'aside'
+-%}
+<div
+  class="remelle-cart__shipping remelle-cart__shipping--{{ offer_variant }}{% if unlocked %} remelle-cart__shipping--unlocked{% endif %}"
+  data-free-shipping
+  data-offer-mode="{{ mode | escape }}"
+  data-offer-state="{% if unlocked %}unlocked{% else %}progress{% endif %}"
+  data-offer-goal="{{ goal | escape }}"
+  data-offer-progress-kicker="{{ progress_kicker_attr | escape }}"
+  data-offer-success-kicker="{{ success_kicker_attr | escape }}"
+  data-offer-success="{{ success_attr | escape }}"
+  data-offer-progress-template="{{ progress_template_attr | escape }}"
+  data-offer-unit-one="{{ unit_one | escape }}"
+  data-offer-unit-other="{{ unit_other | escape }}"
+  role="status"
+  aria-live="polite"
+>
+  <div class="remelle-cart__shipping-copy">
+    {%- if unlocked -%}
+      {%- if success_kicker != blank -%}
+        <p class="remelle-cart__shipping-kicker">{{ success_kicker | escape }}</p>
+      {%- endif -%}
+      <p class="remelle-cart__shipping-text">{{ success_msg | escape }}</p>
+    {%- else -%}
+      {%- if kicker != blank -%}
+        <p class="remelle-cart__shipping-kicker">{{ kicker | escape }}</p>
+      {%- endif -%}
+      {%- if progress_before != blank or progress_after != blank -%}
+        <p class="remelle-cart__shipping-text">
+          {{- progress_before | escape -}}
+          <strong class="remelle-cart__shipping-count">{{ highlight | escape }}</strong>
+          {{- progress_after | escape -}}
+        </p>
+      {%- else -%}
+        <p class="remelle-cart__shipping-text">{{ progress_msg | escape }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+  <div
+    class="remelle-cart__shipping-track"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="{{ progress }}"
+    aria-label="{{ 'cart.offer_progress_label' | t }}"
+  >
+    <span class="remelle-cart__shipping-fill" style="width: {{ progress }}%;"></span>
+  </div>
+</div>
